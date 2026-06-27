@@ -1,0 +1,1317 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#081521">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ניווט חופי">
+<title>ניווט חופי — מתרגל ימאות</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23081521'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23D9A441' stroke-width='2.5'/%3E%3Cpolygon points='32,12 37,32 32,52 27,32' fill='%23ff3b30'/%3E%3Cpolygon points='32,12 27,32 32,32' fill='%23fff4d6'/%3E%3Cpolygon points='12,32 32,27 52,32 32,37' fill='%2322d07a' opacity='.85'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23081521'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23D9A441' stroke-width='2.5'/%3E%3Cpolygon points='32,12 37,32 32,52 27,32' fill='%23ff3b30'/%3E%3Cpolygon points='12,32 32,27 52,32 32,37' fill='%2322d07a'/%3E%3C/svg%3E">
+<style>
+:root{
+  --abyss:#081521; --sea:#0e2236; --sea2:#143049; --sea3:#1b3c59;
+  --line:#24486a; --brass:#d9a441; --brass-dim:#9a7a36;
+  --parchment:#ece3ce; --ink:#cfdcea; --ink-dim:#8aa1b6;
+  --port:#ff3b30; --stbd:#22d07a; --whitelight:#fff4d6; --yellow:#ffd23b;
+  --good:#2fbf7f; --bad:#e2483d;
+  --r:14px; --maxw:920px;
+  --font: system-ui,-apple-system,"Segoe UI","Helvetica Neue","Arial Hebrew","Noto Sans Hebrew",Arial,sans-serif;
+  --mono: ui-monospace,"SF Mono","Cascadia Mono","Consolas",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:
+    radial-gradient(120% 80% at 50% -10%, #0f2740 0%, var(--abyss) 60%) fixed;
+  color:var(--ink); font-family:var(--font); line-height:1.55;
+  -webkit-text-size-adjust:100%; overflow-x:hidden;
+}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 14px;
+  padding-bottom:calc(78px + env(safe-area-inset-bottom));}
+a{color:var(--brass)}
+
+/* ---------- header ---------- */
+header.app{display:flex;align-items:center;gap:12px;padding:16px 2px 10px}
+header.app .rose{width:42px;height:42px;flex:0 0 auto}
+header.app h1{font-size:1.18rem;margin:0;font-weight:800;letter-spacing:-.01em;color:var(--parchment)}
+header.app p{margin:1px 0 0;font-size:.72rem;color:var(--ink-dim);letter-spacing:.02em}
+
+/* ---------- tab bar ---------- */
+nav.tabs{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;
+  display:flex;justify-content:center;gap:2px;
+  background:rgba(8,17,28,.92);backdrop-filter:blur(12px);
+  border-top:1px solid var(--line);
+  padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+}
+nav.tabs button{
+  flex:1 1 0;max-width:130px;background:none;border:0;color:var(--ink-dim);
+  font-family:inherit;font-size:.66rem;font-weight:600;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:5px 2px;border-radius:10px;transition:color .15s,background .15s;
+}
+nav.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
+nav.tabs button[aria-selected="true"]{color:var(--brass);background:rgba(217,164,65,.10)}
+nav.tabs button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+/* ---------- generic ---------- */
+.section-title{display:flex;align-items:baseline;gap:10px;margin:18px 2px 12px}
+.section-title h2{font-size:1.02rem;margin:0;color:var(--parchment);font-weight:800}
+.section-title .hint{font-size:.72rem;color:var(--ink-dim)}
+.card{background:linear-gradient(180deg,var(--sea2),var(--sea));border:1px solid var(--line);
+  border-radius:var(--r);}
+.muted{color:var(--ink-dim)}
+.ref{font-family:var(--mono);font-size:.7rem;color:var(--brass);
+  background:rgba(217,164,65,.10);border:1px solid var(--brass-dim);
+  padding:1px 7px;border-radius:999px;white-space:nowrap}
+.btn{font-family:inherit;font-size:.86rem;font-weight:700;cursor:pointer;
+  border-radius:11px;border:1px solid var(--line);background:var(--sea3);color:var(--ink);
+  padding:10px 16px;transition:transform .08s,background .15s,border-color .15s}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:linear-gradient(180deg,#e9b653,var(--brass));color:#1a1304;border-color:var(--brass)}
+.btn.ghost{background:transparent}
+.btn:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* ---------- study gallery ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tile{cursor:pointer;text-align:center;padding:8px;border-radius:12px;
+  background:linear-gradient(180deg,var(--sea2),var(--sea));border:1px solid var(--line);
+  transition:transform .1s,border-color .15s}
+.tile:hover{border-color:var(--brass-dim);transform:translateY(-2px)}
+.tile[aria-current="true"]{border-color:var(--brass);box-shadow:0 0 0 1px var(--brass) inset}
+.tile svg{width:100%;height:88px;display:block}
+.flagtile .flagimg{padding:10px 14px 4px}
+.flagtile .flagimg svg{height:auto;width:100%;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+.tile .nm{font-size:.74rem;font-weight:700;margin-top:4px;color:var(--ink)}
+
+/* segmented toggle */
+.seg{display:inline-flex;background:var(--abyss);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px}
+.seg button{border:0;background:none;color:var(--ink-dim);font-family:inherit;font-weight:700;
+  font-size:.8rem;padding:7px 16px;border-radius:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--sea3);color:var(--parchment)}
+
+.detail{padding:14px;margin-top:12px}
+.detail .stage{border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#04101d}
+.detail .stage svg{display:block;width:100%;height:auto}
+.detail h3{margin:.6em 0 .2em;font-size:1.05rem;color:var(--parchment)}
+.detail .sum{font-size:.9rem}
+.detail .tip{font-size:.82rem;background:rgba(217,164,65,.08);border:1px solid var(--brass-dim);
+  border-radius:10px;padding:9px 12px;margin-top:10px;color:var(--parchment)}
+.clickhint{font-size:.72rem;color:var(--ink-dim);text-align:center;margin:8px 0 2px}
+
+/* hot (clickable signal) */
+.nf-hot{cursor:pointer}
+.nf-hot:hover .nf-halo,.nf-hot:focus .nf-halo{opacity:.85}
+.nf-hot:focus{outline:none}
+.nf-hot:focus-visible{outline:2px solid var(--brass)}
+.nf-halo{opacity:.5}
+[data-mode="day"] .nf-light{opacity:.13}
+[data-mode="night"] .nf-shape{opacity:.13}
+
+/* ---------- sounds ---------- */
+.sound-card{padding:14px;display:flex;flex-direction:column;gap:8px}
+.pattern{font-family:var(--mono);font-size:1.7rem;letter-spacing:.18em;color:var(--whitelight)}
+.sound-card .meaning{font-size:.9rem}
+
+/* ---------- quiz ---------- */
+.quiz{padding:16px;margin-top:8px}
+.quiz .scorebar{display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--ink-dim);margin-bottom:10px}
+.quiz .qtext{font-size:1.04rem;font-weight:700;color:var(--parchment);margin:4px 0 12px;text-wrap:balance}
+.quiz .visual{border:1px solid var(--line);border-radius:12px;background:#04101d;margin-bottom:12px;overflow:hidden}
+.quiz .visual svg{display:block;width:100%;height:auto;max-height:240px}
+.opt{display:block;width:100%;text-align:right;margin:7px 0;padding:12px 14px;border-radius:11px;
+  border:1px solid var(--line);background:var(--sea3);color:var(--ink);font-family:inherit;
+  font-size:.9rem;cursor:pointer;transition:background .12s,border-color .12s}
+.opt:hover{border-color:var(--brass-dim)}
+.opt:disabled{cursor:default}
+.opt.correct{background:rgba(47,191,127,.16);border-color:var(--good);color:#d8ffe9}
+.opt.wrong{background:rgba(226,72,61,.14);border-color:var(--bad);color:#ffd9d5}
+.explain{margin-top:12px;padding:12px;border-radius:11px;background:var(--abyss);border:1px solid var(--line);font-size:.86rem}
+.explain .lbl{font-weight:800;color:var(--brass);font-size:.78rem;letter-spacing:.04em}
+.topicpill{font-size:.68rem;font-family:var(--mono);color:var(--ink-dim);border:1px solid var(--line);padding:1px 7px;border-radius:999px}
+
+/* ---------- scenarios ---------- */
+.board{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#06283d;touch-action:none}
+.board svg{display:block;width:100%;height:auto}
+.scn-head{display:flex;align-items:center;gap:8px;justify-content:space-between;margin:4px 2px 10px}
+.scn-head .t{font-weight:800;color:var(--parchment);font-size:.95rem}
+.iconbtn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--sea3);
+  color:var(--ink);font-size:1.1rem;cursor:pointer;flex:0 0 auto}
+.typesel{margin:0 2px 4px;border:1px solid var(--line);border-radius:11px;background:var(--sea);overflow:hidden}
+.typesel summary{cursor:pointer;padding:10px 12px;font-size:.82rem;font-weight:700;color:var(--ink);list-style:none}
+.typesel summary::-webkit-details-marker{display:none}
+.typesel summary::before{content:"▾ ";color:var(--brass)}
+.typesel[open] summary::before{content:"▴ "}
+.chipbar{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 4px}
+.chip{font-family:inherit;font-size:.74rem;font-weight:700;cursor:pointer;border-radius:999px;
+  border:1px solid var(--line);background:var(--abyss);color:var(--ink-dim);padding:6px 11px;transition:all .12s}
+.chip[aria-pressed="true"]{background:rgba(217,164,65,.16);border-color:var(--brass);color:var(--parchment)}
+.btn.mini{font-size:.74rem;padding:6px 12px}
+.spd{display:flex;align-items:center;gap:10px;margin:12px 2px 0;font-size:.8rem;font-weight:700;color:var(--ink-dim)}
+.spd input[type=range]{flex:1;accent-color:var(--brass);max-width:260px}
+.spd #spdVal{font-family:var(--mono);color:var(--parchment);min-width:34px}
+.verdict{margin-top:10px;padding:11px 14px;border-radius:11px;font-weight:800;text-align:center;display:none}
+.verdict.show{display:block}
+.verdict.safe{background:rgba(47,191,127,.12);border:1px solid var(--good);color:#d8ffe9}
+.verdict.hit{background:rgba(226,72,61,.12);border:1px solid var(--bad);color:#ffd9d5}
+.verdict .evtop{font-size:1rem;margin-bottom:10px}
+.evgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+.evcol{background:rgba(0,0,0,.20);border:1px solid var(--line);border-radius:10px;padding:9px;text-align:right}
+.evhead{font-weight:800;font-size:.8rem;margin-bottom:7px;line-height:1.3}
+.chk{display:flex;gap:7px;align-items:flex-start;font-size:.8rem;font-weight:600;margin:5px 0;text-align:right}
+.chk.ok{color:#bdf3d6}.chk.no{color:#ffc9c4}
+.chk>span:first-child{flex:0 0 auto;font-weight:900}
+@media(max-width:520px){.evgrid{grid-template-columns:1fr}}
+
+/* ---------- bottom sheet ---------- */
+.sheet-back{position:fixed;inset:0;background:rgba(3,9,16,.6);backdrop-filter:blur(2px);
+  z-index:60;display:none;opacity:0;transition:opacity .2s}
+.sheet-back.show{display:block;opacity:1}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:var(--maxw);margin:0 auto;
+  background:linear-gradient(180deg,var(--sea2),var(--sea));border:1px solid var(--line);
+  border-radius:18px 18px 0 0;padding:16px 18px calc(20px + env(safe-area-inset-bottom));
+  transform:translateY(100%);transition:transform .25s cubic-bezier(.2,.8,.2,1);
+  box-shadow:0 -10px 40px rgba(0,0,0,.5)}
+.sheet.show{transform:translateY(0)}
+.sheet .grip{width:42px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 12px}
+.sheet h3{margin:0 0 6px;color:var(--parchment);font-size:1.05rem}
+.sheet p{margin:6px 0;font-size:.9rem}
+.sheet .close{position:absolute;top:12px;left:14px;background:none;border:0;color:var(--ink-dim);font-size:1.3rem;cursor:pointer}
+
+footer.app{text-align:center;font-size:.7rem;color:var(--ink-dim);padding:24px 0 8px}
+
+@media (min-width:760px){
+  nav.tabs{top:0;bottom:auto;border-top:0;border-bottom:1px solid var(--line);
+    padding:8px;gap:6px}
+  nav.tabs button{flex:0 0 auto;flex-direction:row;font-size:.82rem;gap:7px;padding:8px 14px}
+  .wrap{padding-top:64px;padding-bottom:30px}
+  header.app{padding-top:10px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+<nav class="tabs" id="tabs" role="tablist"></nav>
+
+<div class="wrap">
+  <header class="app">
+    <svg class="rose" viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="29" fill="none" stroke="#24486a" stroke-width="2"/>
+      <circle cx="32" cy="32" r="21" fill="none" stroke="#d9a441" stroke-width="1.4" opacity=".7"/>
+      <polygon points="32,6 37,32 32,40 27,32" fill="#ff3b30"/>
+      <polygon points="32,6 27,32 32,32" fill="#fff4d6"/>
+      <polygon points="32,58 27,32 32,24 37,32" fill="#cfdcea" opacity=".8"/>
+      <circle cx="32" cy="32" r="3" fill="#d9a441"/>
+    </svg>
+    <div>
+      <h1>ניווט חופי · מתרגל ימאות</h1>
+      <p id="subtitle"></p>
+    </div>
+  </header>
+
+  <main id="view" role="main"></main>
+
+  <footer class="app" id="footer"></footer>
+</div>
+
+<div class="sheet-back" id="sheetBack"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <button class="close" id="sheetClose" aria-label="סגירה">✕</button>
+  <div class="grip"></div>
+  <h3 id="sheetTitle"></h3>
+  <div id="sheetBody"></div>
+</div>
+
+<script src="rules.js"></script>
+<script>
+/* ======================================================================
+   ניווט חופי — מנוע תצוגה + מחולל שאלות. קורא הכל מ‑window.SEA_RULES.
+   ====================================================================== */
+(function(){
+"use strict";
+const R = window.SEA_RULES;
+if(!R){document.getElementById('view').innerHTML='<p style="padding:20px">שגיאה: לא נמצא rules.js. ודאו ששני הקבצים באותה תיקייה.</p>';return;}
+
+/* ---------- utils ---------- */
+const $  = (s,el)=> (el||document).querySelector(s);
+const $$ = (s,el)=> Array.from((el||document).querySelectorAll(s));
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const ri =(n)=>Math.floor(Math.random()*n);
+const pick=a=>a[ri(a.length)];
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=ri(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
+function sample(a,n){return shuffle(a).slice(0,n);}
+const vById=id=>R.vessels.find(v=>v.id===id);
+
+document.getElementById('subtitle').textContent=R.meta.subtitle;
+document.getElementById('footer').innerHTML =
+  esc(R.meta.source)+'<br>גרסה '+esc(R.meta.version)+' · עודכן '+esc(R.meta.updated)+
+  ' · הנתונים נערכים בקובץ <code>rules.js</code>';
+
+/* ---------- state ---------- */
+const state = {
+  tab:'study',
+  studyVessel:R.vessels[0].id,
+  studyMode:'both',
+  scnHist:[], scnIdx:-1, scnTypes:null, playSpeed:3,
+  quiz:{q:null,answered:false,correct:0,total:0}
+};
+
+/* ======================================================================
+   AUDIO — צופר אונייה סינתטי (Web Audio)
+   ====================================================================== */
+let actx=null;
+function audioCtx(){ if(!actx){try{actx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}} return actx;}
+function blast(t,dur){
+  const c=audioCtx(); if(!c)return;
+  const g=c.createGain(); const f=c.createBiquadFilter();
+  f.type='lowpass'; f.frequency.value=900;
+  const o1=c.createOscillator(),o2=c.createOscillator(),o3=c.createOscillator();
+  o1.type='sawtooth';o1.frequency.value=120; o2.type='sawtooth';o2.frequency.value=180;
+  o3.type='sine';o3.frequency.value=240;
+  o1.connect(f);o2.connect(f);o3.connect(f);f.connect(g);g.connect(c.destination);
+  const a=0.04,r=0.18;
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.5,t+a);
+  g.gain.setValueAtTime(0.5,t+dur-r);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  [o1,o2,o3].forEach(o=>{o.start(t);o.stop(t+dur+0.02);});
+}
+function playSeq(seq){
+  const c=audioCtx(); if(!c)return;
+  if(c.state==='suspended') c.resume();
+  let t=c.currentTime+0.05;
+  seq.forEach(s=>{ const d=(s==='L')?1.9:0.7; blast(t,d); t+=d+0.32; });
+}
+
+/* ======================================================================
+   DESCRIBERS — טקסט עברי הנגזר מהנתונים (מבטיח נכונות)
+   ====================================================================== */
+function describeNight(v){
+  const L=v.lights.filter(l=>!l.optional), parts=[];
+  if(L.some(l=>l.place==='anchor')) parts.push('פנס עוגן מעגלי לבן');
+  const ar=L.filter(l=>l.place==='allround');
+  if(ar.length===1) parts.push('פנס מעגלי '+R.lightColors[ar[0].color].name);
+  else if(ar.length>1) parts.push(ar.length+' פנסים מעגליים זה מעל זה ('+ar.map(l=>R.lightColors[l.color].name).join('‑')+')');
+  const mh=L.filter(l=>l.place==='masthead'||l.place==='masthead-aft').length;
+  if(mh===1) parts.push('פנס תורן'); else if(mh>1) parts.push(mh+' פנסי תורן');
+  if(L.some(l=>l.place==='sidelight-stbd'||l.place==='sidelight-port')) parts.push('פנסי צד (ירוק‑ימין, אדום‑שמאל)');
+  if(L.some(l=>l.place==='stern')) parts.push('פנס ירכתיים');
+  if(L.some(l=>l.place==='towing')) parts.push('פנס גרירה צהוב מעל הירכתיים');
+  return parts.join(', ');
+}
+const SHNAME={ball:'כדור','cone-up':'חרוט (קודקוד למעלה)','cone-down':'חרוט (קודקוד למטה)',diamond:'מעוין',cylinder:'גליל'};
+function describeDay(v){
+  if(!v.shapes.length) return 'אין צורות יום';
+  const n=v.shapes.map(s=>SHNAME[s.shape]);
+  if(v.shapes.length>=2) return v.shapes.length+' צורות זו מעל זו: '+n.join('‑');
+  return n[0]+' שחור';
+}
+
+/* ======================================================================
+   SVG — ציור כלי שיט (תצוגת צד) עם אורות + צורות
+   ====================================================================== */
+function lightSVG(x,y,colorKey,label,desc,extra){
+  const c=R.lightColors[colorKey];
+  return `<g class="nf-hot nf-light ${extra||''}" tabindex="0" role="button"
+     data-title="${esc(label)}" data-desc="${esc(desc||'')}">
+     <circle class="nf-halo" cx="${x}" cy="${y}" r="15" fill="${c.glow}"/>
+     <circle cx="${x}" cy="${y}" r="7.5" fill="${c.hex}" stroke="rgba(255,255,255,.6)" stroke-width="1"/></g>`;
+}
+function shapePath(x,y,kind){
+  const s=12;
+  switch(kind){
+    case 'ball':      return `<circle cx="${x}" cy="${y}" r="${s}" />`;
+    case 'cone-up':   return `<polygon points="${x},${y-s} ${x-s},${y+s} ${x+s},${y+s}" />`;
+    case 'cone-down': return `<polygon points="${x},${y+s} ${x-s},${y-s} ${x+s},${y-s}" />`;
+    case 'diamond':   return `<polygon points="${x},${y-s-1} ${x+s},${y} ${x},${y+s+1} ${x-s},${y}" />`;
+    case 'cylinder':  return `<rect x="${x-s+2}" y="${y-s-2}" width="${(s-2)*2}" height="${(s+2)*2}" rx="2" />`;
+  }
+  return '';
+}
+function shapeSVG(x,y,kind,label,desc){
+  return `<g class="nf-hot nf-shape" tabindex="0" role="button" fill="#14181c" stroke="rgba(255,255,255,.5)" stroke-width="1.3"
+     data-title="${esc(label)}" data-desc="${esc(desc||'')}">${shapePath(x,y,kind)}</g>`;
+}
+function buildVesselSVG(v,mode){
+  const sky = mode==='day' ? 'url(#skyDay)' : (mode==='night'?'url(#skyNight)':'url(#skyDusk)');
+  const W=400,H=340,water=250, mast=235;
+  let g='';
+  // hull + cabin + mast
+  g+=`<polygon points="95,230 300,230 332,242 300,254 120,254 95,242" fill="#10202e" stroke="#2c4a66" stroke-width="1.4"/>`;
+  g+=`<rect x="150" y="212" width="74" height="19" rx="3" fill="#16293a" stroke="#2c4a66" stroke-width="1"/>`;
+  g+=`<line x1="${mast}" y1="231" x2="${mast}" y2="72" stroke="#3a5a78" stroke-width="2.4"/>`;
+
+  // sail + wind (illustrative)
+  if(v.sail){
+    g+=`<polygon points="${mast},96 ${mast},226 152,208" fill="rgba(236,227,206,.85)" stroke="#9fb0c0" stroke-width="1"/>`;
+    g+=`<line x1="${mast}" y1="226" x2="152" y2="208" stroke="#6d5a3a" stroke-width="2.2"/>`;
+    g+=`<g opacity=".9"><line x1="60" y1="96" x2="116" y2="96" stroke="#cfe6ff" stroke-width="2"/>`+
+       `<polygon points="116,96 108,92 108,100" fill="#cfe6ff"/>`+
+       `<text x="62" y="86" fill="#cfe6ff" font-size="13">רוח</text></g>`;
+  }
+
+  // allround stack (top of mast, top->bottom)
+  const ar=v.lights.filter(l=>l.place==='allround');
+  let y=82;
+  ar.forEach(l=>{ g+=lightSVG(mast,y,l.color,l.label,l.desc,l.optional?'nf-opt':'');
+    if(l.optional){g+=`<circle cx="${mast}" cy="${y}" r="15" fill="none" stroke="#d9a441" stroke-width="1" stroke-dasharray="3 3" opacity=".7"/>`;}
+    y+=26; });
+  // mastheads
+  const mhAft=v.lights.find(l=>l.place==='masthead-aft');
+  const mh   =v.lights.find(l=>l.place==='masthead');
+  if(mhAft) g+=lightSVG(mast,142,mhAft.color,mhAft.label,mhAft.desc);
+  if(mh)    g+=lightSVG(mast,170,mh.color,mh.label,mh.desc);
+  // anchor light (fore)
+  const an=v.lights.find(l=>l.place==='anchor');
+  if(an) g+=lightSVG(252,168,an.color,an.label,an.desc);
+  // sidelights
+  const sp=v.lights.find(l=>l.place==='sidelight-port');
+  const ss=v.lights.find(l=>l.place==='sidelight-stbd');
+  if(sp) g+=lightSVG(300,222,sp.color,sp.label,sp.desc||'אור אדום בצד שמאל (port).');
+  if(ss) g+=lightSVG(316,222,ss.color,ss.label,ss.desc||'אור ירוק בצד ימין (starboard).');
+  // stern + towing
+  const st=v.lights.find(l=>l.place==='stern');
+  if(st) g+=lightSVG(100,222,st.color,st.label,st.desc||'אור לבן בירכתיים.');
+  const tw=v.lights.find(l=>l.place==='towing');
+  if(tw) g+=lightSVG(100,202,tw.color,tw.label,tw.desc);
+
+  // day shapes — stack on a halyard slightly aft of mast
+  let sy=86;
+  v.shapes.filter(s=>s.place!=='fwd').forEach(s=>{ g+=shapeSVG(205,sy,s.shape,s.label,s.desc); sy+=30; });
+  v.shapes.filter(s=>s.place==='fwd').forEach(s=>{ g+=shapeSVG(292,176,s.shape,s.label,s.desc); });
+
+  return `<svg viewBox="0 0 ${W} ${H}" data-mode="${mode}" role="img" aria-label="${esc(v.name)}">
+    <defs>
+      <linearGradient id="skyDay" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe3ff"/><stop offset="1" stop-color="#e8f5ff"/></linearGradient>
+      <linearGradient id="skyNight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#04101d"/><stop offset="1" stop-color="#0a2236"/></linearGradient>
+      <linearGradient id="skyDusk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#26425f"/><stop offset="1" stop-color="#3c5d80"/></linearGradient>
+      <filter id="nfglow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4"/></filter>
+    </defs>
+    <rect x="0" y="0" width="${W}" height="${water}" fill="${sky}"/>
+    <rect x="0" y="${water}" width="${W}" height="${H-water}" fill="#06283d"/>
+    <path d="M0,${water} Q100,${water-6} 200,${water} T400,${water}" fill="none" stroke="#0e3a55" stroke-width="2" opacity=".7"/>
+    <style>.nf-halo{filter:url(#nfglow)}</style>
+    ${g}
+  </svg>`;
+}
+
+/* ======================================================================
+   SVG — מצופים
+   ====================================================================== */
+const CMAP={red:'#ff3b30',green:'#22d07a',white:'#fff4d6',yellow:'#ffd23b',blue:'#2f7bff',black:'#0c1014'};
+function buoyBody(day){
+  const shape=day.shape;
+  function bands(col){ // returns fill instructions for body region y 60..150
+    return col;
+  }
+  // body outline path per shape, plus colored fills clipped
+  let clipPath,outline;
+  if(shape==='can'){ clipPath=`<rect x="38" y="66" width="44" height="90" rx="4"/>`; outline=`<rect x="38" y="66" width="44" height="90" rx="4" fill="none" stroke="#0a0d11" stroke-width="2"/>`; }
+  else if(shape==='cone'){ clipPath=`<polygon points="60,60 36,156 84,156"/>`; outline=`<polygon points="60,60 36,156 84,156" fill="none" stroke="#0a0d11" stroke-width="2"/>`; }
+  else if(shape==='sphere'){ clipPath=`<circle cx="60" cy="118" r="40"/>`; outline=`<circle cx="60" cy="118" r="40" fill="none" stroke="#0a0d11" stroke-width="2"/>`; }
+  else { clipPath=`<path d="M48,66 h24 v74 l10,16 h-44 l10,-16 z"/>`; outline=`<path d="M48,66 h24 v74 l10,16 h-44 l10,-16 z" fill="none" stroke="#0a0d11" stroke-width="2"/>`; }
+
+  // colored fill rects depending on day.color
+  const top=60,bot=158,h=bot-top,c=day.color;
+  let fill='';
+  const horiz=(parts)=>{ // parts: array of color, equal bands top->bottom
+    const bh=h/parts.length; parts.forEach((col,i)=>{ fill+=`<rect x="30" y="${top+i*bh}" width="60" height="${bh+1}" fill="${CMAP[col]||col}"/>`; });
+  };
+  const vert=(parts)=>{ const bw=60/parts.length; parts.forEach((col,i)=>{ fill+=`<rect x="${30+i*bw}" y="${top}" width="${bw+1}" height="${h}" fill="${CMAP[col]||col}"/>`; }); };
+  if(c==='red')horiz(['red']);
+  else if(c==='green')horiz(['green']);
+  else if(c==='yellow')horiz(['yellow']);
+  else if(c==='black-over-yellow')horiz(['black','yellow']);
+  else if(c==='yellow-over-black')horiz(['yellow','black']);
+  else if(c==='black-yellow-black')horiz(['black','yellow','black']);
+  else if(c==='yellow-black-yellow')horiz(['yellow','black','yellow']);
+  else if(c==='black-red-black')horiz(['black','red','black']);
+  else if(c==='red-white-vert')vert(['red','white','red','white']);
+  else if(c==='blue-yellow-vert')vert(['blue','yellow','blue','yellow','blue','yellow']);
+  else horiz(['black']);
+
+  return `<g><clipPath id="clip-${day.shape}-${Math.abs(hashStr(c))}">${clipPath}</clipPath>
+    <g clip-path="url(#clip-${day.shape}-${Math.abs(hashStr(c))})">${fill}</g>${outline}</g>`;
+}
+function hashStr(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return h;}
+function topmarkSVG(tm){
+  if(!tm)return'';
+  const cx=60, y0=20; // above body
+  const conesUp=(y)=>`<polygon points="${cx},${y} ${cx-9},${y+15} ${cx+9},${y+15}" fill="#0c1014"/>`;
+  const conesDn=(y)=>`<polygon points="${cx},${y+15} ${cx-9},${y} ${cx+9},${y} " fill="#0c1014"/>`;
+  switch(tm){
+    case 'cones-up':   return conesUp(18)+conesUp(35);
+    case 'cones-down': return conesDn(18)+conesDn(35);
+    case 'cones-base': return conesUp(16)+conesDn(34);   // bases meet (point away)
+    case 'cones-point':return conesDn(16)+conesUp(34);   // points meet
+    case 'two-balls':  return `<circle cx="${cx}" cy="26" r="8" fill="#0c1014"/><circle cx="${cx}" cy="46" r="8" fill="#0c1014"/>`;
+    case 'one-ball-red':return `<circle cx="${cx}" cy="40" r="9" fill="#ff3b30"/>`;
+    case 'x-yellow':   return `<g stroke="#ffd23b" stroke-width="5"><line x1="${cx-12}" y1="26" x2="${cx+12}" y2="50"/><line x1="${cx+12}" y1="26" x2="${cx-12}" y2="50"/></g>`;
+    case 'cross-yellow':return `<g stroke="#ffd23b" stroke-width="5"><line x1="${cx}" y1="22" x2="${cx}" y2="54"/><line x1="${cx-15}" y1="38" x2="${cx+15}" y2="38"/></g>`;
+  }
+  return '';
+}
+function buildMarkSVG(m){
+  return `<svg viewBox="0 0 120 200" role="img" aria-label="${esc(m.name)}">
+    <rect x="0" y="168" width="120" height="32" fill="#06283d"/>
+    <path d="M0,170 Q30,166 60,170 T120,170" stroke="#0e3a55" stroke-width="2" fill="none"/>
+    <line x1="60" y1="58" x2="60" y2="20" stroke="#33536f" stroke-width="2"/>
+    ${topmarkSVG(m.day.topmark)}
+    ${buoyBody(m.day)}
+    <circle class="nf-marklight" data-mark="${m.id}" cx="60" cy="60" r="6" fill="#000" fill-opacity="0"/>
+    <line x1="60" y1="156" x2="60" y2="172" stroke="#22384a" stroke-width="3"/>
+  </svg>`;
+}
+
+/* ---- live blink ticker for buoy lights ---- */
+function markFrames(id){const m=R.marks.find(x=>x.id===id);return m?m.light.frames:null;}
+function tick(){
+  const now=Date.now();
+  $$('.nf-marklight').forEach(el=>{
+    const fr=markFrames(el.dataset.mark); if(!fr)return;
+    let period=0; fr.forEach(f=>period+=f.ms);
+    let t=now%period, col=null;
+    for(const f of fr){ if(t<f.ms){col=f.color;break;} t-=f.ms; }
+    if(col){ const hex=CMAP[col]||col; el.setAttribute('fill',hex); el.setAttribute('fill-opacity','1');
+      el.style.filter='drop-shadow(0 0 6px '+hex+')'; }
+    else { el.setAttribute('fill-opacity','0'); el.style.filter='none'; }
+  });
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+/* ======================================================================
+   SHEET (bottom modal)
+   ====================================================================== */
+const sheetBack=$('#sheetBack'), sheet=$('#sheet');
+function openSheet(title,bodyHTML){
+  $('#sheetTitle').textContent=title; $('#sheetBody').innerHTML=bodyHTML;
+  sheetBack.classList.add('show'); sheet.classList.add('show');
+}
+function closeSheet(){ sheetBack.classList.remove('show'); sheet.classList.remove('show'); }
+sheetBack.addEventListener('click',closeSheet);
+$('#sheetClose').addEventListener('click',closeSheet);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet();});
+// delegated click for hot signals
+document.addEventListener('click',e=>{
+  const h=e.target.closest('.nf-hot'); if(!h)return;
+  openSheet(h.dataset.title||'', '<p>'+esc(h.dataset.desc||'')+'</p>');
+});
+document.addEventListener('keydown',e=>{
+  if((e.key==='Enter'||e.key===' ')&&document.activeElement&&document.activeElement.classList&&document.activeElement.classList.contains('nf-hot')){
+    e.preventDefault(); const h=document.activeElement;
+    openSheet(h.dataset.title||'','<p>'+esc(h.dataset.desc||'')+'</p>');
+  }
+});
+
+/* ======================================================================
+   VIEW: STUDY (לומדה)
+   ====================================================================== */
+function renderStudy(){
+  const v=vById(state.studyVessel), mode=state.studyMode;
+  let tiles=R.vessels.map(x=>`<div class="tile" role="button" tabindex="0" data-v="${x.id}" aria-current="${x.id===v.id}">
+     ${buildVesselSVG(x,'night')}<div class="nm">${esc(x.shortName)}</div></div>`).join('');
+  const night=describeNight(v), day=describeDay(v);
+  $('#view').innerHTML=`
+    <div class="section-title"><h2>לומדה — אורות וצורות</h2>
+      <span class="hint">בחרו כלי שיט. לחצו על כל אור/צורה להסבר.</span></div>
+    <div class="grid">${tiles}</div>
+    <div class="card detail">
+      <div class="row" style="justify-content:space-between">
+        <div class="seg" role="group" aria-label="תצוגה">
+          <button data-m="day"   aria-pressed="${mode==='day'}">יום</button>
+          <button data-m="night" aria-pressed="${mode==='night'}">לילה</button>
+          <button data-m="both"  aria-pressed="${mode==='both'}">שניהם</button>
+        </div>
+        <span class="ref">${esc(v.ref.colreg)}</span>
+      </div>
+      <div class="clickhint">↓ לחצו על אור או צורה לקבלת הסבר ↓</div>
+      <div class="stage">${buildVesselSVG(v,mode)}</div>
+      <h3>${esc(v.name)}</h3>
+      <p class="sum">${esc(v.summary)}</p>
+      <p class="muted" style="font-size:.84rem"><b>בלילה:</b> ${esc(night)}<br><b>ביום:</b> ${esc(day)}</p>
+      <div class="tip">💡 ${esc(v.examTip)}</div>
+    </div>`;
+  $$('.tile').forEach(t=>{
+    const go=()=>{state.studyVessel=t.dataset.v;renderStudy();window.scrollTo({top:document.querySelector('.detail').offsetTop-70,behavior:'smooth'});};
+    t.addEventListener('click',e=>{if(!e.target.closest('.nf-hot'))go();});
+    t.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}});
+  });
+  $$('.seg button').forEach(b=>b.addEventListener('click',()=>{state.studyMode=b.dataset.m;renderStudy();}));
+}
+
+/* ======================================================================
+   VIEW: MARKS (מצופים)
+   ====================================================================== */
+function markDayDesc(m){
+  const cmap={red:'אדום',green:'ירוק',yellow:'צהוב','black-over-yellow':'שחור מעל צהוב','yellow-over-black':'צהוב מעל שחור',
+    'black-yellow-black':'שחור‑צהוב‑שחור','yellow-black-yellow':'צהוב‑שחור‑צהוב','black-red-black':'שחור עם פס אדום',
+    'red-white-vert':'פסים אנכיים אדום‑לבן','blue-yellow-vert':'פסים אנכיים כחול‑צהוב'};
+  const tm={'cones-up':'שני חרוטים כלפי מעלה','cones-down':'שני חרוטים כלפי מטה','cones-base':'שני חרוטים בסיס אל בסיס',
+    'cones-point':'שני חרוטים קודקוד אל קודקוד','two-balls':'שני כדורים שחורים','one-ball-red':'כדור אדום',
+    'x-yellow':'סימן X צהוב','cross-yellow':'צלב צהוב זקוף'};
+  let s=cmap[m.day.color]||m.day.color; if(m.day.topmark) s+=', '+tm[m.day.topmark]; return s;
+}
+function renderMarks(){
+  const cards=R.marks.map(m=>`
+    <div class="tile" role="button" tabindex="0" data-mark="${m.id}">
+      ${buildMarkSVG(m)}<div class="nm">${esc(m.shortName)}</div>
+    </div>`).join('');
+  $('#view').innerHTML=`
+    <div class="section-title"><h2>מצופים — מערכת IALA אזור A</h2>
+      <span class="hint">האור מהבהב במקצב האמיתי. לחצו למידע מלא.</span></div>
+    <div class="grid">${cards}</div>`;
+  $$('.tile[data-mark]').forEach(t=>{
+    const m=R.marks.find(x=>x.id===t.dataset.mark);
+    const body=`<p>${esc(m.meaning)}</p>
+      <p class="muted" style="font-size:.86rem"><b>ביום:</b> ${esc(markDayDesc(m))}<br>
+      <b>בלילה:</b> ${esc(m.light.rhythm)}</p>
+      <p><span class="ref">${esc(m.ref.colreg)}</span></p>`;
+    const open=()=>openSheet(m.name,body);
+    t.addEventListener('click',open);
+    t.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});
+  });
+}
+
+/* ======================================================================
+   FLAGS (דגלי קוד בינלאומי)
+   ====================================================================== */
+function drawFlag(f){
+  const C=R.flagColors, W=90, H=60, col=c=>C[c]||c, d=f.design;
+  let inner='';
+  if(d.type==='solid') inner=`<rect width="${W}" height="${H}" fill="${col(d.color)}"/>`;
+  else if(d.type==='vert'){ const w=W/d.colors.length; inner=d.colors.map((c,i)=>`<rect x="${i*w}" width="${w+0.6}" height="${H}" fill="${col(c)}"/>`).join(''); }
+  else if(d.type==='horiz'){ const h=H/d.colors.length; inner=d.colors.map((c,i)=>`<rect y="${i*h}" width="${W}" height="${h+0.6}" fill="${col(c)}"/>`).join(''); }
+  else if(d.type==='horiz3') inner=`<rect width="${W}" height="${H/2}" fill="${col(d.colors[0])}"/><rect y="${H/2}" width="${W}" height="${H/2}" fill="${col(d.colors[2])}"/><rect y="${H*0.36}" width="${W}" height="${H*0.28}" fill="${col(d.colors[1])}"/>`;
+  else if(d.type==='square') inner=`<rect width="${W}" height="${H}" fill="${col(d.field)}"/><rect x="${W/2-15}" y="${H/2-15}" width="30" height="30" fill="${col(d.sq)}"/>`;
+  else if(d.type==='circle') inner=`<rect width="${W}" height="${H}" fill="${col(d.field)}"/><circle cx="${W/2}" cy="${H/2}" r="16" fill="${col(d.dot)}"/>`;
+  else if(d.type==='saltire') inner=`<rect width="${W}" height="${H}" fill="${col(d.field)}"/><g stroke="${col(d.cross)}" stroke-width="11"><line x1="0" y1="0" x2="${W}" y2="${H}"/><line x1="${W}" y1="0" x2="0" y2="${H}"/></g>`;
+  else if(d.type==='diag') inner=`<polygon points="0,0 ${W},0 0,${H}" fill="${col(d.a)}"/><polygon points="${W},0 ${W},${H} 0,${H}" fill="${col(d.b)}"/>`;
+  else if(d.type==='concentric') inner=`<rect width="${W}" height="${H}" fill="${col(d.colors[0])}"/><rect x="9" y="9" width="${W-18}" height="${H-18}" fill="${col(d.colors[1])}"/><rect x="22" y="18" width="${W-44}" height="${H-36}" fill="${col(d.colors[2])}"/>`;
+  const cid='fc-'+f.letter;
+  const pts = f.swallow ? `0,0 ${W},0 ${W*0.78},${H/2} ${W},${H} 0,${H}` : `0,0 ${W},0 ${W},${H} 0,${H}`;
+  return `<svg viewBox="-1 -1 ${W+2} ${H+2}" role="img" aria-label="דגל ${f.letter}">
+    <defs><clipPath id="${cid}"><polygon points="${pts}"/></clipPath></defs>
+    <g clip-path="url(#${cid})">${inner}</g>
+    <polygon points="${pts}" fill="none" stroke="#0a0d11" stroke-width="1.4"/></svg>`;
+}
+function renderFlags(){
+  const cards=R.flags.map(f=>`<div class="tile flagtile" role="button" tabindex="0" data-flag="${f.letter}">
+    <div class="flagimg">${drawFlag(f)}</div><div class="nm">${esc(f.letter)} · ${esc(f.phonetic.split(' ')[0])}</div></div>`).join('');
+  $('#view').innerHTML=`<div class="section-title"><h2>דגלי קוד בינלאומי (ICS)</h2>
+    <span class="hint">דגל אות בודד ומשמעותו. לחצו לפרטים.</span></div><div class="grid">${cards}</div>`;
+  $$('.flagtile').forEach(t=>{
+    const f=R.flags.find(x=>x.letter===t.dataset.flag);
+    const open=()=>openSheet('דגל '+f.letter+' · '+f.phonetic, `<p>${esc(f.meaning)}</p><p><span class="ref">${esc(f.ref.colreg)}</span></p>`);
+    t.addEventListener('click',open);
+    t.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});
+  });
+}
+
+/* ======================================================================
+   VIEW: SOUNDS (אותות קול)
+   ====================================================================== */
+function renderSounds(){
+  const cards=R.sounds.map(s=>`
+    <div class="card sound-card" data-s="${s.id}">
+      <div class="row" style="justify-content:space-between">
+        <span class="pattern">${esc(s.pattern)}</span>
+        <button class="btn primary play" data-s="${s.id}">▶ נגן</button>
+      </div>
+      <div class="meaning">${esc(s.meaning)}</div>
+      <div class="row" style="justify-content:space-between">
+        <span class="topicpill">${esc(s.when)}</span>
+        <span class="ref">${esc(s.ref.colreg)}</span>
+      </div>
+    </div>`).join('');
+  $('#view').innerHTML=`
+    <div class="section-title"><h2>אותות קול</h2>
+      <span class="hint">• = צפירה קצרה (~1 שנ׳) · ▬ = צפירה ממושכת (4–6 שנ׳)</span></div>
+    <div style="display:grid;gap:10px">${cards}</div>`;
+  $$('.play').forEach(b=>b.addEventListener('click',()=>{
+    const s=R.sounds.find(x=>x.id===b.dataset.s); playSeq(s.audio);
+  }));
+}
+
+/* ======================================================================
+   VIEW: SCENARIOS (תרחישי זכות קדימה) — top-down + drag arrows + sim
+   ====================================================================== */
+const BW=360, COLA='#4aa3ff', COLB='#ff9f43';
+let sim=null;
+function vec(a,b){return {x:b.x-a.x,y:b.y-a.y};}
+function len(v){return Math.hypot(v.x,v.y)||1;}
+function norm(v){const l=len(v);return{x:v.x/l,y:v.y/l};}
+function clampPt(p){return{x:Math.max(12,Math.min(BW-12,p.x)),y:Math.max(12,Math.min(BW-12,p.y))};}
+// Default "hold your course" track = the heading extended to the edge of the board,
+// so a faster overtaker really catches up rather than stopping after a fixed stub.
+function rayToEdge(start,h){
+  const lo=12,hi=BW-12;
+  const tx = h.x>0?(hi-start.x)/h.x : h.x<0?(lo-start.x)/h.x : Infinity;
+  const ty = h.y>0?(hi-start.y)/h.y : h.y<0?(lo-start.y)/h.y : Infinity;
+  const t=Math.max(20,Math.min(tx,ty));
+  return clampPt({x:start.x+h.x*t, y:start.y+h.y*t});
+}
+function currentScenario(){
+  if(state.scnIdx<0){ state.scnHist=[buildScenario()]; state.scnIdx=0; }
+  return state.scnHist[state.scnIdx];
+}
+function newScenario(){ state.scnHist.push(buildScenario()); state.scnIdx=state.scnHist.length-1; sim=null; renderScenarios(); }
+function prevScenario(){ if(state.scnIdx>0){ state.scnIdx--; sim=null; renderScenarios(); } }
+function initSim(){
+  const sc=currentScenario();
+  sim={ sc, answered:false, running:false,
+    hA:rayToEdge({x:sc.A.x,y:sc.A.y},sc.A.heading),
+    hB:rayToEdge({x:sc.B.x,y:sc.B.y},sc.B.heading),
+    drag:null };
+}
+// Top-down vessel that actually reads as its type, with its lights/marks on it.
+// dir = direction it points; accent = A(blue)/B(orange) so you can still tell them apart.
+function vesselTop(x,y,dir,accent,boat){
+  const ang=Math.atan2(dir.y,dir.x)*180/Math.PI;
+  const cls=boat.class;
+  let g=`<polygon points="20,0 7,-9 -17,-8 -19,0 -17,8 7,9" fill="${accent}" stroke="#06121d" stroke-width="1.5"/>`;
+  if(cls==='sail'){
+    // mainsail to leeward (opposite the wind side)
+    const side = boat.windSide==='stbd' ? -1 : 1;
+    g+=`<line x1="4" y1="0" x2="-14" y2="${side*13}" stroke="#5b4a2e" stroke-width="2"/>`;
+    g+=`<polygon points="4,0 -14,${side*13} -7,${side*2}" fill="rgba(236,227,206,.93)" stroke="#9fb0c0" stroke-width="1"/>`;
+    g+=`<circle cx="4" cy="0" r="1.8" fill="#cdd9e6"/>`; // mast
+  } else {
+    g+=`<rect x="-9" y="-6" width="13" height="12" rx="2" fill="#0b1822" opacity=".92"/>`; // cabin
+    g+=`<circle cx="3" cy="0" r="2.6" fill="#fff4d6"/>`; // masthead light
+  }
+  // sidelights (red=port/left, green=stbd/right relative to heading) + sternlight
+  g+=`<circle cx="16" cy="-6" r="2.6" fill="#ff3b30"/><circle cx="16" cy="6" r="2.6" fill="#22d07a"/>`+
+     `<circle cx="-18" cy="0" r="2.4" fill="#fff4d6"/>`;
+  // a hit-target ring so the whole hull is easy to tap (identify)
+  let s=`<g transform="translate(${x},${y}) rotate(${ang})"><circle cx="0" cy="0" r="20" fill="transparent"/>${g}</g>`;
+  // upright identifying signal badge above the hull (lights / day-shapes from rules.js)
+  s+=signalBadge(x,y,boat.vid);
+  return s;
+}
+// mini upright icon of a vessel's identifying signal (all-round lights, or day shape)
+function miniShape(x,y,kind){
+  const s=4.5, f='fill="#0c1014" stroke="#cdd9e6" stroke-width=".8"';
+  switch(kind){
+    case 'ball':      return `<circle cx="${x}" cy="${y}" r="${s}" ${f}/>`;
+    case 'cone-up':   return `<polygon points="${x},${y-s} ${x-s},${y+s} ${x+s},${y+s}" ${f}/>`;
+    case 'cone-down': return `<polygon points="${x},${y+s} ${x-s},${y-s} ${x+s},${y-s}" ${f}/>`;
+    case 'diamond':   return `<polygon points="${x},${y-s} ${x+s},${y} ${x},${y+s} ${x-s},${y}" ${f}/>`;
+    case 'cylinder':  return `<rect x="${x-s+1}" y="${y-s-1}" width="${(s-1)*2}" height="${(s+1)*2}" rx="1" ${f}/>`;
+  }
+  return '';
+}
+// Identifying badge above a boat: shows the night LIGHTS and the day SHAPES side by
+// side so the correlation is visible (e.g. RAM red-white-red ↔ ball-diamond-ball).
+function signalBadge(x,y,vid){
+  const v=vid&&vById(vid); if(!v)return '';
+  const ar=v.lights.filter(l=>l.place==='allround'&&!l.optional);
+  let lights=ar.map(l=>l.color);
+  if(!lights.length && v.lights.some(l=>l.place==='towing')) lights=['yellow'];
+  const shapes=v.shapes.map(s=>s.shape);
+  if(!lights.length && !shapes.length) return '';
+  const both=lights.length&&shapes.length;
+  const rows=Math.max(lights.length,shapes.length), gap=10, top=y-24-(rows-1)*gap;
+  const lx=both?x-7:x, sx=both?x+7:x;
+  let g=`<line x1="${x}" y1="${y-13}" x2="${x}" y2="${top-2}" stroke="#33536f" stroke-width="1"/>`;
+  lights.forEach((c,i)=>{ const cy=top+i*gap, col=R.lightColors[c];
+    g+=`<circle cx="${lx}" cy="${cy}" r="4" fill="${col.hex}" stroke="#06121d" stroke-width=".7" style="filter:drop-shadow(0 0 3px ${col.glow})"/>`; });
+  shapes.forEach((sh,i)=>{ g+=miniShape(sx,top+i*gap,sh); });
+  return g;
+}
+function openVesselInfo(vid){
+  const v=vById(vid); if(!v)return;
+  openSheet(v.name, `<p>${esc(v.summary)}</p>
+    <p class="muted" style="font-size:.86rem"><b>בלילה:</b> ${esc(describeNight(v))}<br><b>ביום:</b> ${esc(describeDay(v))}</p>
+    <p><span class="ref">${esc(v.ref.colreg)}</span></p>`);
+}
+function windGlyph(boat){
+  if(boat.class!=='sail'||!boat.windSide)return '';
+  const h=norm(boat.heading);
+  const side = boat.windSide==='stbd' ? {x:-h.y,y:h.x} : {x:h.y,y:-h.x}; // stbd=right
+  const src={x:boat.x+side.x*48,y:boat.y+side.y*48};
+  const to ={x:boat.x+side.x*22,y:boat.y+side.y*22};
+  return arrow(src,to,'#bfe0ff',true)+
+    `<text x="${src.x}" y="${src.y-6}" fill="#bfe0ff" font-size="12" text-anchor="middle">רוח</text>`;
+}
+function arrow(from,to,col,solid){
+  const d=norm(vec(from,to)); const tip=to; const back={x:tip.x-d.x*12,y:tip.y-d.y*12};
+  const perp={x:-d.y,y:d.x};
+  return `<g><line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" stroke="${col}" stroke-width="2.5" ${solid?'':'stroke-dasharray="6 5"'} opacity=".9"/>
+    <polygon points="${tip.x},${tip.y} ${back.x+perp.x*6},${back.y+perp.y*6} ${back.x-perp.x*6},${back.y-perp.y*6}" fill="${col}"/></g>`;
+}
+function drawBoardInner(){
+  const sc=sim.sc;
+  let grid='';
+  for(let i=1;i<6;i++){grid+=`<line x1="${i*60}" y1="0" x2="${i*60}" y2="${BW}" stroke="#0e3a55" stroke-width="1" opacity=".5"/>`;
+    grid+=`<line x1="0" y1="${i*60}" x2="${BW}" y2="${i*60}" stroke="#0e3a55" stroke-width="1" opacity=".5"/>`;}
+  const compass=`<g transform="translate(330,34)" opacity=".85">
+    <circle r="16" fill="none" stroke="#33536f" stroke-width="1"/><polygon points="0,-14 3.5,0 -3.5,0" fill="#ff3b30"/>
+    <text x="0" y="-18" fill="#9aafc4" font-size="9" text-anchor="middle">N</text></g>`;
+  // single shared wind, shown at the compass (arrow points where the wind blows TO)
+  const windInd = sc.wind ? (()=>{ const wf={x:-sc.wind.x,y:-sc.wind.y};
+    return arrow({x:330-wf.x*20,y:34-wf.y*20},{x:330+wf.x*20,y:34+wf.y*20},'#7fd6ff',true)
+      +`<text x="330" y="62" fill="#7fd6ff" font-size="10" text-anchor="middle">רוח</text>`; })() : '';
+  const aArr = sim.running?'':arrow({x:sc.A.x,y:sc.A.y},sim.hA,COLA);
+  const bArr = sim.running?'':arrow({x:sc.B.x,y:sc.B.y},sim.hB,COLB);
+  const aH = sim.running?'':`<circle class="handle" data-h="A" cx="${sim.hA.x}" cy="${sim.hA.y}" r="12" fill="${COLA}" fill-opacity=".25" stroke="${COLA}" stroke-width="2"/>`;
+  const bH = sim.running?'':`<circle class="handle" data-h="B" cx="${sim.hB.x}" cy="${sim.hB.y}" r="12" fill="${COLB}" fill-opacity=".25" stroke="${COLB}" stroke-width="2"/>`;
+  return `<rect width="${BW}" height="${BW}" fill="#06283d"/>${grid}${compass}${windInd}
+    ${aArr}${bArr}
+    ${vesselTop(sc.A.x,sc.A.y,sc.A.heading,COLA,sc.A)}
+    ${vesselTop(sc.B.x,sc.B.y,sc.B.heading,COLB,sc.B)}
+    <text x="${sc.A.x}" y="${sc.A.y+25}" fill="${COLA}" font-size="11" font-weight="700" text-anchor="middle">${esc(sc.A.label)}</text>
+    <text x="${sc.A.x}" y="${sc.A.y+38}" fill="${COLA}" font-size="10" opacity=".92" text-anchor="middle">${esc(vById(sc.A.vid).shortName)}</text>
+    <text x="${sc.B.x}" y="${sc.B.y+25}" fill="${COLB}" font-size="11" font-weight="700" text-anchor="middle">${esc(sc.B.label)}</text>
+    <text x="${sc.B.x}" y="${sc.B.y+38}" fill="${COLB}" font-size="10" opacity=".92" text-anchor="middle">${esc(vById(sc.B.vid).shortName)}</text>
+    ${aH}${bH}
+    <g id="animLayer"></g>`;
+}
+function redrawInner(){ const s=$('#boardSvg'); if(s) s.innerHTML=drawBoardInner(); }
+function chipsBar(){
+  const chips=SCN_TYPES.map(t=>`<button class="chip" data-vid="${t.vid}" aria-pressed="${state.scnTypes.has(t.vid)}">${esc(t.label)}</button>`).join('');
+  return `<details class="typesel" ${state.typeselOpen?'open':''}>
+    <summary>סוגי כלי שיט בתרחיש · נבחרו ${state.scnTypes.size}/${SCN_TYPES.length}</summary>
+    <div class="chipbar">${chips}</div>
+    <div class="row" style="margin-top:8px"><button class="btn ghost mini" id="selAll">בחר הכל</button><button class="btn ghost mini" id="selNone">נקה</button></div>
+  </details>`;
+}
+function bindChips(){
+  const det=$('.typesel'); if(det) det.addEventListener('toggle',()=>{state.typeselOpen=det.open;});
+  $$('.chip').forEach(c=>c.addEventListener('click',()=>{
+    const vid=c.dataset.vid;
+    if(state.scnTypes.has(vid)) state.scnTypes.delete(vid); else state.scnTypes.add(vid);
+    regenScenarios();
+  }));
+  const sa=$('#selAll'), sn=$('#selNone');
+  if(sa) sa.addEventListener('click',()=>{state.scnTypes=new Set(SCN_TYPES.map(t=>t.vid));regenScenarios();});
+  if(sn) sn.addEventListener('click',()=>{state.scnTypes=new Set();regenScenarios();});
+}
+function regenScenarios(){ state.scnHist=[]; state.scnIdx=-1; sim=null; renderScenarios(); }
+function renderScenarios(){
+  if(!state.scnTypes) state.scnTypes=new Set(SCN_TYPES.map(t=>t.vid));
+  const head=`<div class="section-title"><h2>תרחישי זכות קדימה</h2><span class="hint">תרחישים אקראיים מכל זווית. לחצו על כלי שיט לזיהוי, גררו את העיגול לשרטוט נתיב, ובדקו אם תמרנתם נכון.</span></div>${chipsBar()}`;
+  const cur=currentScenario();
+  if(!cur){
+    $('#view').innerHTML=head+`<div class="card" style="padding:20px;text-align:center;color:var(--ink-dim);margin-top:12px">לא ניתן ליצור תרחיש מהבחירה הנוכחית.<br>בחרו לפחות סוג אחד שיכול לתמרן: <b>ממונע</b> / <b>מפרשית</b> / <b>דיג</b>.</div>`;
+    bindChips(); return;
+  }
+  if(!sim||sim.sc!==cur) initSim();
+  const sc=sim.sc;
+  const tnA=vById(sc.A.vid).shortName, tnB=vById(sc.B.vid).shortName;
+  const opts=[`כלי שיט א׳ (${tnA}) נותן זכות קדימה`,`כלי שיט ב׳ (${tnB}) נותן זכות קדימה`,'שני כלי השיט מתמרנים','אף אחד — שמירת נתיב'];
+  const correctIdx = sc.giveWay==='A'?0 : sc.giveWay==='B'?1 : sc.giveWay==='both'?2 : 3;
+  $('#view').innerHTML=head+`
+    <div class="scn-head">
+      <button class="iconbtn" id="prevScn" aria-label="הקודם" title="תרחיש קודם">›</button>
+      <div class="t">${esc(sc.title)} <span class="ref">${esc(sc.ref.colreg)}</span></div>
+      <button class="iconbtn" id="newScn" aria-label="שאלה הבאה" title="שאלה חדשה">↻</button>
+    </div>
+    <div class="board" id="board"><svg id="boardSvg" viewBox="0 0 ${BW} ${BW}">${drawBoardInner()}</svg></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn primary" id="simBtn">▶ בדוק תמרון</button>
+      <button class="btn" id="solBtn">הצג פתרון</button>
+      <button class="btn ghost" id="resetBtn">איפוס</button>
+      <button class="btn" id="nextScn" style="margin-inline-start:auto">שאלה הבאה ←</button>
+    </div>
+    <label class="spd">מהירות הדמיה
+      <input type="range" id="spdRange" min="1" max="10" step="0.5" value="${state.playSpeed}">
+      <span id="spdVal">×${state.playSpeed}</span></label>
+    <div class="verdict" id="verdict"></div>
+    <div class="card quiz" style="margin-top:14px">
+      <div class="qtext">מי נותן זכות קדימה (give‑way)?</div>
+      <div id="scnOpts">${opts.map((o,i)=>`<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>
+      <div id="scnExp"></div>
+    </div>`;
+
+  bindChips();
+  $('#prevScn').addEventListener('click',prevScenario);
+  $('#newScn').addEventListener('click',newScenario);
+  $('#nextScn').addEventListener('click',newScenario);
+  $('#resetBtn').addEventListener('click',()=>{initSim();redrawInner();$('#verdict').className='verdict';});
+  $('#simBtn').addEventListener('click',runSim);
+  $('#solBtn').addEventListener('click',()=>{sim.hA={...sc.solution.A};sim.hB={...sc.solution.B};redrawInner();setTimeout(runSim,250);});
+  const sr=$('#spdRange'); sr.addEventListener('input',()=>{state.playSpeed=+sr.value;$('#spdVal').textContent='×'+sr.value;});
+
+  $$('#scnOpts .opt').forEach(b=>b.addEventListener('click',()=>{
+    if(sim.answered)return; sim.answered=true;
+    const i=+b.dataset.i;
+    $$('#scnOpts .opt').forEach((x,k)=>{x.disabled=true;if(k===correctIdx)x.classList.add('correct');});
+    if(i!==correctIdx)b.classList.add('wrong');
+    $('#scnExp').innerHTML=`<div class="explain"><span class="lbl">הסבר</span><br>${esc(sc.explain)}</div>`;
+  }));
+
+  bindBoard();
+}
+function svgPt(evt){
+  const svg=$('#boardSvg'),r=svg.getBoundingClientRect();
+  return clampPt({x:(evt.clientX-r.left)/r.width*BW, y:(evt.clientY-r.top)/r.height*BW});
+}
+let winDragInstalled=false;
+function bindBoard(){
+  const svg=$('#boardSvg'); if(svg) svg.addEventListener('pointerdown',onDown);
+  if(winDragInstalled)return; winDragInstalled=true;
+  window.addEventListener('pointermove',onMove);
+  window.addEventListener('pointerup',onUp);
+}
+function onDown(e){
+  if(!sim||sim.running)return;
+  const p=svgPt(e);
+  const dA=len(vec(p,sim.hA)), dB=len(vec(p,sim.hB));
+  if(Math.min(dA,dB)<=34){ sim.drag = dA<dB?'A':'B'; e.preventDefault(); return; } // grab a track handle
+  // otherwise: tapping a vessel identifies it (shows its type + signals)
+  const bA=len(vec(p,{x:sim.sc.A.x,y:sim.sc.A.y})), bB=len(vec(p,{x:sim.sc.B.x,y:sim.sc.B.y}));
+  if(Math.min(bA,bB)<=24){ openVesselInfo((bA<bB?sim.sc.A:sim.sc.B).vid); e.preventDefault(); }
+}
+function onMove(e){
+  if(!sim||!sim.drag||sim.running)return;
+  const p=svgPt(e); if(sim.drag==='A')sim.hA=p; else sim.hB=p;
+  redrawInner(); e.preventDefault();
+}
+function onUp(){ if(sim)sim.drag=null; }
+// Honest physics: both vessels travel at a constant, equal base speed (× an
+// optional per-boat factor) along the drawn direction, each stopping at its own
+// arrow tip. We continuously check the true distance between hulls — a collision
+// is flagged the moment they touch, not judged by where they happen to end up.
+const BASE_SPEED=72;        // px per second (physics speed — do not change for visual tuning)
+const HIT_DIST=24;          // centre-to-centre distance counted as a collision (playback speed is state.playSpeed)
+const HOLD_MAX=12;          // a stand-on vessel may not alter course by more than this (deg)
+
+// signed turn from heading H to drawn direction D; + = starboard, - = port (screen coords)
+function signedTurnDeg(H,D){ return Math.atan2(H.x*D.y-H.y*D.x, H.x*D.x+H.y*D.y)*180/Math.PI; }
+// closest point of approach between two constant-velocity tracks (each stops at its tip)
+function computeCPA(A0,dA,LA,spA,B0,dB,LB,spB){
+  const T=Math.max(LA/spA,LB/spB,0.15);
+  const pos=(s,d,L,sp,t)=>{const dd=Math.min(t*sp,L);return{x:s.x+d.x*dd,y:s.y+d.y*dd};};
+  let minD=1e9,paC=A0,pbC=B0;
+  for(let t=0;t<=T;t+=1/120){const a=pos(A0,dA,LA,spA,t),b=pos(B0,dB,LB,spB,t);const d=len(vec(a,b));if(d<minD){minD=d;paC=a;pbC=b;}}
+  return {minD,paC,pbC};
+}
+function lineIntersect(p1,d1,p2,d2){
+  const den=d1.x*d2.y-d1.y*d2.x; if(Math.abs(den)<1e-6)return null;
+  const a=((p2.x-p1.x)*d2.y-(p2.y-p1.y)*d2.x)/den;
+  const b=((p2.x-p1.x)*d1.y-(p2.y-p1.y)*d1.x)/den;
+  return {a,b};
+}
+// give-way must NOT cross ahead: who reaches the tracks' crossing point first?
+function passesAstern(G0,dG,LG,spG,O0,dO,LO,spO){
+  const X=lineIntersect(G0,dG,O0,dO);
+  if(!X) return true;                       // parallel — no crossing ahead
+  if(X.a<0 || X.a>LG+10) return true;       // give-way turned away, never crosses other's line
+  if(X.b<0) return true;                    // crossing point is behind the stand-on's start
+  return (X.a/spG) >= (X.b/spO) - 0.05;     // give-way arrives later → passes astern
+}
+function evaluateManeuver(sc,hA,hB){
+  hA=hA||sim.hA; hB=hB||sim.hB;
+  const A0={x:sc.A.x,y:sc.A.y}, B0={x:sc.B.x,y:sc.B.y};
+  const D={A:norm(vec(A0,hA)), B:norm(vec(B0,hB))};
+  const L={A:len(vec(A0,hA)), B:len(vec(B0,hB))};
+  const SP={A:BASE_SPEED*(sc.A.spd||1), B:BASE_SPEED*(sc.B.spd||1)};
+  const P={A:A0,B:B0};
+  const cpa=computeCPA(A0,D.A,L.A,SP.A,B0,D.B,L.B,SP.B);
+  const hit=cpa.minD<HIT_DIST;
+  function checks(key){
+    const exp=sc.expected[key], H=norm(sc[key].heading), ang=signedTurnDeg(H,D[key]), mag=Math.abs(ang), side=ang>0?'starboard':'port';
+    const o=[];
+    if(exp.role==='stand-on'){
+      const hold=mag<=HOLD_MAX;
+      o.push({ok:hold, t: hold?'שמר על נתיב ומהירות — נכון לכלי שיט שומר‑נתיב (תקנה 17)':('כלי שיט שומר‑נתיב חייב לשמור על נתיבו — שינית ב‑'+Math.round(mag)+'° (תקנה 17)')});
+    } else {
+      o.push({ok: mag>=exp.minTurnDeg, t: mag>=exp.minTurnDeg?('בוצעה פעולה ברורה — פנייה של '+Math.round(mag)+'°'):('הפנייה קטנה מדי ('+Math.round(mag)+'°) — נדרשת פעולה מוקדמת וברורה (תקנה 16)')});
+      if(exp.turn && exp.turn!=='either'){
+        const ok=(side===exp.turn)&&mag>=5;
+        o.push({ok, t: ok?('פנה לכיוון הנכון — '+(exp.turn==='starboard'?'ימינה (starboard)':'שמאלה (port)')):('יש לפנות '+(exp.turn==='starboard'?'ימינה (starboard)':'שמאלה (port)')+(mag>=5?(' — פנית '+(side==='starboard'?'ימינה':'שמאלה')):''))});
+      }
+      if(exp.passAstern){
+        const ok=passesAstern(P[key],D[key],L[key],SP[key], P[exp.passAstern],D[exp.passAstern],L[exp.passAstern],SP[exp.passAstern]);
+        o.push({ok, t: ok?'חלף מאחורי כלי השיט האחר (לא חצה מלפניו)':'חצה/עומד לחצות מלפני כלי השיט האחר — יש לחלוף מאחוריו (תקנות 15, 8)'});
+      }
+      if(exp.keepClear){ o.push({ok:!hit, t: !hit?'נשמר מרחק בטוח מהכלי הנעקף':'לא נשמר מרחק בטוח — יש לחלוף הרחק מהנעקף'}); }
+    }
+    return o;
+  }
+  const cA=checks('A'), cB=checks('B');
+  const coll={ok:!hit, t:!hit?('אין התנגשות (מרחק מינימלי '+Math.round(cpa.minD)+' יח׳)'):'התנגשות! הנתיבים מצטלבים בו‑זמנית'};
+  const allOk = cA.every(x=>x.ok)&&cB.every(x=>x.ok)&&!hit;
+  return {A:cA, B:cB, coll, allOk, minD:cpa.minD, hit};
+}
+function showEvaluation(sc){
+  const ev=evaluateManeuver(sc), v=$('#verdict');
+  const item=it=>`<div class="chk ${it.ok?'ok':'no'}"><span>${it.ok?'✓':'✗'}</span><span>${esc(it.t)}</span></div>`;
+  const col=key=>`<div class="evcol"><div class="evhead" style="color:${key==='A'?COLA:COLB}">${esc(sc[key].label)} — ${esc(vById(sc[key].vid).shortName)}<br><span style="font-weight:600;opacity:.85">${sc.expected[key].role==='stand-on'?'שומר נתיב':'נותן זכות קדימה'}</span></div>${ev[key].map(item).join('')}</div>`;
+  v.className='verdict show '+(ev.allOk?'safe':'hit');
+  v.innerHTML=`<div class="evtop">${ev.allOk?'✓ תמרון נכון לפי התקנות!':'✗ התמרון אינו תקין — ראו פירוט'}</div>
+    <div class="evgrid">${col('A')}${col('B')}</div>${item(ev.coll)}`;
+}
+
+/* ===== COLREG resolver + random-angle scenario generator =====================
+   resolveEncounter() computes — for ANY geometry — who gives way and the exact
+   maneuver each vessel must perform. buildScenario() creates a random encounter,
+   then derives the correct answer + a solution that passes our own grader. ====*/
+function dotv(u,v){return u.x*v.x+u.y*v.y;}
+function rotate(v,deg){const r=deg*Math.PI/180,c=Math.cos(r),s=Math.sin(r);return{x:v.x*c-v.y*s,y:v.x*s+v.y*c};} // +deg = starboard
+const RANK_MAP={power:2,sail:3,fishing:4,cbd:5,nuc:6,ram:6};
+function rankOf(cls){return RANK_MAP[cls]||2;}
+function scnClass(v){return v.giveWayClass;}
+const HE_CLASS={power:'כלי שיט ממונע',sail:'מפרשית',fishing:'כלי שיט עוסק בדיג',cbd:'כלי שיט מוגבל בשוקעו',nuc:'כלי שיט שאינו שולט בתנועתו',ram:'כלי שיט מוגבל ביכולת התמרון'};
+function heClass(c){return HE_CLASS[c]||c;}
+const capable=c=>['power','sail','fishing','cbd'].includes(c);   // can give way / can maneuver
+// every underway vessel type is selectable for the simulator
+const SCN_TYPES=R.vessels.filter(v=>v.underway&&!['anchor','aground'].includes(v.giveWayClass))
+  .map(v=>({vid:v.id, cls:scnClass(v), label:v.shortName}));
+function resolveEncounter(A,B,wind){
+  const hA=norm(A.heading),hB=norm(B.heading);
+  const aFromB=Math.abs(signedTurnDeg(hB,vec(B,A))), bFromA=Math.abs(signedTurnDeg(hA,vec(A,B)));
+  const Aover=aFromB>112.5, Bover=bFromA>112.5;     // a vessel >22.5° abaft the other's beam is overtaking
+  const exp={};
+  if(Aover!==Bover){
+    const g=Aover?'A':'B', o=Aover?'B':'A';
+    exp[g]={role:'give-way',turn:'either',minTurnDeg:15,keepClear:o}; exp[o]={role:'stand-on'};
+    return {type:'overtaking',title:'עקיפה',giveWay:g,expected:exp,ref:{colreg:'Rule 13'},
+      explain:'עקיפה (תקנה 13): כלי השיט העוקף חייב להתרחק ולחלוף בבטחה; הנעקף שומר נתיב ומהירות.'};
+  }
+  const rA=rankOf(A.class),rB=rankOf(B.class),course=Math.abs(signedTurnDeg(hA,hB));
+  if(rA!==rB){
+    const g=rA<rB?'A':'B', o=rA<rB?'B':'A';
+    exp[g]={role:'give-way',turn:'either',minTurnDeg:15,passAstern:o}; exp[o]={role:'stand-on'};
+    const giveCls=(g==='A'?A:B).class, standCls=(o==='A'?A:B).class;
+    const cbd = standCls==='cbd';
+    return {type:'priority',title: cbd?'הימנעות מהפרעה (מוגבל בשוקעו)':'עדיפות לפי סוג כלי השיט',giveWay:g,expected:exp,
+      ref:{colreg: cbd?'Rule 18(d)':'Rule 18'},
+      explain: cbd
+        ? ('תקנה 18(ד): כל כלי שיט (פרט ל‑NUC/RAM) חייב להימנע מהפרעה למעברו של כלי שיט מוגבל בשוקעו — '+heClass(giveCls)+' מפנה דרך ל'+heClass(standCls)+'.')
+        : ('תקנה 18: '+heClass(giveCls)+' נותן זכות קדימה ל'+heClass(standCls)+' (פונה וחולף מאחוריו).')};
+  }
+  if(A.class==='sail'&&B.class==='sail'&&wind){
+    const tA=signedTurnDeg(hA,wind)>0?'stbd':'port', tB=signedTurnDeg(hB,wind)>0?'stbd':'port';
+    if(tA!==tB){const g=tA==='port'?'A':'B', o=g==='A'?'B':'A';
+      exp[g]={role:'give-way',turn:'either',minTurnDeg:15,passAstern:o}; exp[o]={role:'stand-on'};
+      return {type:'sail-diff',title:'שתי מפרשיות — הרוח בצדדים שונים',giveWay:g,expected:exp,ref:{colreg:'Rule 12'},
+        explain:'תקנה 12: המפרשית שהרוח בצדה השמאלי (port tack) נותנת זכות קדימה למפרשית שהרוח בצדה הימני.'};}
+    const aWind=dotv(vec(B,A),wind)>0, g=aWind?'A':'B', o=aWind?'B':'A';
+    exp[g]={role:'give-way',turn:'either',minTurnDeg:15,passAstern:o}; exp[o]={role:'stand-on'};
+    return {type:'sail-same',title:'שתי מפרשיות — הרוח באותו צד',giveWay:g,expected:exp,ref:{colreg:'Rule 12'},
+      explain:'תקנה 12: באותו צד רוח — הכלי שלרוח (windward) נותן זכות קדימה לכלי שמתחת לרוח (leeward).'};
+  }
+  // Rules 14 (head-on) and 15 (crossing) apply ONLY between two power-driven vessels
+  if(A.class==='power'&&B.class==='power'){
+    if(course>165&&bFromA<35){
+      exp.A={role:'give-way',turn:'starboard',minTurnDeg:15}; exp.B={role:'give-way',turn:'starboard',minTurnDeg:15};
+      return {type:'head-on',title:'חזית מול חזית',giveWay:'both',expected:exp,ref:{colreg:'Rule 14'},
+        explain:'חזית מול חזית (תקנה 14): כל אחד יסטה ימינה ויחלפו צד‑שמאל אל צד‑שמאל.'};
+    }
+    const bStbd=signedTurnDeg(hA,vec(A,B))>0, g=bStbd?'A':'B', o=bStbd?'B':'A';
+    exp[g]={role:'give-way',turn:'starboard',minTurnDeg:15,passAstern:o}; exp[o]={role:'stand-on'};
+    return {type:'crossing',title:'חיתוך נתיבים',giveWay:g,expected:exp,ref:{colreg:'Rule 15'},
+      explain:'חיתוך נתיבים (תקנה 15): הכלי שרואה את האחר בצדו הימני נותן זכות קדימה, פונה ימינה וחולף מאחוריו (אסור לחצות לפניו).'};
+  }
+  return null; // same category, not power & not sail (e.g. two fishing vessels) — no defined crossing rule
+}
+function solutionTracks(sc){
+  const trackFor=key=>{const e=sc.expected[key], st={x:sc[key].x,y:sc[key].y}, H=norm(sc[key].heading);
+    if(e.role==='stand-on')return [rayToEdge(st,H)];
+    const dirs=e.turn==='starboard'?[1]:e.turn==='port'?[-1]:[1,-1], angs=[25,35,45,55,65], c=[];
+    dirs.forEach(s=>angs.forEach(a=>c.push(rayToEdge(st,norm(rotate(H,s*a))))));
+    return c;};
+  const cA=trackFor('A'), cB=trackFor('B');
+  for(const a of cA) for(const b of cB){ if(evaluateManeuver(sc,a,b).allOk) return {A:a,B:b}; }
+  return null;
+}
+function dirAt(deg){const r=deg*Math.PI/180;return {x:Math.cos(r),y:Math.sin(r)};}
+// keep both boats inside a safe inner region so hull + signal badge (above) +
+// type labels (below) + wind arrow (side) are always fully visible
+function fitBoard(A,B){
+  const L=50,Rr=310,Tp=66,Bt=314; let dx=0,dy=0;
+  const minx=Math.min(A.x,B.x),maxx=Math.max(A.x,B.x),miny=Math.min(A.y,B.y),maxy=Math.max(A.y,B.y);
+  if(minx<L)dx=L-minx; if(maxx>Rr)dx=Rr-maxx; if(miny<Tp)dy=Tp-miny; if(maxy>Bt)dy=Bt-maxy;
+  A.x+=dx;A.y+=dy;B.x+=dx;B.y+=dy;}
+function geomsFor(ca,cb){
+  if(ca==='power'&&cb==='power') return ['headon','crossing','overtaking'];
+  if(ca==='sail'&&cb==='sail')   return ['sail'];
+  if(ca===cb)                    return capable(ca)?['overtaking']:[];   // fishing-fishing→overtaking; nuc-nuc→none
+  if(rankOf(ca)!==rankOf(cb))    return ['crossing','overtaking'];        // different category → Rule 18 / 13
+  return [];                                                             // same rank, different class (nuc-ram) → none
+}
+// weighted geometry pick — overtaking is the easiest, so make it rarer
+function pickGeom(geoms){
+  const w=geoms.map(g=>g==='overtaking'?1:4);
+  let tot=w.reduce((a,b)=>a+b,0), r=Math.random()*tot;
+  for(let i=0;i<geoms.length;i++){ if((r-=w[i])<0) return geoms[i]; }
+  return geoms[geoms.length-1];
+}
+function proposeScenario(allowed){
+  const sailTypes=allowed.filter(t=>t.cls==='sail');
+  for(let k=0;k<40;k++){
+    let ta,tb;
+    if(sailTypes.length && Math.random()<0.4){ ta=pick(sailTypes); tb=pick(sailTypes); }  // boost sail-vs-sail
+    else { ta=pick(allowed); tb=pick(allowed); }
+    let ca=ta.cls, cb=tb.cls;
+    if(!capable(ca)&&!capable(cb)) continue;
+    const geoms=geomsFor(ca,cb); if(!geoms.length) continue;
+    const geom=pickGeom(geoms);
+    const C={x:170+Math.random()*20,y:170+Math.random()*20}, th=Math.random()*360, d=100+Math.random()*22;
+    let A,B,wind;
+    const mk=(cls,t,head,extra)=>Object.assign({class:cls,vid:t.vid,heading:head},extra||{});
+    if(geom==='overtaking'){
+      if(!capable(ca)&&capable(cb)){ [ca,cb]=[cb,ca]; [ta,tb]=[tb,ta]; }   // overtaker must be able to maneuver
+      const dir=dirAt(th);                                  // B's course
+      const off=(Math.random()*2-1)*52;                     // approach from anywhere abaft B's beam (±52° off dead astern)
+      const back=dirAt(th+180+off), dist=120+Math.random()*26;
+      B=mk(cb,tb,dir); B.x=C.x; B.y=C.y;
+      A=mk(ca,ta,dir,{spd:1.7}); A.x=C.x+back.x*dist; A.y=C.y+back.y*dist;
+      A.heading=norm(vec(A,{x:C.x+dir.x*46,y:C.y+dir.y*46}));   // steer to converge onto B's track
+    } else if(geom==='headon'){
+      const dir=dirAt(th); A=mk(ca,ta,dir); B=mk(cb,tb,{x:-dir.x,y:-dir.y});
+      A.x=C.x-dir.x*d; A.y=C.y-dir.y*d; B.x=C.x+dir.x*d; B.y=C.y+dir.y*d;
+    } else if(geom==='sail'){
+      wind=dirAt(Math.random()*360); const side=Math.random()<.5?1:-1, dA=dirAt(th), dB=dirAt(th+90*side);
+      if(Math.abs(signedTurnDeg(dA,wind))<48||Math.abs(signedTurnDeg(dB,wind))<48) continue; // in irons (one shared wind)
+      A=mk(ca,ta,dA); B=mk(cb,tb,dB); A.x=C.x-dA.x*d;A.y=C.y-dA.y*d; B.x=C.x-dB.x*d;B.y=C.y-dB.y*d;
+    } else { // crossing / priority
+      const side=Math.random()<.5?1:-1, dA=dirAt(th), dB=dirAt(th+90*side);
+      A=mk(ca,ta,dA); B=mk(cb,tb,dB); A.x=C.x-dA.x*d;A.y=C.y-dA.y*d; B.x=C.x-dB.x*d;B.y=C.y-dB.y*d;
+    }
+    fitBoard(A,B);
+    const r=resolveEncounter(A,B,wind); if(!r) continue;
+    if(wind){A.windSide=signedTurnDeg(norm(A.heading),wind)>0?'stbd':'port'; B.windSide=signedTurnDeg(norm(B.heading),wind)>0?'stbd':'port';}
+    A.label='כלי שיט א׳'; B.label='כלי שיט ב׳';
+    return {A,B,wind,title:r.title,ref:r.ref,giveWay:r.giveWay,expected:r.expected,explain:r.explain};
+  }
+  return null;
+}
+function buildScenario(){
+  const allowed=SCN_TYPES.filter(t=>state.scnTypes.has(t.vid));
+  if(!allowed.some(t=>capable(t.cls))) return null;   // need at least one vessel that can maneuver
+  for(let i=0;i<140;i++){
+    const sc=proposeScenario(allowed); if(!sc)continue;
+    const defA=rayToEdge({x:sc.A.x,y:sc.A.y},sc.A.heading), defB=rayToEdge({x:sc.B.x,y:sc.B.y},sc.B.heading);
+    if(!evaluateManeuver(sc,defA,defB).hit) continue;        // no real risk of collision — skip
+    const sol=solutionTracks(sc); if(!sol) continue;          // ensure a correct solution exists
+    sc.solution=sol; return sc;
+  }
+  return null;
+}
+function runSim(){
+  if(!sim||sim.running)return; sim.running=true;
+  redrawInner(); // hides handles/arrows
+  const sc=sim.sc, layer=$('#animLayer');
+  const A0={x:sc.A.x,y:sc.A.y}, B0={x:sc.B.x,y:sc.B.y};
+  const dirA=norm(vec(A0,sim.hA)), dirB=norm(vec(B0,sim.hB));
+  const LA=len(vec(A0,sim.hA)), LB=len(vec(B0,sim.hB));
+  const spA=BASE_SPEED*(sc.A.spd||1), spB=BASE_SPEED*(sc.B.spd||1);
+  const T=Math.max(LA/spA, LB/spB, 0.15);
+  const posAt=(s,dir,L,sp,t)=>{ const d=Math.min(t*sp,L); return {x:s.x+dir.x*d,y:s.y+dir.y*d}; };
+  let minD=1e9, hit=false, hitPt=null, t0=performance.now(), prevT=0, trailA='', trailB='';
+  function draw(pa,pb){
+    trailA+=(trailA?' L':'M')+pa.x.toFixed(1)+','+pa.y.toFixed(1);
+    trailB+=(trailB?' L':'M')+pb.x.toFixed(1)+','+pb.y.toFixed(1);
+    layer.innerHTML=`<path d="${trailA}" fill="none" stroke="${COLA}" stroke-width="2" opacity=".45"/>
+      <path d="${trailB}" fill="none" stroke="${COLB}" stroke-width="2" opacity=".45"/>
+      ${hitPt?`<circle cx="${hitPt.x}" cy="${hitPt.y}" r="20" fill="#e2483d" opacity=".55"/><circle cx="${hitPt.x}" cy="${hitPt.y}" r="11" fill="#ffd9d5"/>`:''}
+      ${vesselTop(pa.x,pa.y,dirA,COLA,sc.A)}${vesselTop(pb.x,pb.y,dirB,COLB,sc.B)}`;
+  }
+  function frame(now){
+    const t=Math.min(T,(now-t0)/1000*state.playSpeed);   // playSpeed scales playback only, not the physics
+    // sub-step the collision check between frames so fast playback can't skip a hit
+    const sub=Math.max(1,Math.ceil((t-prevT)/(1/120)));
+    for(let i=1;i<=sub && !hit;i++){ const tt=prevT+(t-prevT)*i/sub;
+      const a=posAt(A0,dirA,LA,spA,tt), b=posAt(B0,dirB,LB,spB,tt), dd=len(vec(a,b));
+      if(dd<minD)minD=dd;
+      if(dd<HIT_DIST){ hit=true; hitPt={x:(a.x+b.x)/2,y:(a.y+b.y)/2}; }
+    }
+    prevT=t;
+    const pa=posAt(A0,dirA,LA,spA,t), pb=posAt(B0,dirB,LB,spB,t);
+    draw(pa,pb);
+    if(hit){ sim.running=false; showEvaluation(sc); return; }   // freeze at impact, then grade
+    if(t<T){ requestAnimationFrame(frame); }
+    else { sim.running=false; showEvaluation(sc); }             // finished — grade the maneuver
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ======================================================================
+   VIEW: QUIZ (חידון) — מחולל שאלות מהנתונים
+   ====================================================================== */
+function uniqueOptions(correct,poolFn,n){
+  const opts=[correct]; let guard=0;
+  while(opts.length<n && guard++<200){ const c=poolFn(); if(c && !opts.includes(c)) opts.push(c); }
+  return opts;
+}
+// Only vessels with a UNIQUE night/day signature may be the subject of an
+// "identify" question — otherwise two different vessels share the same picture
+// (e.g. power<50 vs motorsailing at night) and the question has two right answers.
+let _IDPOOLS=null;
+function idPools(){
+  if(_IDPOOLS)return _IDPOOLS;
+  const ws=R.vessels.filter(v=>v.shapes.length);
+  const cnt=(arr,f)=>{const m={};arr.forEach(v=>{const k=f(v);m[k]=(m[k]||0)+1;});return m;};
+  const nc=cnt(R.vessels,describeNight), dc=cnt(ws,describeDay);
+  _IDPOOLS={ night:R.vessels.filter(v=>nc[describeNight(v)]===1),
+             day:  ws.filter(v=>dc[describeDay(v)]===1) };
+  return _IDPOOLS;
+}
+function genIdentify(){
+  const P=idPools();
+  const mode=(Math.random()<0.6 && P.night.length)?'night':(P.day.length?'day':'night');
+  const v=pick(mode==='night'?P.night:P.day);
+  const opts=uniqueOptions(v.shortName,()=>pick(R.vessels).shortName,4);
+  return {topic:'זיהוי', q: mode==='night'?'איזה כלי שיט מראה את האורות הבאים? (לחצו על האורות לפרטים)':'איזה כלי שיט מראה את צורות היום הבאות?',
+    options:opts, correct:v.shortName,
+    explain:v.summary+' '+v.examTip, ref:v.ref.colreg,
+    visual:buildVesselSVG(v,mode)};
+}
+function genRecallLights(){
+  const v=pick(R.vessels), correct=describeNight(v);
+  const opts=uniqueOptions(correct,()=>describeNight(pick(R.vessels)),4);
+  return {topic:'אורות', q:'אילו אורות מראה בלילה: '+v.name+'?', options:opts, correct, explain:v.summary, ref:v.ref.colreg};
+}
+function genRecallShapes(){
+  const pool=R.vessels.filter(v=>v.shapes.length);
+  const v=pick(pool), correct=describeDay(v);
+  const opts=uniqueOptions(correct,()=>describeDay(pick(pool)),Math.min(4,pool.length));
+  return {topic:'צורות יום', q:'אילו צורות יום מראה: '+v.name+'?', options:opts, correct, explain:v.summary, ref:v.ref.colreg};
+}
+function genGiveWay(){
+  const t=pick(['class','headon','crossing','overtaking','sail']);
+  if(t==='class'){
+    const H=R.giveWay.hierarchy.filter(h=>h.class!=='seaplane');
+    const a=pick(H); const b=pick(H.filter(x=>x.rank!==a.rank));
+    const lower=a.rank<b.rank?a:b, higher=a.rank<b.rank?b:a;
+    return {topic:'זכות קדימה',
+      q:`כלי שיט ${a.name} פוגש כלי שיט ${b.name}. מי נותן זכות קדימה (give‑way)?`,
+      options:[`כלי שיט ${a.name}`,`כלי שיט ${b.name}`,'שני כלי השיט מתמרנים','אף אחד — שמירת נתיב'],
+      correct:`כלי שיט ${lower.name}`,
+      explain:`לפי תקנה 18 (סדר העדיפויות): ${lower.name} נותן זכות קדימה ל${higher.name}.`, ref:'Rule 18'};
+  }
+  if(t==='headon') return {topic:'זכות קדימה', q:'שני כלי שיט ממונעים מתקרבים חזית מול חזית. כיצד ינהגו?',
+    options:['כל אחד יסטה ימינה (starboard)','כל אחד יסטה שמאלה','הקטן יפנה והגדול ימשיך','שניהם ימשיכו ישר ויאיצו'],
+    correct:'כל אחד יסטה ימינה (starboard)', explain:R.giveWay.encounters.headon.rule, ref:'Rule 14'};
+  if(t==='crossing'){
+    const right=Math.random()<0.5;
+    if(right) return {topic:'זכות קדימה', q:'אתה (כלי שיט ממונע) רואה כלי שיט ממונע אחר בצדך הימני בחיתוך נתיבים. כיצד תנהג?',
+      options:['אני נותן זכות קדימה — פונה ימינה וחולף מאחוריו','אני שומר נתיב ומהירות','אני מאיץ וחוצה לפניו','אני פונה שמאלה'],
+      correct:'אני נותן זכות קדימה — פונה ימינה וחולף מאחוריו', explain:R.giveWay.encounters.crossing.rule, ref:'Rule 15'};
+    return {topic:'זכות קדימה', q:'אתה (כלי שיט ממונע) רואה כלי שיט ממונע אחר בצדך השמאלי בחיתוך נתיבים. כיצד תנהג?',
+      options:['אני שומר נתיב ומהירות (stand‑on)','אני נותן זכות קדימה ופונה ימינה','אני פונה שמאלה ועוצר','אני מאיץ'],
+      correct:'אני שומר נתיב ומהירות (stand‑on)', explain:'הכלי האחר נמצא בצדך השמאלי — לכן הוא זה שנותן זכות קדימה, ואתה שומר נתיב ומהירות.', ref:'Rule 15/17'};
+  }
+  if(t==='overtaking') return {topic:'זכות קדימה', q:'כלי שיט מתקרב אליך מאחור (מזווית גדולה מ‑22.5° מאחורי הזרוע) כדי לעקוף. מי חייב להתרחק?',
+    options:['הכלי העוקף','אתה (הנעקף)','שני הכלים','אף אחד'], correct:'הכלי העוקף', explain:R.giveWay.encounters.overtaking.rule, ref:'Rule 13'};
+  // sail
+  const diff=Math.random()<0.5;
+  if(diff) return {topic:'זכות קדימה', q:'מפרשית א׳ — הרוח בצדה השמאלי (port). מפרשית ב׳ — הרוח בצדה הימני (starboard). מי נותן זכות קדימה?',
+    options:['מפרשית א׳ (הרוח משמאל)','מפרשית ב׳ (הרוח מימין)','שתיהן','אף אחת'], correct:'מפרשית א׳ (הרוח משמאל)',
+    explain:R.giveWay.sailTacks.rules[0], ref:'Rule 12'};
+  return {topic:'זכות קדימה', q:'לשתי מפרשיות הרוח באותו צד. א׳ נמצאת לרוח (windward) ו‑ב׳ מתחת לרוח (leeward). מי נותן זכות קדימה?',
+    options:['מפרשית א׳ (windward)','מפרשית ב׳ (leeward)','שתיהן','אף אחת'], correct:'מפרשית א׳ (windward)',
+    explain:R.giveWay.sailTacks.rules[1], ref:'Rule 12'};
+}
+function genSound(){
+  // pattern->meaning is only unambiguous for patterns that map to a single meaning
+  // (e.g. one prolonged blast means both "bend" and "RV making way").
+  const uniqPat=R.sounds.filter(s=>R.sounds.filter(o=>o.pattern===s.pattern).length===1);
+  if(Math.random()<0.5 && uniqPat.length){
+    const s=pick(uniqPat);
+    const opts=uniqueOptions(s.meaning,()=>pick(R.sounds).meaning,4);
+    return {topic:'אותות קול', q:'מה משמעות אות הקול הבא?', patternBig:s.pattern, audio:s.audio,
+      options:opts, correct:s.meaning, explain:'('+s.when+')', ref:s.ref.colreg};
+  }
+  const s=pick(R.sounds);
+  const opts=uniqueOptions(s.pattern,()=>pick(R.sounds).pattern,4);
+  return {topic:'אותות קול', q:'באיזה אות קול משתמשים עבור: «'+s.meaning+'»?',
+    options:opts, correct:s.pattern, explain:'('+s.when+')', ref:s.ref.colreg, mono:true};
+}
+function genMark(){
+  const m=pick(R.marks);
+  if(Math.random()<0.5){
+    const opts=uniqueOptions(m.meaning,()=>pick(R.marks).meaning,4);
+    return {topic:'מצופים', q:'מה תפקיד המצוף הבא?', visual:buildMarkSVG(m),
+      options:opts, correct:m.meaning, explain:'ביום: '+markDayDesc(m)+'. בלילה: '+m.light.rhythm, ref:m.ref.colreg};
+  }
+  const opts=uniqueOptions(m.light.rhythm,()=>pick(R.marks).light.rhythm,4);
+  return {topic:'מצופים', q:'מהו מקצב האור של '+m.name+'?', options:opts, correct:m.light.rhythm,
+    explain:'ביום: '+markDayDesc(m), ref:m.ref.colreg};
+}
+function genFlag(){
+  const f=pick(R.flags);
+  if(Math.random()<0.6){
+    const opts=uniqueOptions(f.meaning,()=>pick(R.flags).meaning,4);
+    return {topic:'דגלים', q:'מה משמעות הדגל הבא?',
+      visual:`<div style="display:flex;justify-content:center;padding:14px"><div style="width:160px">${drawFlag(f)}</div></div>`,
+      options:opts, correct:f.meaning, explain:'דגל '+f.letter+' · '+f.phonetic, ref:f.ref.colreg};
+  }
+  const opts=uniqueOptions(f.phonetic,()=>pick(R.flags).phonetic,4);
+  return {topic:'דגלים', q:'באיזה דגל משתמשים עבור: «'+f.meaning+'»?', options:opts, correct:f.phonetic, explain:'דגל '+f.letter, ref:f.ref.colreg};
+}
+const GENERATORS=[genIdentify,genIdentify,genRecallLights,genRecallShapes,genGiveWay,genGiveWay,genSound,genMark,genMark,genFlag];
+function newQuestion(){ const q=pick(GENERATORS)(); q.options=shuffle(q.options); return q; }
+
+function renderQuiz(fresh){
+  const Q=state.quiz;
+  if(fresh||!Q.q){Q.q=newQuestion();Q.answered=false;}
+  const q=Q.q;
+  const acc=Q.total?Math.round(Q.correct/Q.total*100):0;
+  $('#view').innerHTML=`
+    <div class="section-title"><h2>חידון</h2><span class="hint">שאלות נוצרות אוטומטית מהתקנות — אינסוף תרגול.</span></div>
+    <div class="card quiz">
+      <div class="scorebar"><span class="topicpill">${esc(q.topic)}</span>
+        <span>ציון: ${Q.correct}/${Q.total} ${Q.total?'('+acc+'%)':''}</span></div>
+      <div class="qtext">${esc(q.q)}</div>
+      ${q.patternBig?`<div class="pattern" style="text-align:center;margin:6px 0">${esc(q.patternBig)}</div>`:''}
+      ${q.audio?`<div class="row" style="justify-content:center;margin-bottom:10px"><button class="btn primary" id="qplay">▶ נגן את האות</button></div>`:''}
+      ${q.visual?`<div class="visual">${q.visual}</div>${/nf-hot/.test(q.visual)?'<div class="clickhint">לחצו על האורות/הצורות לפרטים</div>':''}`:''}
+      <div id="opts">${q.options.map((o,i)=>`<button class="opt ${q.mono?'':''}" data-i="${i}" ${q.mono?'style="font-family:var(--mono);font-size:1.15rem;letter-spacing:.12em"':''}>${esc(o)}</button>`).join('')}</div>
+      <div id="qexp"></div>
+      <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn primary" id="nextQ" style="display:none">שאלה הבאה ←</button></div>
+    </div>`;
+  if(q.audio)$('#qplay').addEventListener('click',()=>playSeq(q.audio));
+  $$('#opts .opt').forEach(b=>b.addEventListener('click',()=>{
+    if(Q.answered)return; Q.answered=true; Q.total++;
+    const chosen=q.options[+b.dataset.i], ok=chosen===q.correct;
+    if(ok)Q.correct++;
+    $$('#opts .opt').forEach(x=>{x.disabled=true; if(q.options[+x.dataset.i]===q.correct)x.classList.add('correct');});
+    if(!ok)b.classList.add('wrong');
+    $('#qexp').innerHTML=`<div class="explain"><span class="lbl">${ok?'נכון! ':'התשובה הנכונה מסומנת. '}</span><br>${esc(q.explain)} <span class="ref">${esc(q.ref)}</span></div>`;
+    $('#nextQ').style.display='inline-block'; $('#nextQ').focus();
+  }));
+  $('#nextQ').addEventListener('click',()=>renderQuiz(true));
+}
+
+/* ======================================================================
+   NAV
+   ====================================================================== */
+const TABS=[
+  {id:'study',label:'לומדה',icon:'M3 7l9-4 9 4-9 4-9-4zm0 5l9 4 9-4M3 17l9 4 9-4'},
+  {id:'marks',label:'מצופים',icon:'M12 2v9m0 0l-5 9h10l-5-9zM7 7h10'},
+  {id:'flags',label:'דגלים',icon:'M6 21V3m0 1h13l-3 4 3 4H6'},
+  {id:'sounds',label:'אותות',icon:'M4 9v6h4l5 5V4L8 9H4zm12 0a4 4 0 010 6m2.5-9a8 8 0 010 12'},
+  {id:'scenarios',label:'תרחישים',icon:'M3 18l6-6 4 4 8-8M5 6l3 3M19 6l-3 3'},
+  {id:'quiz',label:'חידון',icon:'M9 9a3 3 0 116 0c0 2-3 2-3 5M12 19h.01'}
+];
+function renderTabs(){
+  $('#tabs').innerHTML=TABS.map(t=>`<button role="tab" data-t="${t.id}" aria-selected="${state.tab===t.id}">
+    <svg viewBox="0 0 24 24"><path d="${t.icon}" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>${t.label}</span></button>`).join('');
+  $$('#tabs button').forEach(b=>b.addEventListener('click',()=>{state.tab=b.dataset.t;render();window.scrollTo(0,0);}));
+}
+function render(){
+  renderTabs();
+  if(state.tab==='study')renderStudy();
+  else if(state.tab==='marks')renderMarks();
+  else if(state.tab==='flags')renderFlags();
+  else if(state.tab==='sounds')renderSounds();
+  else if(state.tab==='scenarios')renderScenarios();
+  else if(state.tab==='quiz')renderQuiz(!state.quiz.q);
+}
+render();
+})();
+</script>
+</body>
+</html>
