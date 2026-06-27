@@ -1,0 +1,16 @@
+{
+  "name": "ימאות",
+  "short_name": "ימאות",
+  "description": "תרגול כללי מניעת התנגשויות בים (COLREG) לבחינת משיט 30",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "he",
+  "dir": "rtl",
+  "background_color": "#081521",
+  "theme_color": "#081521",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

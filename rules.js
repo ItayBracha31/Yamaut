@@ -51,7 +51,7 @@
 window.SEA_RULES = {
 
   meta: {
-    title: "ניווט חופי — מתרגל ימאות",
+    title: "ימאות",
     subtitle: "תרגול כללי מניעת התנגשויות בים (COLREG) לבחינת משיט 30",
     source: "International Regulations for Preventing Collisions at Sea, 1972 (COLREG) + IALA Maritime Buoyage System, Region A",
     version: "1.0",

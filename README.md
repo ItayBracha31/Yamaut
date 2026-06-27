@@ -1,4 +1,4 @@
-# ניווט חופי — מתרגל ימאות 🧭
+# ימאות 🧭
 
 אפליקציית תרגול לכללי מניעת התנגשויות בים (COLREG 1972) לקראת בחינת **משיט 30** (ימאות).
 כוללת: אורות וצורות של כלי שיט (יום/לילה), מצופים (IALA אזור A), אותות קול,
@@ -93,7 +93,7 @@ ref: { colreg: "Rule 27", israeli: "" }
 ```bash
 cd D:/ProgrammingProjects/Yamaut
 git add index.html rules.js README.md
-git commit -m "ניווט חופי — מתרגל ימאות"
+git commit -m "ימאות"
 # הוסיפו remote ו-push; הפעילו GitLab Pages / GitHub Pages על התיקייה.
 ```
 

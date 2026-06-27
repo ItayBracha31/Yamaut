@@ -1,0 +1,12 @@
+# GitLab Pages — publishes the static site to https://<user>.gitlab.io/<project>/
+# (Only used if you host on GitLab. Harmless if you stay on GitHub.)
+pages:
+  stage: deploy
+  script:
+    - mkdir public
+    - cp index.html rules.js README.md manifest.webmanifest icon.svg public/
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
