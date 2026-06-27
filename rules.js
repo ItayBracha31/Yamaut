@@ -343,8 +343,82 @@ window.SEA_RULES = {
         { place: "stern", color: "white", arc: 135, label: "פנס ירכתיים" }
       ],
       shapes: [],
+      note: "אין צורת יום לפי COLREG לכלי שיט נתב. דגלי הקוד הקשורים לניתוב — G (‘דרוש נתב’) ו‑H (‘נתב על הסיפון’) — מונפים על‑ידי כלי השיט שמקבל את הנתב, ולא על‑ידי כלי הנתב עצמו. ביום מזוהה הנתב גם בכיתוב ‘PILOT’ (נוהג, אינו תקנה).",
       summary: "כלי שיט נתב: לבן מעל אדום (פנסים מעגליים בראש התורן) + פנסי צד וירכתיים בהפלגה.",
       examTip: "‘White over red — pilot ahead’. לבן מעל אדום = נתב."
+    },
+
+    {
+      id: "diving",
+      name: "כלי שיט העוסק בפעולות צלילה (קטן)",
+      shortName: "צלילה",
+      ref: { colreg: "Rule 27(e)", israeli: "" },
+      giveWayClass: "ram",
+      underway: true,
+      lights: [
+        { place: "allround", color: "red",   arc: 360, label: "פנס אדום עליון", desc: "שלושה פנסים מעגליים במאונך: אדום‑לבן‑אדום (כמו ‘מוגבל ביכולת התמרון’)." },
+        { place: "allround", color: "white", arc: 360, label: "פנס לבן אמצעי" },
+        { place: "allround", color: "red",   arc: 360, label: "פנס אדום תחתון" }
+      ],
+      shapes: [],
+      dayFlag: "A",
+      note: "כלי שיט קטן העוסק בצלילה, שאינו יכול להציג את צורות ‘מוגבל ביכולת התמרון’, מציג ביום העתק נוקשה של דגל A (Alpha) בגובה של לפחות 1 מטר, נראה מכל הכיוונים. כלי שיט גדול יותר יציג כדור‑מעוין‑כדור.",
+      summary: "פעולות צלילה: שלושה פנסים מעגליים אדום‑לבן‑אדום, וביום — דגל A (Alpha) נוקשה (‘יש צוללן במים — התרחק ועבור לאט’).",
+      examTip: "דגל A נוקשה = יש צוללן במים. דין כלי השיט כמוגבל ביכולת התמרון (אחרים מפנים לו דרך)."
+    },
+
+    {
+      id: "dredging",
+      name: "כלי שיט העוסק בחפירה או בעבודות תת‑מימיות (מוגבל בתמרון)",
+      shortName: "חפירה/עבודות",
+      ref: { colreg: "Rule 27(d)", israeli: "" },
+      giveWayClass: "ram",
+      underway: true,
+      lights: [
+        { place: "allround", color: "red",   arc: 360, label: "פנס אדום עליון", desc: "שלושה פנסים מעגליים אדום‑לבן‑אדום — מוגבל ביכולת התמרון." },
+        { place: "allround", color: "white", arc: 360, label: "פנס לבן אמצעי" },
+        { place: "allround", color: "red",   arc: 360, label: "פנס אדום תחתון" },
+        { place: "masthead",       color: "white", arc: 225, label: "פנס תורן" },
+        { place: "sidelight-stbd", color: "green", arc: 112.5, label: "פנס צד ימני" },
+        { place: "sidelight-port", color: "red",   arc: 112.5, label: "פנס צד שמאלי" },
+        { place: "stern", color: "white", arc: 135, label: "פנס ירכתיים" }
+      ],
+      sideLights: { port: ["red","red"], stbd: ["green","green"] },
+      shapes: [
+        { shape: "ball",    place: "stack", color: "black", label: "כדור עליון" },
+        { shape: "diamond", place: "stack", color: "black", label: "מעוין אמצעי" },
+        { shape: "ball",    place: "stack", color: "black", label: "כדור תחתון" }
+      ],
+      sideShapes: { port: ["ball","ball"], stbd: ["diamond","diamond"] },
+      note: "בנוסף לסימני ‘מוגבל ביכולת התמרון’: בצד שבו קיים המכשול — שני פנסים אדומים מעגליים / שני כדורים; ובצד שבו מותר לעבור — שני פנסים ירוקים מעגליים / שני מעוינים.",
+      summary: "חפירה/עבודות תת‑מים (מוגבל בתמרון): אדום‑לבן‑אדום + שני אדומים בצד המכשול ושני ירוקים בצד המעבר. ביום: כדור‑מעוין‑כדור + שני כדורים (מכשול) ושני מעוינים (מעבר).",
+      examTip: "שני כדורים = הצד עם המכשול (אל תעבור שם); שני מעוינים = הצד הבטוח למעבר."
+    },
+
+    {
+      id: "mineclear",
+      name: "כלי שיט העוסק בפינוי מוקשים",
+      shortName: "פינוי מוקשים",
+      ref: { colreg: "Rule 27(f)", israeli: "" },
+      giveWayClass: "ram",
+      underway: true,
+      lights: [
+        { place: "masthead", color: "white", arc: 225, label: "פנס תורן" },
+        { place: "allround", color: "green", arc: 360, label: "פנס ירוק 1", desc: "שלושה פנסים מעגליים ירוקים — אחד בראש התורן הקדמי ואחד בכל קצה של הזרוע הקדמית." },
+        { place: "allround", color: "green", arc: 360, label: "פנס ירוק 2" },
+        { place: "allround", color: "green", arc: 360, label: "פנס ירוק 3" },
+        { place: "sidelight-stbd", color: "green", arc: 112.5, label: "פנס צד ימני" },
+        { place: "sidelight-port", color: "red",   arc: 112.5, label: "פנס צד שמאלי" },
+        { place: "stern", color: "white", arc: 135, label: "פנס ירכתיים" }
+      ],
+      shapes: [
+        { shape: "ball", place: "stack", color: "black", label: "כדור 1" },
+        { shape: "ball", place: "stack", color: "black", label: "כדור 2" },
+        { shape: "ball", place: "stack", color: "black", label: "כדור 3" }
+      ],
+      note: "במציאות שלושת הפנסים הירוקים / שלושת הכדורים מוצבים במשולש: אחד בראש התורן הקדמי ואחד בכל קצה של הזרוע הקדמית (לא במאונך). המשמעות: סכנה חמורה — התרחק לפחות 1000 מטר.",
+      summary: "פינוי מוקשים: אורות כלי שיט ממונע + שלושה פנסים מעגליים ירוקים (ביום — שלושה כדורים שחורים). יש לשמור מרחק של 1000 מ׳ לפחות.",
+      examTip: "שלושה ירוקים מעגליים / שלושה כדורים = פינוי מוקשים. התרחק 1000 מ׳."
     }
 
   ],

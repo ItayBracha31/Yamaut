@@ -308,11 +308,13 @@ function describeNight(v){
 }
 const SHNAME={ball:'כדור','cone-up':'חרוט (קודקוד למעלה)','cone-down':'חרוט (קודקוד למטה)',diamond:'מעוין',cylinder:'גליל'};
 function describeDay(v){
+  if(v.dayFlag && !v.shapes.length) return 'דגל '+v.dayFlag+' (Alpha) נוקשה, בגובה ≥1 מ׳';
   if(!v.shapes.length) return 'אין צורות יום';
   const n=v.shapes.map(s=>SHNAME[s.shape]);
   if(v.shapes.length>=2) return v.shapes.length+' צורות זו מעל זו: '+n.join('‑');
   return n[0]+' שחור';
 }
+function flagByLetter(l){ return R.flags && R.flags.find(f=>f.letter===l); }
 
 /* ======================================================================
    SVG — ציור כלי שיט (תצוגת צד) עם אורות + צורות
@@ -386,6 +388,15 @@ function buildVesselSVG(v,mode){
   let sy=86;
   v.shapes.filter(s=>s.place!=='fwd').forEach(s=>{ g+=shapeSVG(205,sy,s.shape,s.label,s.desc); sy+=30; });
   v.shapes.filter(s=>s.place==='fwd').forEach(s=>{ g+=shapeSVG(292,176,s.shape,s.label,s.desc); });
+  // a code flag used AS a day signal (e.g. diving → rigid flag A)
+  if(v.dayFlag){ const f=flagByLetter(v.dayFlag);
+    if(f) g+=`<g class="nf-hot nf-shape" tabindex="0" role="button" data-title="${esc('דגל '+f.letter+' (Alpha) — אות יום')}" data-desc="${esc(f.meaning+' (העתק נוקשה בגובה ≥1 מ׳)')}">
+      <svg x="184" y="72" width="44" height="30">${drawFlag(f)}</svg></g>`; }
+  // side lights/shapes (dredging: obstruction side vs safe-pass side)
+  if(v.sideLights){ ['port','stbd'].forEach(k=>{ const xs=k==='port'?140:312, lbl=k==='port'?'צד המכשול':'צד המעבר';
+    (v.sideLights[k]||[]).forEach((c,i)=>{ g+=lightSVG(xs,116+i*24,c,'פנס '+lbl,(k==='port'?'שני פנסים אדומים בצד שבו נמצא המכשול.':'שני פנסים ירוקים בצד שבו מותר לעבור.')); }); }); }
+  if(v.sideShapes){ ['port','stbd'].forEach(k=>{ const xs=k==='port'?165:288, lbl=k==='port'?'מכשול':'מעבר';
+    (v.sideShapes[k]||[]).forEach((sh,i)=>{ g+=shapeSVG(xs,114+i*28,sh,lbl,(k==='port'?'שני כדורים = צד המכשול (אל תעבור).':'שני מעוינים = הצד הבטוח למעבר.')); }); }); }
 
   return `<svg viewBox="0 0 ${W} ${H}" data-mode="${mode}" role="img" aria-label="${esc(v.name)}">
     <defs>
@@ -537,6 +548,7 @@ function renderStudy(){
       <h3>${esc(v.name)}</h3>
       <p class="sum">${esc(v.summary)}</p>
       <p class="muted" style="font-size:.84rem"><b>בלילה:</b> ${esc(night)}<br><b>ביום:</b> ${esc(day)}</p>
+      ${v.note?`<p class="muted" style="font-size:.82rem;line-height:1.5">ℹ️ ${esc(v.note)}</p>`:''}
       <div class="tip">💡 ${esc(v.examTip)}</div>
     </div>`;
   $$('.tile').forEach(t=>{
@@ -716,20 +728,24 @@ function signalBadge(x,y,vid){
   let lights=ar.map(l=>l.color);
   if(!lights.length && v.lights.some(l=>l.place==='towing')) lights=['yellow'];
   const shapes=v.shapes.map(s=>s.shape);
-  if(!lights.length && !shapes.length) return '';
-  const both=lights.length&&shapes.length;
-  const rows=Math.max(lights.length,shapes.length), gap=10, top=y-24-(rows-1)*gap;
+  const flagItem = v.dayFlag?1:0;
+  const shapesCount = shapes.length || flagItem;
+  if(!lights.length && !shapesCount) return '';
+  const both=lights.length&&shapesCount;
+  const rows=Math.max(lights.length,shapesCount), gap=10, top=y-24-(rows-1)*gap;
   const lx=both?x-7:x, sx=both?x+7:x;
   let g=`<line x1="${x}" y1="${y-13}" x2="${x}" y2="${top-2}" stroke="#33536f" stroke-width="1"/>`;
   lights.forEach((c,i)=>{ const cy=top+i*gap, col=R.lightColors[c];
     g+=`<circle cx="${lx}" cy="${cy}" r="4" fill="${col.hex}" stroke="#06121d" stroke-width=".7" style="filter:drop-shadow(0 0 3px ${col.glow})"/>`; });
   shapes.forEach((sh,i)=>{ g+=miniShape(sx,top+i*gap,sh); });
+  if(flagItem){ const f=flagByLetter(v.dayFlag); if(f) g+=`<svg x="${sx-9}" y="${top-6}" width="18" height="12">${drawFlag(f)}</svg>`; }
   return g;
 }
 function openVesselInfo(vid){
   const v=vById(vid); if(!v)return;
   openSheet(v.name, `<p>${esc(v.summary)}</p>
     <p class="muted" style="font-size:.86rem"><b>בלילה:</b> ${esc(describeNight(v))}<br><b>ביום:</b> ${esc(describeDay(v))}</p>
+    ${v.note?`<p class="muted" style="font-size:.82rem">${esc(v.note)}</p>`:''}
     <p><span class="ref">${esc(v.ref.colreg)}</span></p>`);
 }
 function windGlyph(boat){
@@ -767,10 +783,8 @@ function drawBoardInner(){
     ${aArr}${bArr}
     ${vesselTop(sc.A.x,sc.A.y,sc.A.heading,COLA,sc.A)}
     ${vesselTop(sc.B.x,sc.B.y,sc.B.heading,COLB,sc.B)}
-    <text x="${sc.A.x}" y="${sc.A.y+25}" fill="${COLA}" font-size="11" font-weight="700" text-anchor="middle">${esc(sc.A.label)}</text>
-    <text x="${sc.A.x}" y="${sc.A.y+38}" fill="${COLA}" font-size="10" opacity=".92" text-anchor="middle">${esc(vById(sc.A.vid).shortName)}</text>
-    <text x="${sc.B.x}" y="${sc.B.y+25}" fill="${COLB}" font-size="11" font-weight="700" text-anchor="middle">${esc(sc.B.label)}</text>
-    <text x="${sc.B.x}" y="${sc.B.y+38}" fill="${COLB}" font-size="10" opacity=".92" text-anchor="middle">${esc(vById(sc.B.vid).shortName)}</text>
+    <text x="${sc.A.x}" y="${sc.A.y+27}" fill="${COLA}" font-size="11" font-weight="700" text-anchor="middle">${esc(sc.A.label)}</text>
+    <text x="${sc.B.x}" y="${sc.B.y+27}" fill="${COLB}" font-size="11" font-weight="700" text-anchor="middle">${esc(sc.B.label)}</text>
     ${aH}${bH}
     <g id="animLayer"></g>`;
 }
@@ -805,8 +819,7 @@ function renderScenarios(){
   }
   if(!sim||sim.sc!==cur) initSim();
   const sc=sim.sc;
-  const tnA=vById(sc.A.vid).shortName, tnB=vById(sc.B.vid).shortName;
-  const opts=[`כלי שיט א׳ (${tnA}) נותן זכות קדימה`,`כלי שיט ב׳ (${tnB}) נותן זכות קדימה`,'שני כלי השיט מתמרנים','אף אחד — שמירת נתיב'];
+  const opts=['כלי שיט א׳ נותן זכות קדימה','כלי שיט ב׳ נותן זכות קדימה','שני כלי השיט מתמרנים','אף אחד — שמירת נתיב'];
   const correctIdx = sc.giveWay==='A'?0 : sc.giveWay==='B'?1 : sc.giveWay==='both'?2 : 3;
   $('#view').innerHTML=head+`
     <div class="scn-head">
