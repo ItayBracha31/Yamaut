@@ -54,8 +54,8 @@ window.SEA_RULES = {
     title: "ימאות",
     subtitle: "תרגול כללי מניעת התנגשויות בים (COLREG) לבחינת משיט 30",
     source: "International Regulations for Preventing Collisions at Sea, 1972 (COLREG) + IALA Maritime Buoyage System, Region A",
-    version: "1.0",
-    updated: "2026-06"
+    version: "2.0",
+    updated: "2026-07"
   },
 
   /* ----- צבעי אורות (להצגה ולציור) ----- */
@@ -103,6 +103,7 @@ window.SEA_RULES = {
       ref: { colreg: "Rule 23(a)", israeli: "" },
       giveWayClass: "power",
       underway: true,
+      mastheadLayout: "aft",
       lights: [
         { place: "masthead",       color: "white", arc: 225, label: "פנס תורן קדמי", desc: "פנס תורן קדמי נמוך יותר." },
         { place: "masthead-aft",   color: "white", arc: 225, label: "פנס תורן אחורי", desc: "פנס תורן שני, אחורי וגבוה יותר — חובה בכלי שיט באורך 50 מ׳ ומעלה." },
@@ -131,8 +132,8 @@ window.SEA_RULES = {
         { place: "allround", color: "green", arc: 360, optional: true, label: "פנס מעגלי ירוק (רשות)", desc: "החלק התחתון של זוג הפנסים המעגליים שברשות (אדום מעל ירוק)." }
       ],
       shapes: [],
-      summary: "מפרשית מראה פנסי צד ופנס ירכתיים בלבד — אין פנס תורן! רשות: אדום מעל ירוק בראש התורן. מתחת ל‑20 מ׳ מותר פנס תלת‑גוני אחד בראש התורן.",
-      examTip: "אין פנס תורן לבן = מפרשית. זכרו את כיוון הרוח: צד התורף (windward) הוא הצד ההפוך לזה שבו נישא המפרש הראשי."
+      summary: "מפרשית מראה פנסי צד ופנס ירכתיים בלבד — אין פנס תורן! רשות: אדום מעל ירוק בראש התורן (לא יחד עם פנס תלת‑גוני). מתחת ל‑20 מ׳ מותר פנס תלת‑גוני אחד בראש התורן.",
+      examTip: "אין פנס תורן לבן = מפרשית. זכרו את כיוון הרוח: צד מעלה הרוח (windward) הוא הצד ההפוך לזה שבו נישא המפרש הראשי."
     },
 
     {
@@ -164,12 +165,13 @@ window.SEA_RULES = {
       giveWayClass: "anchor",
       underway: false,
       lights: [
-        { place: "anchor", color: "white", arc: 360, label: "פנס עוגן", desc: "פנס מעגלי לבן בחלק הקדמי, נראה מכל הכיוונים. כלי שיט ≥ 50 מ׳ מראה שניים — קדמי גבוה ואחורי נמוך." }
+        { place: "anchor", color: "white", arc: 360, label: "פנס עוגן", desc: "פנס מעגלי לבן בחלק הקדמי, נראה מכל הכיוונים. כלי שיט <50 מ׳ רשאי להסתפק בפנס אחד במקום הנראה ביותר. כלי שיט ≥50 מ׳ מראה שניים — קדמי גבוה ואחורי נמוך." }
       ],
       shapes: [
         { shape: "ball", place: "fwd", color: "black", label: "כדור שחור", desc: "ביום: כדור שחור אחד בחלק הקדמי." }
       ],
-      summary: "בעוגן: פנס מעגלי לבן (אחד מתחת ל‑50 מ׳, שניים מעל). ביום — כדור שחור אחד בחרטום.",
+      note: "כלי שיט ≥100 מ׳ בעוגן חייב להאיר את סיפוניו בתאורת עבודה. כלי שיט <7 מ׳ בעוגן מחוץ לנתיב/מעגן — פטור מפנס וכדור עוגן. עוסק בדיג בעוגן מציג אורות דיג, לא אורות עוגן.",
+      summary: "בעוגן: פנס מעגלי לבן (אחד מתחת ל‑50 מ׳, שניים מעל; ≥100 מ׳ גם תאורת סיפון). ביום — כדור שחור אחד בחרטום.",
       examTip: "כדור שחור בודד בחרטום = כלי שיט בעוגן."
     },
 
@@ -260,8 +262,8 @@ window.SEA_RULES = {
       shapes: [
         { shape: "cylinder", place: "stack", color: "black", label: "גליל (צילינדר) שחור", desc: "ביום: גליל שחור אחד." }
       ],
-      summary: "מוגבל בשוקעו (בגלל עומק/רוחב הנתיב): שלושה פנסים מעגליים אדומים במאונך, בנוסף לאורות ממונע. ביום — גליל שחור.",
-      examTip: "שלושה אדומים מעגליים במאונך = מוגבל בשוקעו. ביום — גליל. (קיים ב‑COLREG הבינלאומי בלבד.)"
+      summary: "מוגבל בשוקעו (בגלל עומק/רוחב הנתיב): רשאי להציג שלושה פנסים מעגליים אדומים במאונך, בנוסף לאורות ממונע. ביום — גליל שחור. (תקנה 28 — רשות, לא חובה!)",
+      examTip: "שלושה אדומים מעגליים במאונך = מוגבל בשוקעו. ביום — גליל. שימו לב: זו רשות (‘may’), לא חובה — שאלת מלכוד נפוצה."
     },
 
     {
@@ -271,16 +273,17 @@ window.SEA_RULES = {
       ref: { colreg: "Rule 24(a)", israeli: "" },
       giveWayClass: "power",
       underway: true,
+      mastheadLayout: "stack",
       lights: [
-        { place: "masthead",     color: "white", arc: 225, label: "פנס תורן קדמי", desc: "שני פנסי תורן במאונך (שלושה אם אורך הגרירה עולה על 200 מ׳)." },
-        { place: "masthead-aft", color: "white", arc: 225, label: "פנס תורן שני" },
+        { place: "masthead",     color: "white", arc: 225, label: "פנס תורן תחתון", desc: "שני פנסי תורן זה מעל זה בקו אנכי, על אותו תורן (שלושה אם אורך הגרירה עולה על 200 מ׳)." },
+        { place: "masthead-aft", color: "white", arc: 225, label: "פנס תורן עליון", desc: "הפנס העליון בזוג האנכי. גורר באורך 50 מ׳ ומעלה מוסיף בנפרד גם פנס תורן אחורי רגיל (תקנה 24(ד))." },
         { place: "sidelight-stbd", color: "green", arc: 112.5, label: "פנס צד ימני" },
         { place: "sidelight-port", color: "red",   arc: 112.5, label: "פנס צד שמאלי" },
         { place: "stern", color: "white", arc: 135, label: "פנס ירכתיים" },
         { place: "towing", color: "yellow", arc: 135, label: "פנס גרירה", desc: "פנס צהוב מעל פנס הירכתיים — מציין גרירה." }
       ],
       shapes: [],
-      summary: "גורר: שני פנסי תורן במאונך + פנס צהוב (פנס גרירה) מעל פנס הירכתיים. אם אורך הגרירה עולה על 200 מ׳ — שלושה פנסי תורן ומעוין שחור ביום (גם בנגרר).",
+      summary: "גורר: שני פנסי תורן בקו אנכי (זה מעל זה) + פנס צהוב (פנס גרירה) מעל פנס הירכתיים. אם אורך הגרירה עולה על 200 מ׳ — שלושה פנסי תורן במאונך ומעוין שחור ביום (גם בנגרר).",
       examTip: "פנס צהוב מעל פנס לבן בירכתיים = כלי שיט גורר. אם הגרירה ארוכה מ‑200 מ׳ → מעוין שחור ביום."
     },
 
@@ -294,6 +297,7 @@ window.SEA_RULES = {
       lights: [
         { place: "allround", color: "green", arc: 360, label: "פנס ירוק עליון", desc: "שני פנסים מעגליים זה מעל זה: ירוק מעל לבן — דיג במכמורת." },
         { place: "allround", color: "white", arc: 360, label: "פנס לבן תחתון" },
+        { place: "masthead", color: "white", arc: 225, optional: true, label: "פנס תורן (≥50 מ׳ — חובה)", desc: "פנס תורן אחורי וגבוה מהפנס הירוק המעגלי. חובה במכמורתן באורך 50 מ׳ ומעלה; רשות בקטן יותר (תקנה 26(ב)). זהו ההבדל מדייג שאינו מכמורתן — שלו אסור פנס תורן!" },
         { place: "sidelight-stbd", color: "green", arc: 112.5, label: "פנס צד ימני", desc: "פנסי צד וירכתיים נראים רק כשהכלי מתקדם במים." },
         { place: "sidelight-port", color: "red",   arc: 112.5, label: "פנס צד שמאלי" },
         { place: "stern", color: "white", arc: 135, label: "פנס ירכתיים" }
@@ -302,8 +306,9 @@ window.SEA_RULES = {
         { shape: "cone-down", place: "stack", color: "black", label: "חרוט עליון (קודקוד למטה)", desc: "שני חרוטים שקודקודיהם נפגשים — ‘עוסק בדיג’." },
         { shape: "cone-up",   place: "stack", color: "black", label: "חרוט תחתון (קודקוד למעלה)" }
       ],
-      summary: "דיג במכמורת: ירוק מעל לבן (פנסים מעגליים). ביום — שני חרוטים שקודקודיהם נפגשים (אחד מעל השני).",
-      examTip: "ירוק מעל לבן = דיג במכמורת (Trawling). זכרו ‘Green for Go trawling’."
+      note: "כלי שיט עוסק בדיג — בהפלגה או בעוגן — מציג רק את אורות וסימני הדיג (לא אורות עוגן!) — תקנה 26(א). מכמורתן ≥50 מ׳ חייב גם פנס תורן אחורי-גבוה; קטן מ‑50 מ׳ — רשות.",
+      summary: "דיג במכמורת: ירוק מעל לבן (פנסים מעגליים) + פנס תורן אחורי בכלי ≥50 מ׳. ביום — שני חרוטים שקודקודיהם נפגשים.",
+      examTip: "ירוק מעל לבן = דיג במכמורת (Trawling). מכמורתן גדול מוסיף פנס תורן; דייג אחר — לעולם לא. ‘Green for Go trawling’."
     },
 
     {
@@ -324,7 +329,8 @@ window.SEA_RULES = {
         { shape: "cone-down", place: "stack", color: "black", label: "חרוט עליון (קודקוד למטה)" },
         { shape: "cone-up",   place: "stack", color: "black", label: "חרוט תחתון (קודקוד למעלה)" }
       ],
-      summary: "דיג שאינו מכמורת: אדום מעל לבן (פנסים מעגליים). ביום — שני חרוטים שקודקודיהם נפגשים. אם הציוד משתרע מעל 150 מ׳ — מוסיף חרוט/אור לבן בכיוון הציוד.",
+      note: "עוסק בדיג — גם בעוגן — מציג רק את אורות וסימני הדיג (תקנה 26(א)). לדייג שאינו מכמורתן אין ולעולם לא יהיה פנס תורן.",
+      summary: "דיג שאינו מכמורת: אדום מעל לבן (פנסים מעגליים). ביום — שני חרוטים שקודקודיהם נפגשים. אם הציוד משתרע מעל 150 מ׳ — חרוט שקודקודו כלפי מעלה בכיוון הציוד (בלילה: פנס מעגלי לבן בכיוון הציוד).",
       examTip: "אדום מעל לבן = דיג שאינו מכמורת. ‘Red over white — fishing tonight’."
     },
 
@@ -343,7 +349,7 @@ window.SEA_RULES = {
         { place: "stern", color: "white", arc: 135, label: "פנס ירכתיים" }
       ],
       shapes: [],
-      note: "אין צורת יום לפי COLREG לכלי שיט נתב. דגלי הקוד הקשורים לניתוב — G (‘דרוש נתב’) ו‑H (‘נתב על הסיפון’) — מונפים על‑ידי כלי השיט שמקבל את הנתב, ולא על‑ידי כלי הנתב עצמו. ביום מזוהה הנתב גם בכיתוב ‘PILOT’ (נוהג, אינו תקנה).",
+      note: "אין צורת יום לפי COLREG לכלי שיט נתב. דגל G = ‘דרוש לי נתב’ (מניפה הספינה המבקשת); דגל H = ‘יש נתב על סיפוני’ (מניף כל כלי שיט שנתב על סיפונו). ביום מזוהה הנתב גם בכיתוב ‘PILOT’ (נוהג, אינו תקנה).",
       summary: "כלי שיט נתב: לבן מעל אדום (פנסים מעגליים בראש התורן) + פנסי צד וירכתיים בהפלגה.",
       examTip: "‘White over red — pilot ahead’. לבן מעל אדום = נתב."
     },
@@ -419,6 +425,59 @@ window.SEA_RULES = {
       note: "במציאות שלושת הפנסים הירוקים / שלושת הכדורים מוצבים במשולש: אחד בראש התורן הקדמי ואחד בכל קצה של הזרוע הקדמית (לא במאונך). המשמעות: סכנה חמורה — התרחק לפחות 1000 מטר.",
       summary: "פינוי מוקשים: אורות כלי שיט ממונע + שלושה פנסים מעגליים ירוקים (ביום — שלושה כדורים שחורים). יש לשמור מרחק של 1000 מ׳ לפחות.",
       examTip: "שלושה ירוקים מעגליים / שלושה כדורים = פינוי מוקשים. התרחק 1000 מ׳."
+    },
+
+    {
+      id: "towed",
+      name: "כלי שיט נגרר",
+      shortName: "נגרר",
+      ref: { colreg: "Rule 24(e)", israeli: "" },
+      giveWayClass: "power",
+      underway: true,
+      noScenario: true,
+      idAmbiguous: true,
+      lights: [
+        { place: "sidelight-stbd", color: "green", arc: 112.5, label: "פנס צד ימני", desc: "הנגרר מציג פנסי צד ופנס ירכתיים בלבד — ללא פנס תורן." },
+        { place: "sidelight-port", color: "red",   arc: 112.5, label: "פנס צד שמאלי" },
+        { place: "stern",          color: "white", arc: 135,   label: "פנס ירכתיים" }
+      ],
+      shapes: [],
+      note: "כשאורך הגרירה (מירכתי הגורר עד קצה הנגרר) עולה על 200 מ׳ — הנגרר מציג ביום מעוין שחור (וכך גם הגורר). שימו לב: אורות הנגרר בלילה זהים למפרשית — ההקשר (פנס הגרירה הצהוב של הגורר לפניו) הוא שמסגיר את המצב.",
+      summary: "נגרר: פנסי צד ופנס ירכתיים בלבד (כמו מפרשית!). גרירה ארוכה מ‑200 מ׳ — מעוין שחור ביום.",
+      examTip: "רואים ‘מפרשית’ צמוד מאחורי כלי עם פנס צהוב מעל הירכתיים? זה נגרר, לא מפרשית."
+    },
+
+    {
+      id: "power_small",
+      name: "כלי שיט ממונע קטן (פחות מ‑7 מ׳, מהירות עד 7 קשר)",
+      shortName: "ממונע < 7 מ׳",
+      ref: { colreg: "Rule 23(d)", israeli: "" },
+      giveWayClass: "power",
+      underway: true,
+      idAmbiguous: true,
+      lights: [
+        { place: "allround", color: "white", arc: 360, label: "פנס מעגלי לבן", desc: "כלי שיט ממונע <7 מ׳ שמהירותו המרבית אינה עולה על 7 קשר רשאי להציג פנס מעגלי לבן אחד בלבד (ופנסי צד — אם מעשי)." }
+      ],
+      shapes: [],
+      note: "כלי שיט ממונע <12 מ׳ רשאי להציג פנס מעגלי לבן אחד (במקום פנס תורן ופנס ירכתיים) + פנסי צד. בזהירות: פנס לבן בודד בלילה יכול להיות גם כלי שיט בעוגן — ההבחנה נעשית לפי תנועה והקשר.",
+      summary: "ממונע קטן: <12 מ׳ — פנס מעגלי לבן + פנסי צד; <7 מ׳ ועד 7 קשר — פנס מעגלי לבן בלבד (פנסי צד אם מעשי).",
+      examTip: "פנס לבן בודד נע = כנראה סירת מנוע קטנה; פנס לבן בודד נייח = עוגן. שאלות ההבחנה חוזרות בבחינה."
+    },
+
+    {
+      id: "sail_small",
+      name: "מפרשית קטנה (פחות מ‑7 מ׳) / סירת משוטים",
+      shortName: "מפרשית קטנה/משוטים",
+      ref: { colreg: "Rule 25(d)", israeli: "" },
+      giveWayClass: "sail",
+      underway: true,
+      noScenario: true,
+      idAmbiguous: true,
+      nightDesc: "אם אינה יכולה להציג פנסי צד וירכתיים — פנס יד או לפיד לבן, מוכן להצגה בעוד מועד למניעת התנגשות",
+      lights: [],
+      shapes: [],
+      summary: "מפרשית <7 מ׳ וסירת משוטים: אם אין אפשרות להציג את הפנסים הרגילים — מחזיקים פנס/לפיד לבן זמין ומציגים אותו בזמן כדי למנוע התנגשות.",
+      examTip: "בסירת משוטים אין חובת פנסים קבועים — אבל חובה שיהיה פנס לבן זמין להצגה."
     }
 
   ],
@@ -470,7 +529,7 @@ window.SEA_RULES = {
       rules: [
         "כאשר לכל מפרשית הרוח בצד אחר — זו שהרוח בצדה השמאלי (port tack) נותנת זכות קדימה.",
         "כאשר לשתיהן הרוח באותו צד — הכלי שלרוח (windward) נותן זכות קדימה לכלי שמתחת לרוח (leeward).",
-        "צד התורף (windward) הוא הצד ההפוך לזה שבו נישא המפרש הראשי."
+        "צד מעלה הרוח (windward) הוא הצד הנוגד לצד שבו נישא המפרש הראשי (תקנה 12(ב))."
       ]
     }
   },
@@ -489,7 +548,14 @@ window.SEA_RULES = {
     { id: "s_agree",   pattern: "▬ • ▬ •", meaning: "הסכמה לעקיפה (מהכלי הנעקף)", when: "עקיפה בנתיב צר", ref: { colreg: "Rule 34(c)", israeli: "" }, audio: ["L","S","L","S"] },
     { id: "s_rv_making", pattern: "▬", meaning: "בראות מוגבלת: כלי שיט ממונע המתקדם במים — צפירה ממושכת אחת כל פרק זמן שאינו עולה על 2 דקות", when: "ראות מוגבלת", ref: { colreg: "Rule 35(a)", israeli: "" }, audio: ["L"] },
     { id: "s_rv_stopped", pattern: "▬ ▬", meaning: "בראות מוגבלת: כלי שיט ממונע בהפלגה אך עומד במקום (אינו מתקדם) — שתי צפירות ממושכות כל ≤2 דקות", when: "ראות מוגבלת", ref: { colreg: "Rule 35(b)", israeli: "" }, audio: ["L","L"] },
-    { id: "s_rv_special", pattern: "▬ • •", meaning: "בראות מוגבלת: כלי שיט שאינו שולט בתנועתו / מוגבל בתמרון / מוגבל בשוקעו / מפרשית / עוסק בדיג / גורר — ממושכת ואחריה שתי קצרות, כל ≤2 דקות", when: "ראות מוגבלת", ref: { colreg: "Rule 35(c)", israeli: "" }, audio: ["L","S","S"] }
+    { id: "s_rv_special", pattern: "▬ • •", meaning: "בראות מוגבלת: כלי שיט שאינו שולט בתנועתו / מוגבל בתמרון / מוגבל בשוקעו / מפרשית / עוסק בדיג / גורר — ממושכת ואחריה שתי קצרות, כל ≤2 דקות. (גם דייג בעוגן וכלי מוגבל‑בתמרון העובד בעוגן!)", when: "ראות מוגבלת", ref: { colreg: "Rule 35(c),(d)", israeli: "" }, audio: ["L","S","S"] },
+    { id: "s_rv_towed", pattern: "▬ • • •", meaning: "בראות מוגבלת: כלי שיט נגרר (האחרון בשיירה, אם מאויש) — צפירה ממושכת ושלוש קצרות, מיד אחרי אות הגורר אם אפשר, כל ≤2 דקות", when: "ראות מוגבלת", ref: { colreg: "Rule 35(e)", israeli: "" }, audio: ["L","S","S","S"] },
+    { id: "s_rv_pilot", pattern: "• • • •", meaning: "ספינת נתב בתפקיד רשאית להוסיף אות זיהוי: ארבע צפירות קצרות", when: "ראות מוגבלת", ref: { colreg: "Rule 35(k)", israeli: "" }, audio: ["S","S","S","S"] },
+    { id: "s_rv_anchor", pattern: "🔔", meaning: "בראות מוגבלת: כלי שיט בעוגן — צלצול פעמון מהיר כ‑5 שניות, כל דקה לכל היותר. בכלי ≥100 מ׳: פעמון בחרטום ומיד אחריו גונג בירכתיים", when: "ראות מוגבלת — בעוגן/שרטון", ref: { colreg: "Rule 35(g)", israeli: "" }, audio: ["B"] },
+    { id: "s_rv_anchor_warn", pattern: "• ▬ •", meaning: "בעוגן (רשות): קצרה‑ממושכת‑קצרה — אזהרה לכלי שיט מתקרב על מיקומי ועל אפשרות התנגשות", when: "ראות מוגבלת — בעוגן/שרטון", ref: { colreg: "Rule 35(g)", israeli: "" }, audio: ["S","L","S"] },
+    { id: "s_rv_aground", pattern: "••• 🔔 •••", meaning: "בראות מוגבלת: כלי שיט על שרטון — שלוש נקישות פעמון נפרדות וברורות, צלצול מהיר, ושוב שלוש נקישות (בכלי ≥100 מ׳ — בתוספת גונג)", when: "ראות מוגבלת — בעוגן/שרטון", ref: { colreg: "Rule 35(h)", israeli: "" }, audio: ["K","K","K","B","K","K","K"] },
+    { id: "s_rv_bell_exempt", pattern: "♪", meaning: "כלי שיט באורך 12–20 מ׳ פטור מאותות הפעמון של עוגן/שרטון — ובלבד שישמיע אות קול יעיל אחר, כל 2 דקות לכל היותר", when: "ראות מוגבלת — בעוגן/שרטון", ref: { colreg: "Rule 35(i)", israeli: "" }, audio: ["S"] },
+    { id: "s_rv_small", pattern: "♪", meaning: "כלי שיט קטן מ‑12 מ׳ אינו חייב באותות הראות המוגבלת הרגילים — אך חייב להשמיע אות קול יעיל אחר, כל 2 דקות לכל היותר", when: "ראות מוגבלת", ref: { colreg: "Rule 35(j)", israeli: "" }, audio: ["S"] }
   ],
 
   /* ========================== מצופים (IALA אזור A) ========================== */
@@ -515,6 +581,26 @@ window.SEA_RULES = {
       light: { color: "green", rhythm: "מהבהב ירוק (כל מקצב)", frames: [ {ms:400,color:"green"},{ms:1200,color:null} ] },
       meaning: "סמן צד בכניסה לנמל: השאר אותו בצדך הימני בכניסה מהים. צבע ירוק, צורת חרוט (cone).",
       ref: { colreg: "IALA R1001 §2.1.3", israeli: "" }
+    },
+    {
+      id: "preferred_stbd",
+      name: "ערוץ מועדף לימין (Preferred channel to starboard)",
+      shortName: "ערוץ מועדף לימין",
+      region: "A",
+      day: { color: "red-green-red", shape: "can", topmark: "can-red" },
+      light: { color: "red", rhythm: "אדום Fl(2+1) — שני הבהובים + אחד (מקצב השמור רק למצופי ערוץ מועדף)", frames: [ {ms:400,color:"red"},{ms:400,color:null},{ms:400,color:"red"},{ms:1100,color:null},{ms:400,color:"red"},{ms:2900,color:null} ] },
+      meaning: "בהתפצלות נתיב: הערוץ הראשי (המועדף) עובר מימין למצוף — לכן נוהגים בו כמו מצוף צד שמאל ומשאירים אותו בצד שמאל (בכניסה מהים). גוף אדום (גליל) עם פס ירוק אופקי רחב.",
+      ref: { colreg: "IALA R1001 §2.1 (Preferred channel)", israeli: "" }
+    },
+    {
+      id: "preferred_port",
+      name: "ערוץ מועדף לשמאל (Preferred channel to port)",
+      shortName: "ערוץ מועדף לשמאל",
+      region: "A",
+      day: { color: "green-red-green", shape: "cone", topmark: "cone-up-green" },
+      light: { color: "green", rhythm: "ירוק Fl(2+1) — שני הבהובים + אחד", frames: [ {ms:400,color:"green"},{ms:400,color:null},{ms:400,color:"green"},{ms:1100,color:null},{ms:400,color:"green"},{ms:2900,color:null} ] },
+      meaning: "בהתפצלות נתיב: הערוץ הראשי (המועדף) עובר משמאל למצוף — לכן נוהגים בו כמו מצוף צד ימין ומשאירים אותו בצד ימין (בכניסה מהים). גוף ירוק (חרוט) עם פס אדום אופקי רחב.",
+      ref: { colreg: "IALA R1001 §2.1 (Preferred channel)", israeli: "" }
     },
     {
       id: "card_north",
@@ -625,7 +711,18 @@ window.SEA_RULES = {
     { letter:"Q", phonetic:"קובק (Quebec)", meaning:"כלי השיט שלי תקין — אני מבקש אישור כניסה חופשי (free pratique).", design:{type:"solid",color:"yellow"}, ref:{colreg:"ICS Q", israeli:""} },
     { letter:"S", phonetic:"סיירה (Sierra)",meaning:"אני מפעיל הנעה לאחור.", design:{type:"square",field:"white",sq:"blue"}, ref:{colreg:"ICS S", israeli:""} },
     { letter:"V", phonetic:"ויקטור (Victor)",meaning:"אני זקוק לסיוע.", design:{type:"saltire",field:"white",cross:"red"}, ref:{colreg:"ICS V", israeli:""} },
-    { letter:"W", phonetic:"ויסקי (Whiskey)",meaning:"אני זקוק לסיוע רפואי.", design:{type:"concentric",colors:["blue","white","red"]}, ref:{colreg:"ICS W", israeli:""} }
+    { letter:"W", phonetic:"ויסקי (Whiskey)",meaning:"אני זקוק לסיוע רפואי.", design:{type:"concentric",colors:["blue","white","red"]}, ref:{colreg:"ICS W", israeli:""} },
+    { letter:"C", phonetic:"צ׳רלי (Charlie)", meaning:"כן (חיוב); אישור.", design:{type:"horiz",colors:["blue","white","red","white","blue"]}, ref:{colreg:"ICS C", israeli:""} },
+    { letter:"F", phonetic:"פוקסטרוט (Foxtrot)", meaning:"אני מושבת (תקול); צור עמי קשר.", design:{type:"diamond",field:"white",diamond:"red"}, ref:{colreg:"ICS F", israeli:""} },
+    { letter:"K", phonetic:"קילו (Kilo)", meaning:"ברצוני ליצור עמך קשר.", design:{type:"vert",colors:["yellow","blue"]}, ref:{colreg:"ICS K", israeli:""} },
+    { letter:"L", phonetic:"לימה (Lima)", meaning:"עצור את כלי השיט שלך מיד.", design:{type:"quarters",a:"yellow",b:"black"}, ref:{colreg:"ICS L", israeli:""} },
+    { letter:"M", phonetic:"מייק (Mike)", meaning:"כלי השיט שלי עומד ואינו מתקדם במים.", design:{type:"saltire",field:"blue",cross:"white"}, ref:{colreg:"ICS M", israeli:""} },
+    { letter:"N", phonetic:"נובמבר (November)", meaning:"לא (שלילה). דגלים N מעל C יחד = אות מצוקה.", design:{type:"checker",a:"blue",b:"white"}, ref:{colreg:"ICS N", israeli:""} },
+    { letter:"T", phonetic:"טנגו (Tango)", meaning:"התרחק ממני; אני עוסק בדיג מכמורת בצמדים.", design:{type:"vert",colors:["red","white","blue"]}, ref:{colreg:"ICS T", israeli:""} },
+    { letter:"U", phonetic:"יוניפורם (Uniform)", meaning:"אתה מתקדם לעבר סכנה.", design:{type:"quarters",a:"red",b:"white"}, ref:{colreg:"ICS U", israeli:""} },
+    { letter:"X", phonetic:"אקס־ריי (X-ray)", meaning:"עצור בביצוע כוונותיך ושים לב לאותותיי.", design:{type:"cross",field:"white",cross:"blue"}, ref:{colreg:"ICS X", israeli:""} },
+    { letter:"Y", phonetic:"יאנקי (Yankee)", meaning:"אני גורר את עוגני (העוגן נגרר).", design:{type:"diagstripes",a:"yellow",b:"red"}, ref:{colreg:"ICS Y", israeli:""} },
+    { letter:"Z", phonetic:"זולו (Zulu)", meaning:"דרושה לי גוררת. (מכלי דיג בשטחי דיג: אני פורש רשתות.)", design:{type:"zquad",top:"yellow",side1:"blue",bottom:"red",side2:"black"}, ref:{colreg:"ICS Z", israeli:""} }
   ],
 
   /* ========================== תרחישי זכות קדימה (לסימולטור) ========================== */

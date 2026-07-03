@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><title>smoke</title></head>
+<body>
+<div id="tabs"></div><div id="subnav"></div><main id="view"></main><div id="footer"></div>
+<p id="subtitle"></p>
+<div id="sheetBack"></div><div id="sheet"><button id="sheetClose"></button><h3 id="sheetTitle"></h3><div id="sheetBody"></div></div>
+<div id="toasts"></div><canvas id="confetti"></canvas>
+<pre id="RESULTS">PENDING</pre>
+<script src="rules.js"></script>
+<script src="js/data/exam-bank.js"></script>
+<script src="js/data/figures.js"></script>
+<script src="js/data/navdata.js"></script>
+<script src="js/core.js"></script>
+<script src="js/update.js"></script>
+<script src="js/draw.js"></script>
+<script src="js/views/quiz.js"></script>
+<script>
+(function(){
+const out=[]; let fails=0;
+const ok=(name,cond,detail)=>{ if(!cond){fails++; out.push('FAIL '+name+(detail?' :: '+detail:''));} };
+const R=window.SEA_RULES;
+try{
+  // 1. נתונים: כל כלי שיט מצויר בכל מצב בלי חריגה, וכל אור עם צבע מוכר
+  R.vessels.forEach(v=>{
+    ok('vessel-fields:'+v.id, v.name&&v.shortName&&v.ref&&v.summary!=null);
+    (v.lights||[]).forEach(l=>ok('light-color:'+v.id, !!R.lightColors[l.color], l.color));
+    ['day','night','both'].forEach(m=>{
+      const svg=Draw.buildVesselSVG(v,m);
+      ok('vesselSVG:'+v.id+':'+m, svg.indexOf('<svg')===0 && svg.indexOf('undefined')<0 && svg.indexOf('NaN')<0);
+    });
+    const dn=Draw.describeNight(v), dd=Draw.describeDay(v);
+    ok('describe:'+v.id, typeof dn==='string' && dn.length>0 && typeof dd==='string' && dd.length>0, dn+'|'+dd);
+  });
+  // 2. מצופים: ציור + פריימים
+  R.marks.forEach(m=>{
+    const svg=Draw.buildMarkSVG(m);
+    ok('markSVG:'+m.id, svg.indexOf('undefined')<0 && svg.indexOf('NaN')<0);
+    ok('markFrames:'+m.id, Array.isArray(m.light.frames)&&m.light.frames.length>0&&m.light.frames.every(f=>f.ms>0));
+    ok('markDayDesc:'+m.id, Draw.markDayDesc(m).indexOf('undefined')<0);
+  });
+  // 3. דגלים: כל עיצוב נתמך במנוע הציור
+  R.flags.forEach(f=>{
+    const svg=Draw.drawFlag(f);
+    ok('flag:'+f.letter, svg.indexOf('<svg')===0 && svg.indexOf('undefined')<0 && /<(rect|polygon|circle|line|g )/.test(svg), f.design.type);
+  });
+  // 4. אותות: קודי אודיו מוכרים
+  R.sounds.forEach(s=>ok('sound:'+s.id, s.audio.every(a=>['S','L','B','K','G'].includes(a)), s.audio.join(',')));
+  // 5. מחולל שאלות — 400 שאלות פאז
+  for(let i=0;i<400;i++){
+    const q=QuizGen.newQuestion(null);
+    ok('gen-null:'+i, !!q); if(!q) break;
+    ok('gen-opts:'+i, q.options.length>=2 && new Set(q.options).size===q.options.length, q.q);
+    ok('gen-correct:'+i, q.options.includes(q.correct), q.q+' || '+q.correct);
+    ok('gen-strings:'+i, q.options.every(o=>typeof o==='string'&&o.length>0), q.q);
+  }
+  // 6. מאגר רשמי: תקינות עומק
+  const B=window.EXAM_BANK;
+  ok('bank-loaded', B && B.questions.length>1000);
+  if(B){
+    B.questions.forEach(q=>{
+      if(q.correct<0||q.correct>=q.options.length){fails++;out.push('FAIL bank-correct '+q.id);}
+      if(q.dq && q.dq.length!==q.options.length){fails++;out.push('FAIL bank-dq '+q.id);}
+      if(!q.tracks.length){fails++;out.push('FAIL bank-tracks '+q.id);}
+    });
+  }
+  // 7. נתוני ניווט
+  ok('navdata', window.NAV_DATA && window.NAV_DATA.lights && window.NAV_DATA.lights.length>=3);
+  if(window.NAV_DATA){
+    const ll=window.NAV_DATA.latLonOf(75,150);
+    ok('navdata-latlon', /32°/.test(ll.lat) && /34°/.test(ll.lon), JSON.stringify(ll));
+  }
+}catch(e){ fails++; out.push('EXCEPTION '+(e&&e.stack||e)); }
+document.getElementById('RESULTS').textContent = (fails===0?'ALL-PASS':'FAILURES:'+fails)+'\n'+out.slice(0,60).join('\n');
+})();
+</script>
+</body></html>

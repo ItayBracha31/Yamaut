@@ -1,7 +1,7 @@
 {
-  "name": "ימאות",
+  "name": "ימאות — לומדת משיט",
   "short_name": "ימאות",
-  "description": "תרגול כללי מניעת התנגשויות בים (COLREG) לבחינת משיט 30",
+  "description": "לומדת הכנה לבחינות משיט: תקנות (COLREG), מצופים, אותות, תרחישים, ניווט חופי ומבחני סימולציה",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
@@ -11,6 +11,12 @@
   "background_color": "#081521",
   "theme_color": "#081521",
   "icons": [
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "חידון מהיר", "url": "./#/practice/quiz" },
+    { "name": "מבחן סימולציה", "url": "./#/exam" },
+    { "name": "תרגול ניווט", "url": "./#/nav/chart" }
   ]
 }
