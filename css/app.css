@@ -40,8 +40,9 @@
        linear-gradient(180deg,#071522 0%,#0d2536 55%,#0c2030 100%);
   --stage-bg:#04101d; --water:#06283d; --water-line:#0e3a55;
   --tabbar-bg:rgba(7,20,32,.92); --sheet-shadow:0 -10px 40px rgba(0,0,0,.5);
-  --scnA:#4aa3ff; --scnB:#ff9f43;
+  --scnA:#35b9cf; --scnB:#f5a13d;
   --rib1:#2fb3c9; --rib2:#ff5147;
+  --bg-solid:#0b2233;
   --r:14px; --maxw:920px;
   --font: "Rubik",system-ui,-apple-system,"Segoe UI","Helvetica Neue","Arial Hebrew","Noto Sans Hebrew",Arial,sans-serif;
   --display: "Frank Ruhl Libre","Rubik","Arial Hebrew",serif;
@@ -64,22 +65,25 @@
        linear-gradient(180deg,#b9e0ea 0%,#eef0df 44%,#ecdfbd 78%,#e4d3a8 100%);
   --stage-bg:#0a1c2c; --water:#bfe0e8; --water-line:#7fb8c9;
   --tabbar-bg:rgba(253,252,246,.94); --sheet-shadow:0 -10px 40px rgba(30,60,80,.18);
-  --scnA:#0d5a9e; --scnB:#a34d00;
+  --scnA:#0e7d94; --scnB:#b06905;
   --rib1:#16405e; --rib2:#d6403a;
+  --bg-solid:#ecefe0;
 }
 
 *{box-sizing:border-box}
-html,body{margin:0;padding:0}
+html,body{margin:0;padding:0;background:var(--bg-solid)}
 html{scroll-behavior:smooth}
 ::selection{background:var(--brass);color:var(--brass-ink)}
 nav.tabs,.subnav,.btn,.chip,.iconbtn,.seg,.opt,.quick,.tile,.hud{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .ic{vertical-align:-3px;flex:0 0 auto}
 body{
-  background:var(--bg) fixed;
   color:var(--ink); font-family:var(--font); line-height:1.55;
   -webkit-text-size-adjust:100%; overflow-x:hidden;
   -webkit-tap-highlight-color:transparent;
 }
+/* הרקע מצויר על שכבה קבועה אמיתית — background-attachment:fixed שבור בניידים
+   (מציג פסים לבנים בזמן גלילה שמתמלאים באיחור) */
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:var(--bg)}
 .wrap{max-width:var(--maxw);margin:0 auto;padding:0 14px;
   padding-top:calc(64px + env(safe-area-inset-top,0px));
   padding-bottom:120px;}
@@ -89,13 +93,19 @@ button{touch-action:manipulation}
 /* ---------- animated waves backdrop ----------
    חשוב: left:0 מפורש — בדף RTL אלמנט מוחלט ברוחב 200% נצמד לימין,
    וההזזה חושפת קצה "חתוך". העוגן השמאלי + נתיב מחזורי = לולאה חלקה. */
-/* קו המים בתחתית: שתי שכבות גלים + פס קצף — הסרגל עבר למעלה כך שהחוף פנוי */
+/* קו המים בתחתית: שתי שכבות גלים + קצף, מעל התוכן בכל המסכים
+   (z-30: מעל הדף, מתחת לסרגל/גיליונות/טוסטים; שקוף למגע) */
 .waves{position:fixed;left:0;right:0;bottom:0;
-  height:96px;z-index:0;pointer-events:none;opacity:.85;overflow:hidden}
-.waves svg{position:absolute;left:0;bottom:-8px;width:200%;height:100%;animation:waveslide 18s linear infinite}
-.waves svg.w2{animation:waveslide2 26s linear infinite;opacity:.6;bottom:-20px}
+  height:96px;z-index:30;pointer-events:none;opacity:.8;overflow:hidden}
+.waves > svg{position:absolute;left:0;bottom:-8px;width:200%;height:100%;animation:waveslide 18s linear infinite}
+.waves > svg.w2{animation:waveslide2 26s linear infinite;opacity:.6;bottom:-20px}
 @keyframes waveslide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @keyframes waveslide2{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+/* המפרשית הנודדת: החוצה את המסך בגובה קו המים, מתנדנדת על הגל */
+.saildrift{position:absolute;bottom:26px;left:0;opacity:0;pointer-events:none;
+  will-change:transform;transition:opacity .8s}
+.saildrift .bob{display:block;transform-origin:50% 92%;animation:sailbob 3.4s ease-in-out infinite}
+@keyframes sailbob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-4px) rotate(3deg)}}
 .wrap,nav.tabs,.sheet,.sheet-back,#toasts{position:relative;z-index:1}
 
 /* ---------- header ---------- */
@@ -104,15 +114,19 @@ header.app{display:flex;align-items:center;gap:11px;padding:14px 2px 12px;
 /* "סרט הדגלים" — פס כפול בסגנון חולצת מלחים, חתימת העיצוב של האפליקציה */
 header.app::after{content:"";position:absolute;inset-inline:2px;bottom:0;height:5px;border-radius:3px;
   background:linear-gradient(180deg,var(--rib1) 0 2px,transparent 2px 3px,var(--rib2) 3px 5px)}
-header.app .rose{width:40px;height:40px;flex:0 0 auto;animation:rosewobble 9s ease-in-out infinite}
-@keyframes rosewobble{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(5deg)}}
+.brand .logo{height:42px;width:auto;display:block}
+.brand .logo-boat{transform-origin:73px 40px;animation:rosewobble 7s ease-in-out infinite}
+.brand p{margin:2px 2px 0;font-size:.68rem;color:var(--ink-dim)}
+@keyframes rosewobble{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
 header.app h1{font-size:1.34rem;margin:0;font-family:var(--display);font-weight:800;letter-spacing:.02em;color:var(--parchment)}
 header.app p{margin:1px 0 0;font-size:.7rem;color:var(--ink-dim);letter-spacing:.02em}
 header.app .hgrow{flex:1}
 .hud{display:flex;align-items:center;gap:6px}
 .hud .pill{display:flex;align-items:center;gap:4px;font-size:.72rem;font-weight:800;
   color:var(--parchment);background:var(--sea2);border:1px solid var(--line);
-  border-radius:9px;padding:4px 10px;white-space:nowrap}
+  border-radius:9px;padding:4px 10px;white-space:nowrap;
+  border-inline-start:3px solid var(--brass)}
+.hud .pill.flame{border-inline-start-color:var(--yellow)}
 .hud .pill .ico{font-size:.85rem;line-height:1}
 .hud .pill.flame .ic{animation:flame 1.6s ease-in-out infinite;color:#ff9f43}
 .hud .pill.flame .ico{animation:flame 1.6s ease-in-out infinite}
@@ -138,7 +152,12 @@ nav.tabs button{
   position:relative;
 }
 nav.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
-nav.tabs button[aria-selected="true"]{color:var(--brass);background:rgba(217,164,65,.10)}
+/* לשונית פעילה: פס-מלחים קטן (כמו הסרט שמתחת לכותרת) במקום רקע */
+nav.tabs button[aria-selected="true"]{color:var(--parchment)}
+nav.tabs button[aria-selected="true"] svg{stroke:var(--brass)}
+nav.tabs button[aria-selected="true"]::after{content:"";position:absolute;bottom:0;inset-inline:16%;
+  height:4px;border-radius:2px;
+  background:linear-gradient(180deg,var(--rib1) 0 1.6px,transparent 1.6px 2.4px,var(--rib2) 2.4px 4px)}
 nav.tabs button:active{transform:scale(.94)}
 nav.tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
@@ -146,7 +165,12 @@ nav.tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .hubgrid{display:grid;gap:10px}
 .hubcard{display:flex;align-items:center;gap:14px;text-align:right;cursor:pointer;
   font-family:inherit;color:var(--ink);background:var(--card-grad);
-  border:1px solid var(--line);border-radius:14px;padding:16px 16px;transition:transform .1s,border-color .15s;min-height:76px}
+  border:1px solid var(--line);border-radius:14px;padding:16px 16px;transition:transform .1s,border-color .15s;min-height:76px;
+  border-inline-start-width:4px}
+.hubgrid .hubcard:nth-child(4n+1){border-inline-start-color:var(--brass)}
+.hubgrid .hubcard:nth-child(4n+2){border-inline-start-color:var(--info)}
+.hubgrid .hubcard:nth-child(4n+3){border-inline-start-color:var(--yellow)}
+.hubgrid .hubcard:nth-child(4n+4){border-inline-start-color:var(--brass-dim)}
 .hubcard:active{transform:scale(.98)}
 .hubcard:hover{border-color:var(--brass-dim)}
 .hubcard .hi{color:var(--brass);flex:0 0 auto;display:flex}
@@ -160,13 +184,27 @@ nav.tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .backrow .bt .ic{color:var(--brass)}
 .backrow .bh{margin-inline-start:auto;font-size:.7rem;color:var(--ink-dim);font-weight:700}
 
-/* ---------- view transitions (מעברי מסך כמו באפליקציה) ---------- */
-.view-enter{animation:fadeup .28s cubic-bezier(.2,.8,.3,1)}
-.view-slide-left{animation:slideL .32s cubic-bezier(.2,.8,.3,1)}
-.view-slide-right{animation:slideR .32s cubic-bezier(.2,.8,.3,1)}
-@keyframes fadeup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-@keyframes slideL{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:none}}
-@keyframes slideR{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+/* ---------- מעברי מסך ומיקרו-אנימציות (זריז וקפיצי) ---------- */
+:root{--spring:cubic-bezier(.32,.72,.28,1)}
+.view-enter{animation:fadeup .3s var(--spring)}
+.view-slide-left{animation:slideL .34s var(--spring)}
+.view-slide-right{animation:slideR .34s var(--spring)}
+@keyframes fadeup{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes slideL{from{opacity:0;transform:translateX(-32px)}to{opacity:1;transform:none}}
+@keyframes slideR{from{opacity:0;transform:translateX(32px)}to{opacity:1;transform:none}}
+/* כניסה מדורגת של פריטים — כרטיסי מדור, אריחים, תשובות, תגים, תחנות */
+.hubgrid .hubcard,.grid .tile,#opts .opt,.badgegrid .badge,.quickgrid .quick,.statrow .stat{
+  animation:fadeup .34s var(--spring) both}
+.hubgrid>*:nth-child(1),.grid>*:nth-child(1),#opts>*:nth-child(1),.badgegrid>*:nth-child(1),.statrow>*:nth-child(1){animation-delay:.02s}
+.hubgrid>*:nth-child(2),.grid>*:nth-child(2),#opts>*:nth-child(2),.badgegrid>*:nth-child(2),.statrow>*:nth-child(2){animation-delay:.06s}
+.hubgrid>*:nth-child(3),.grid>*:nth-child(3),#opts>*:nth-child(3),.badgegrid>*:nth-child(3),.statrow>*:nth-child(3){animation-delay:.1s}
+.hubgrid>*:nth-child(4),.grid>*:nth-child(4),#opts>*:nth-child(4),.badgegrid>*:nth-child(4){animation-delay:.14s}
+.hubgrid>*:nth-child(5),.grid>*:nth-child(5),.badgegrid>*:nth-child(5){animation-delay:.18s}
+.hubgrid>*:nth-child(n+6),.grid>*:nth-child(n+6),.badgegrid>*:nth-child(n+6){animation-delay:.21s}
+/* משוב מגע קפיצי אחיד */
+.btn,.chip,.iconbtn,.tile,.quick,.hubcard,.opt,nav.tabs button{transition:transform .16s var(--spring),background .15s,border-color .15s,color .15s,box-shadow .15s}
+nav.tabs button[aria-selected="true"] svg{animation:tabpop .34s var(--spring)}
+@keyframes tabpop{0%{transform:scale(.82)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
 @keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
 @keyframes shake{0%,100%{transform:none}25%{transform:translateX(4px)}75%{transform:translateX(-4px)}}
 .shake{animation:shake .3s ease-in-out 2}
@@ -174,8 +212,10 @@ nav.tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 /* ---------- generic ---------- */
 .section-title{display:flex;align-items:baseline;gap:10px;margin:14px 2px 12px;flex-wrap:wrap}
 .section-title h2{font-size:1.08rem;margin:0;color:var(--parchment);font-family:var(--display);font-weight:700;letter-spacing:.03em}
-.section-title h2::before{content:"";display:inline-block;width:4px;height:13px;border-radius:2px;
-  background:var(--brass);margin-inline-end:8px;vertical-align:-1px}
+/* דגלון (pennant) קטן לפני כל כותרת מדור */
+.section-title h2::before{content:"";display:inline-block;width:11px;height:13px;
+  background:var(--brass);margin-inline-end:8px;vertical-align:-1px;
+  clip-path:polygon(100% 0,0 50%,100% 100%)}
 .section-title .hint{font-size:.72rem;color:var(--ink-dim)}
 .card{background:var(--card-grad);border:1px solid var(--line);border-radius:var(--r)}
 .muted{color:var(--ink-dim)}
@@ -206,6 +246,8 @@ nav.tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .tile:active{transform:scale(.97)}
 .tile[aria-current="true"]{border-color:var(--brass);box-shadow:0 0 0 1px var(--brass) inset}
 .tile svg{width:100%;height:88px;display:block}
+/* מצופים: רקע "בין־ערביים" כהה כדי שהבהוב האור יבלוט (גם בערכה הבהירה) */
+svg.marksvg{background:linear-gradient(180deg,#315270 0%,#1d3a55 62%,#0d2c44 100%);border-radius:10px}
 .tile .nm{font-size:.74rem;font-weight:700;margin-top:4px;color:var(--ink)}
 .tile .mastery{position:absolute;top:6px;inset-inline-start:6px;width:9px;height:9px;border-radius:50%;
   background:var(--line)}
@@ -307,7 +349,8 @@ nav.tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .exam-timer{font-family:var(--mono);font-weight:800;font-size:1rem;color:var(--parchment)}
 .exam-timer.low{color:var(--bad);animation:flame 1s infinite}
 .exam-prog{height:6px;border-radius:3px;background:var(--abyss);overflow:hidden;margin:8px 0}
-.exam-prog>div{height:100%;background:var(--brass);border-radius:3px;transition:width .3s}
+.exam-prog>div{height:100%;border-radius:3px;transition:width .3s;
+  background:repeating-linear-gradient(-45deg,rgba(255,255,255,.22) 0 5px,transparent 5px 10px),var(--brass)}
 .exam-nav{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
 .exam-nav button{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--sea2);
   color:var(--ink-dim);font-family:var(--mono);font-size:.72rem;font-weight:700;cursor:pointer}
@@ -321,12 +364,18 @@ nav.tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .hero{padding:16px;display:flex;flex-direction:column;gap:12px}
 .hero .greet{font-size:1.18rem;font-family:var(--display);font-weight:700;color:var(--parchment)}
 .statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.stat{background:var(--abyss);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.stat{background:var(--abyss);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center;
+  border-top-width:3px}
+.statrow .stat:nth-child(1){border-top-color:var(--yellow)}
+.statrow .stat:nth-child(2){border-top-color:var(--brass)}
+.statrow .stat:nth-child(3){border-top-color:var(--info)}
 .stat .v{font-size:1.25rem;font-weight:900;color:var(--parchment);font-family:var(--mono);
   display:flex;align-items:center;justify-content:center;gap:5px}
 .stat .l{font-size:.66rem;color:var(--ink-dim);font-weight:700}
 .xpbar{height:10px;border-radius:5px;background:var(--abyss);border:1px solid var(--line);overflow:hidden}
-.xpbar>div{height:100%;background:var(--brass);transition:width .6s cubic-bezier(.2,.8,.3,1)}
+/* מילוי "סרט רגטה" — פסים אלכסוניים עדינים */
+.xpbar>div{height:100%;transition:width .6s cubic-bezier(.2,.8,.3,1);
+  background:repeating-linear-gradient(-45deg,rgba(255,255,255,.22) 0 6px,transparent 6px 12px),var(--brass)}
 .ranklabel{display:flex;justify-content:space-between;font-size:.72rem;color:var(--ink-dim);font-weight:700;margin-top:4px}
 .ring{position:relative;width:74px;height:74px;margin:0 auto}
 .ring > svg{transform:rotate(-90deg)}   /* רק טבעת ההתקדמות — לא אייקון שבמרכזה */
@@ -370,20 +419,30 @@ nav.tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .viewer3d .bearing{position:absolute;top:8px;inset-inline-start:10px;font-family:var(--mono);font-size:.78rem;
   font-weight:800;color:#ece3ce;background:rgba(8,21,33,.8);border-radius:8px;padding:4px 10px;pointer-events:none}
 
-/* ---------- bottom sheet ---------- */
-.sheet-back{position:fixed;inset:0;background:rgba(3,9,16,.6);backdrop-filter:blur(2px);
-  z-index:60;display:none;opacity:0;transition:opacity .2s}
+/* ---------- דיאלוג צף (הסברים/הגדרות) — נפתח במרכז בקפיץ, רקע מטושטש ---------- */
+.sheet-back{position:fixed;inset:0;background:rgba(5,14,22,.45);
+  backdrop-filter:blur(9px) saturate(1.1);-webkit-backdrop-filter:blur(9px) saturate(1.1);
+  z-index:60;display:none;opacity:0;transition:opacity .25s}
 .sheet-back.show{display:block;opacity:1}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:var(--maxw);margin:0 auto;
+.sheet{position:fixed;inset:0;margin:auto;z-index:61;
+  width:min(480px, calc(100% - 32px));height:fit-content;max-height:80vh;
   background:var(--card-grad);border:1px solid var(--line);
-  border-radius:18px 18px 0 0;padding:16px 18px calc(20px + env(safe-area-inset-bottom));
-  transform:translateY(100%);transition:transform .25s cubic-bezier(.2,.8,.2,1);
-  box-shadow:var(--sheet-shadow);max-height:82vh;overflow-y:auto;overscroll-behavior:contain}
-.sheet.show{transform:translateY(0)}
-.sheet .grip{width:42px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 12px}
-.sheet h3{margin:0 0 6px;color:var(--parchment);font-size:1.05rem;font-family:var(--display);font-weight:700}
+  border-radius:20px;padding:18px 20px 20px;
+  opacity:0;transform:scale(.9) translateY(16px);pointer-events:none;
+  transition:transform .34s var(--spring),opacity .22s;
+  box-shadow:0 24px 70px rgba(0,0,0,.4);overflow-y:auto;overscroll-behavior:contain}
+.sheet.show{opacity:1;transform:none;pointer-events:auto}
+.sheet .grip{display:none}
+.sheet h3{margin:0 0 12px;color:var(--parchment);font-size:1.08rem;font-family:var(--display);font-weight:700;padding-inline-end:30px;position:relative}
+.sheet h3::after{content:"";position:absolute;bottom:-7px;inset-inline-start:0;width:46px;height:4px;border-radius:2px;
+  background:linear-gradient(180deg,var(--rib1) 0 1.6px,transparent 1.6px 2.4px,var(--rib2) 2.4px 4px)}
 .sheet p{margin:6px 0;font-size:.9rem}
-.sheet .close{position:absolute;top:12px;left:14px;background:none;border:0;color:var(--ink-dim);font-size:1.3rem;cursor:pointer;padding:6px}
+/* כפתור סגירה: מטרה גדולה (40px), נשאר בפינה גם כשגוללים בתוך הדיאלוג */
+.sheet .close{position:sticky;top:0;float:left;margin:-4px 0 0 -6px;z-index:3;
+  width:40px;height:40px;border-radius:50%;
+  background:var(--abyss);border:1px solid var(--line);color:var(--ink);font-size:1.05rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center}
+.sheet .close:active{transform:scale(.92)}
 
 /* settings rows */
 .setrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
@@ -397,14 +456,20 @@ nav.tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 #toasts{position:fixed;top:calc(10px + env(safe-area-inset-top));left:0;right:0;z-index:80;
   display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
 .toast{background:var(--card-grad);border:1px solid var(--brass-dim);color:var(--parchment);
-  border-radius:999px;padding:9px 18px;font-size:.84rem;font-weight:800;
-  box-shadow:0 6px 24px rgba(0,0,0,.4);animation:toastin .3s cubic-bezier(.2,.8,.3,1);display:flex;gap:7px;align-items:center}
+  border-radius:12px;padding:9px 16px;font-size:.84rem;font-weight:800;
+  border-inline-start:4px solid var(--brass);
+  box-shadow:0 6px 24px rgba(0,0,0,.4);animation:toastin .3s var(--spring);display:flex;gap:7px;align-items:center}
 .toast.out{animation:toastout .3s forwards}
 @keyframes toastin{from{opacity:0;transform:translateY(-16px) scale(.9)}to{opacity:1;transform:none}}
 @keyframes toastout{to{opacity:0;transform:translateY(-16px) scale(.9)}}
 
 /* confetti canvas */
 #confetti{position:fixed;inset:0;z-index:90;pointer-events:none}
+
+/* מפריד "גל" — קו מסולסל בסגנון מפה */
+.wavy-div{height:7px;margin:14px 0 10px;background:var(--brass-dim);opacity:.7;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='7' viewBox='0 0 24 7'%3E%3Cpath d='M0,4 q6,-5 12,0 t12,0' fill='none' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E") repeat-x;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='7' viewBox='0 0 24 7'%3E%3Cpath d='M0,4 q6,-5 12,0 t12,0' fill='none' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E") repeat-x}
 
 footer.app{text-align:center;font-size:.7rem;color:var(--ink-dim);padding:24px 0 8px}
 

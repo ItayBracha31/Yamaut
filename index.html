@@ -7,8 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ימאות">
-<title>ימאות — לומדת משיט</title>
+<meta name="apple-mobile-web-app-title" content="משיט 30">
+<title>משיט 30 — לומדת ההסמכה</title>
 <meta name="author" content="Itay Bracha">
 <meta name="copyright" content="© 2026 Itay Bracha">
 <link rel="manifest" href="manifest.webmanifest">
@@ -35,22 +35,42 @@
     <path d="M0,74 c60,-14 120,-14 180,0 c60,14 120,14 180,0 c60,-14 120,-14 180,0 c60,14 120,14 180,0 c60,-14 120,-14 180,0 c60,14 120,14 180,0 c60,-14 120,-14 180,0 c60,14 120,14 180,0"
       fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.8"/>
   </svg>
+  <!-- מפרשית קטנה שחוצה את המסך על הגלים, מדי פעם -->
+  <div class="saildrift" id="sailDrift" aria-hidden="true">
+    <div class="fw">
+      <svg class="bob" viewBox="0 0 64 56" width="50" height="44">
+        <path d="M7,42 L57,42 L48,52 L15,52 Z" fill="#16405e" stroke="#0c2233" stroke-width="1"/>
+        <line x1="31" y1="5" x2="31" y2="42" stroke="#5b4a2e" stroke-width="2"/>
+        <path d="M31,7 Q29,26 31,38 L11,38 Q22,24 31,7 Z" fill="#fdfcf5" stroke="#c2ccce" stroke-width="1"/>
+        <path d="M34,13 Q35,27 34,38 L52,38 Q42,25 34,13 Z" fill="#f2ecd8" stroke="#c2ccce" stroke-width="1"/>
+        <path d="M31,5 l9,3.2 -9,3.2 Z" fill="#d6403a"/>
+      </svg>
+    </div>
+  </div>
 </div>
 
 <nav class="tabs" id="tabs" role="tablist"></nav>
 
 <div class="wrap">
   <header class="app">
-    <svg class="rose" viewBox="0 0 64 64" aria-hidden="true">
-      <circle cx="32" cy="32" r="29" fill="none" stroke="#24486a" stroke-width="2"/>
-      <circle cx="32" cy="32" r="21" fill="none" stroke="#d9a441" stroke-width="1.4" opacity=".7"/>
-      <polygon points="32,6 37,32 32,40 27,32" fill="#ff3b30"/>
-      <polygon points="32,6 27,32 32,32" fill="#fff4d6"/>
-      <polygon points="32,58 27,32 32,24 37,32" fill="#cfdcea" opacity=".8"/>
-      <circle cx="32" cy="32" r="3" fill="#d9a441"/>
-    </svg>
-    <div>
-      <h1>ימאות</h1>
+    <div class="brand">
+      <svg class="logo" viewBox="46 0 122 48" aria-label="משיט 30" role="img">
+        <!-- סמל: מפרש נושא את המספר 30 כמו מספר-מפרש במרוץ, צמוד לכיתוב -->
+        <g class="logo-boat">
+          <path d="M77,3 Q74,20 76,33 L51,33 Q65,17 77,3 Z" fill="var(--brass)"/>
+          <path d="M81,10 Q82,23 81,33 L95,33 Q88,20 81,10 Z" fill="var(--brass)" opacity=".55"/>
+          <line x1="78.5" y1="2" x2="78.5" y2="35" stroke="var(--parchment)" stroke-width="2" opacity=".85"/>
+          <path d="M46,36 L100,36 Q97,43 91,44 L56,44 Q49,42 46,36 Z" fill="#16405e"/>
+          <path d="M46,36 L100,36 L99,38.5 L47,38.5 Z" fill="rgba(255,255,255,.25)"/>
+          <text x="64.5" y="30" text-anchor="middle" font-size="17" font-weight="900"
+            fill="#ffffff" stroke="#0c2233" stroke-width=".8" paint-order="stroke"
+            style="font-family:var(--font)">30</text>
+        </g>
+        <text x="164" y="33" text-anchor="start" font-size="28" font-weight="800"
+          fill="var(--parchment)" style="font-family:var(--display);direction:rtl">משיט</text>
+        <path d="M48,46 q7,-3.5 14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0 t14,0" fill="none"
+          stroke="var(--brass)" stroke-width="1.4" opacity=".5"/>
+      </svg>
       <p id="subtitle"></p>
     </div>
     <div class="hgrow"></div>

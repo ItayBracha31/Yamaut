@@ -279,7 +279,7 @@ function configScreen(el){
         ${figN?`<button class="btn mini ${cfg.includeFigures?'primary':''}" id="figTgl">איורים רשמיים (${figN})</button>`:''}
       </div>
 
-      <div style="border-top:1px solid var(--line);margin:14px 0 10px"></div>
+      <div class="wavy-div"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:.78rem">
         <div><span class="muted">משך:</span> <b>${timeMin} דק׳</b></div>
         <div><span class="muted">ציון עובר:</span> <b dir="ltr">~${tr.passPct}%</b> <span class="muted">(לפי בתי ספר)</span></div>
@@ -348,6 +348,7 @@ function runScreen(el){
       </div>
       <div class="exam-prog"><div style="width:${answered/exam.qs.length*100}%"></div></div>
       <div class="row" style="margin:4px 0 10px">
+        <button class="btn mini ghost" id="quitQ" title="ביטול המבחן" style="color:var(--ink-dim)">✕ ביטול</button>
         <button class="btn mini" id="prevQ" ${exam.idx===0?'disabled':''}>→ הקודמת</button>
         <button class="btn mini ${exam.flags[exam.idx]?'primary':''}" id="flagQ">⚑ סימון</button>
         <span class="grow"></span>
@@ -385,6 +386,12 @@ function runScreen(el){
     const un=exam.qs.length-exam.answers.filter(a=>a!=null).length;
     if(un>0 && !confirm('יש '+un+' שאלות ללא מענה. להגיש בכל זאת?')) return;
     finishExam(); paint(el);
+  });
+  App.$('#quitQ',el).addEventListener('click',()=>{
+    if(!confirm('לבטל את המבחן ולחזור למסך הראשי? ההתקדמות במבחן לא תישמר.')) return;
+    exam=null; clearInterval(timerId);
+    try{ localStorage.removeItem('yamaut2.exam'); }catch(e){}
+    paint(el);
   });
 }
 

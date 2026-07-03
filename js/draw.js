@@ -233,7 +233,7 @@ function topmarkSVG(tm){
   return '';
 }
 D.buildMarkSVG = m=>
-  `<svg viewBox="0 0 120 200" role="img" aria-label="${esc(m.name)}">
+  `<svg class="marksvg" viewBox="0 0 120 200" role="img" aria-label="${esc(m.name)}">
     <rect x="0" y="168" width="120" height="32" fill="#06283d"/>
     <path d="M0,170 Q30,166 60,170 T120,170" stroke="#0e3a55" stroke-width="2" fill="none"/>
     <line x1="60" y1="58" x2="60" y2="20" stroke="#33536f" stroke-width="2"/>
@@ -363,10 +363,10 @@ D.vesselTop = (x,y,dir,accent,boat,opts)=>{
     // מנור + מפרש ראשי מלא ותפוח לצד המשווה (leeward), וחרטום־מפרש (ג'יב)
     g+=`<line x1="4" y1="0" x2="-16.5" y2="${side*12.5}" stroke="#5b4a2e" stroke-width="1.8"/>`;
     g+=`<path d="M4.5,-0.5 Q-9,${side*12} -16.5,${side*12.5} Q-4,${side*2.5} 4.5,-0.5 Z"
-        fill="rgba(244,238,220,.97)" stroke="#8fa4b5" stroke-width="1"/>`;
-    g+=`<path d="M4.5,0 Q-6,${side*7.5} -13,${side*10}" fill="none" stroke="rgba(140,160,175,.5)" stroke-width=".7"/>`;
+        fill="rgba(255,253,246,.98)" stroke="#6d8296" stroke-width="1.1"/>`;
+    g+=`<path d="M4.5,0 Q-6,${side*7.5} -13,${side*10}" fill="none" stroke="rgba(120,145,165,.55)" stroke-width=".8"/>`;
     g+=`<path d="M18.5,0 Q6.5,${side*8} 2.5,${side*9.5} Q9,${side*2.5} 18.5,0 Z"
-        fill="rgba(244,238,220,.88)" stroke="#8fa4b5" stroke-width=".8"/>`;
+        fill="rgba(255,253,246,.92)" stroke="#6d8296" stroke-width=".9"/>`;
     g+=`<circle cx="4" cy="0" r="1.9" fill="#cdd9e6" stroke="#06121d" stroke-width=".6"/>`;
   } else {
     // תא הגה מעוגל עם שמשה וחלונות
@@ -380,7 +380,7 @@ D.vesselTop = (x,y,dir,accent,boat,opts)=>{
   g+=`<circle cx="15" cy="-6.2" r="2.4" fill="#ff3b30" style="filter:drop-shadow(0 0 3px #ff6a5e)"/>
       <circle cx="15" cy="6.2" r="2.4" fill="#22d07a" style="filter:drop-shadow(0 0 3px #5cf0a6)"/>
       <circle cx="-19" cy="0" r="2.2" fill="#fff4d6" style="filter:drop-shadow(0 0 3px #fffbe9)"/>`;
-  let s=`<g transform="translate(${x},${y}) rotate(${ang})"><circle cx="0" cy="0" r="20" fill="transparent"/>${g}</g>`;
+  let s=`<g transform="translate(${x},${y}) rotate(${ang}) scale(1.12)"><circle cx="0" cy="0" r="20" fill="transparent"/>${g}</g>`;
   if(!opts.noBadge) s+=D.signalBadge(x,y,boat.vid);
   return s;
 };

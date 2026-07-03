@@ -6,7 +6,8 @@
    ========================================================================== */
 (function(){
 "use strict";
-const BW=360, COLA='#4aa3ff', COLB='#ff9f43';
+/* צבעי הצוותים — מתוך פלטת "רגטה": טורקיז-ים מול כתום-שקיעה החלטי */
+const BW=360, COLA='#2aa7bd', COLB='#f0932b';
 const PLAY_SCALE=4.5;   // ×1 בסליידר = קצב הצפייה הנוח (4.5 הישן)
 const st={hist:[],idx:-1,types:null,speed:1,night:false,typeselOpen:false};
 let sim=null;
@@ -308,7 +309,7 @@ function nightVesselTop(x,y,dir,boat){
   // פנס תורן — רק אם הכלי אכן מציג כזה (NUC/דייג לא-מכמורתן לעולם לא!)
   const hasMast=v&&v.lights.some(l=>(l.place==='masthead'||l.place==='masthead-aft')&&!l.optional);
   if(hasMast) g+=glow(3,0,'#fff4d6');
-  let s=`<g transform="translate(${x},${y}) rotate(${ang})"><circle cx="0" cy="0" r="20" fill="transparent"/>${g}</g>`;
+  let s=`<g transform="translate(${x},${y}) rotate(${ang}) scale(1.12)"><circle cx="0" cy="0" r="20" fill="transparent"/>${g}</g>`;
   // אורות מעגליים מזהים בלבד (ללא צורות יום — לילה!)
   if(v){
     const ar=v.lights.filter(l=>l.place==='allround'&&!l.optional).map(l=>l.color);

@@ -495,6 +495,27 @@ App.render=()=>{
   else el.innerHTML='<div class="card" style="padding:20px;text-align:center">בקרוב…</div>';
 };
 
+/* ---------------- המפרשית הנודדת על הגלים ---------------- */
+function startSailDrift(){
+  const el=document.getElementById('sailDrift'); if(!el || !el.animate) return;
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const fw=el.querySelector('.fw');
+  function voyage(){
+    const w=innerWidth, ltr=Math.random()<0.5;
+    fw.style.transform = ltr ? 'scaleX(1)' : 'scaleX(-1)';   // החרטום לכיוון ההפלגה
+    const from = ltr ? -70 : w+70, to = ltr ? w+70 : -70;
+    el.style.opacity='1';
+    const anim=el.animate(
+      [{transform:`translateX(${from}px)`},{transform:`translateX(${to}px)`}],
+      {duration:17000+Math.random()*9000, easing:'linear'});
+    anim.onfinish=()=>{ el.style.opacity='0'; schedule(false); };
+  }
+  function schedule(first){
+    setTimeout(voyage, first ? 7000+Math.random()*8000 : 40000+Math.random()*80000);
+  }
+  schedule(true);
+}
+
 /* ---------------- boot ---------------- */
 App.start=()=>{
   if(!App.R){
@@ -530,6 +551,7 @@ App.start=()=>{
   if('serviceWorker' in navigator && location.protocol==='https:'){
     navigator.serviceWorker.register('sw.js').catch(()=>{});
   }
+  startSailDrift();
   App.current=parseHash();
   App.render();
 };
