@@ -321,6 +321,20 @@ function configScreen(el){
 }
 
 /* ---------- מסך מבחן רץ ---------- */
+/* שאלות "מעגל המצבים": שני כלי שיט מסומנים באותיות — מציגים גם את תמונה 127 */
+function needsCircle(q){
+  if(!q.topic || q.topic.indexOf('rules')!==0 || q.figure===127) return false;
+  const m=q.q.match(/[("״"]\s?([A-P])\s?[)"״"]/g)||[];
+  return new Set(m.map(s=>s.replace(/[^A-P]/g,''))).size>=2;
+}
+function circleHTML(){
+  const IM=window.EXAM_FIGURE_IMGS;
+  const src=IM&&IM['127']; if(!src) return '';
+  return `<div class="visual" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px;background:#fdfdfa">
+    <img id="circleImg" src="${src}" alt="מעגל המצבים" loading="lazy" style="max-width:min(300px,100%);height:auto;cursor:zoom-in">
+    <div class="muted" style="font-size:.72rem">מעגל המצבים (תמונה 127) — מיקומי כלי השיט לפי האותיות · הקישו להגדלה</div>
+  </div>`;
+}
 function runScreen(el){
   persistExam();
   const q=exam.qs[exam.idx];
@@ -333,23 +347,29 @@ function runScreen(el){
         <span class="exam-timer" id="examTimer">${fmtTime(exam.endsAt-Date.now())}</span>
       </div>
       <div class="exam-prog"><div style="width:${answered/exam.qs.length*100}%"></div></div>
+      <div class="row" style="margin:4px 0 10px">
+        <button class="btn mini" id="prevQ" ${exam.idx===0?'disabled':''}>→ הקודמת</button>
+        <button class="btn mini ${exam.flags[exam.idx]?'primary':''}" id="flagQ">⚑ סימון</button>
+        <span class="grow"></span>
+        ${exam.idx<exam.qs.length-1?`<button class="btn mini primary" id="nextQ">הבאה ←</button>`:''}
+        <button class="btn mini ${exam.idx===exam.qs.length-1?'primary':''}" id="submitQ">הגש</button>
+      </div>
       <div class="qtext">${App.esc(q.q)}</div>
+      ${needsCircle(q)?circleHTML():''}
       ${q.figure?renderFigure(q)||`<p class="muted" style="font-size:.76rem">שאלה זו מתייחסת לתמונה ${q.figure} מהחוברת הרשמית.</p>`:''}
       ${q.patternBig?`<div class="pattern" style="text-align:center;margin:6px 0">${App.esc(q.patternBig)}</div>`:''}
       ${q.audio?`<div class="row" style="justify-content:center;margin-bottom:10px"><button class="btn" id="qplay">נגן</button></div>`:''}
       ${q.visual?`<div class="visual">${q.visual}</div>`:''}
       <div id="opts">${q.options.map((o,i)=>`<button class="opt" data-i="${i}" style="${exam.answers[exam.idx]===i?'border-color:var(--brass);background:rgba(217,164,65,.14)':''}${q.mono?';font-family:var(--mono)':''}">${App.esc(o)}</button>`).join('')}</div>
-      <div class="row" style="margin-top:12px">
-        <button class="btn" id="prevQ" ${exam.idx===0?'disabled':''}>→ הקודמת</button>
-        <button class="btn ${exam.flags[exam.idx]?'primary':''}" id="flagQ">⚑</button>
-        <span class="grow"></span>
-        ${exam.idx<exam.qs.length-1?`<button class="btn primary" id="nextQ">הבאה ←</button>`:''}
-        <button class="btn ${exam.idx===exam.qs.length-1?'primary':''}" id="submitQ">הגש</button>
-      </div>
       <div class="exam-nav">${exam.qs.map((_,i)=>`<button data-g="${i}"
         class="${exam.answers[i]!=null?'answered':''} ${i===exam.idx?'current':''} ${exam.flags[i]?'flagged':''}">${i+1}</button>`).join('')}</div>
     </div>`;
   if(q.audio) App.$('#qplay',el).addEventListener('click',()=>App.playSeq(q.audio));
+  const ci=App.$('#circleImg',el);
+  if(ci) ci.addEventListener('click',()=>App.openSheet('מעגל המצבים — תמונה 127',
+    `<div style="background:#fdfdfa;border-radius:10px;padding:8px;text-align:center">
+       <img src="${ci.src}" alt="מעגל המצבים" style="max-width:100%;height:auto"></div>
+     <p class="muted" style="font-size:.78rem">16 כלי שיט (A–P) סביב המעגל בקפיצות של 22.5° — כולם בכיוון המרכז, פרט ל-E ו-I המפליגים החוצה.</p>`));
   App.$$('[data-figaudio]',el).forEach(b=>b.addEventListener('click',()=>App.playSeq(b.dataset.figaudio.split(''))));
   App.$$('#opts .opt',el).forEach(b=>b.addEventListener('click',()=>{
     exam.answers[exam.idx]= exam.answers[exam.idx]===+b.dataset.i ? null : +b.dataset.i;
@@ -391,6 +411,10 @@ function resultScreen(el){
       ${r.disqualified?`<p style="font-size:.8rem;color:var(--bad);font-weight:700">
         במבחן האמיתי, בחירה בתשובה המסומנת במאגר הרשמי כ"פוסלת" גוררת פסילה אוטומטית —
         גם אם שאר המבחן מושלם. שאלות: ${r.disq.map(i=>i+1).join(', ')}</p>`:''}
+      <div class="row" style="justify-content:center;margin-top:10px">
+        <button class="btn primary" id="againBtn">מבחן חדש</button>
+        ${wrong.length?'<button class="btn" id="revBtn">לתרגול הטעויות</button>':''}
+      </div>
     </div>
     <div class="card" style="padding:14px;margin-top:12px">
       <h3 style="margin:0 0 8px;color:var(--parchment)">פירוט לפי נושא</h3>
@@ -408,11 +432,7 @@ function resultScreen(el){
           ${q.explain?`<div class="muted" style="font-size:.78rem;margin-top:4px">${App.esc(q.explain)}</div>`:''}
           ${figSpec(q)?`<div class="muted" style="font-size:.78rem;margin-top:4px">תמונה ${q.figure}: ${App.esc(figSpec(q).desc)}</div>`:''}
         </div>`).join('')}
-    </div>`:'<div class="card" style="padding:16px;text-align:center;margin-top:12px">אפס טעויות — מושלם!</div>'}
-    <div class="row" style="margin-top:14px">
-      <button class="btn primary" id="againBtn">מבחן חדש</button>
-      ${wrong.length?'<button class="btn" id="revBtn">לתרגול הטעויות</button>':''}
-    </div>`;
+    </div>`:'<div class="card" style="padding:16px;text-align:center;margin-top:12px">אפס טעויות — מושלם!</div>'}`;
   App.$('#againBtn',el).addEventListener('click',()=>{exam=null;paint(el);});
   const rb=App.$('#revBtn',el); if(rb) rb.addEventListener('click',()=>App.navigate('practice','review'));
 }

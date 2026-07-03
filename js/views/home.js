@@ -47,9 +47,9 @@ function nestedIcon(x,y,size,name,color){
   return `<g color="${color}"><svg x="${x-size/2}" y="${y-size/2}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${App.ICONS[name]||''}"/></svg></g>`;
 }
 function voyageSVG(){
-  const W=360, step=70, y0=48;
-  const H=y0+(LEGS.length-1)*step+62;
-  const pos=LEGS.map((_,i)=>({x: i%2===0?104:256, y:y0+i*step}));
+  const W=360, step=58, y0=38;
+  const H=y0+(LEGS.length-1)*step+48;
+  const pos=LEGS.map((_,i)=>({x: i%2===0?110:250, y:y0+i*step}));
   const states=LEGS.map(legState);
   let cur=states.findIndex(s=>!s.done); if(cur<0) cur=LEGS.length-1;
   let g='';
@@ -61,7 +61,7 @@ function voyageSVG(){
   }
   // תחנות
   LEGS.forEach((l,i)=>{
-    const p=pos[i], st=states[i], R=l.port?27:22;
+    const p=pos[i], st=states[i], R=l.port?23:19;
     const pct=st.answered?st.m:0;
     const C=(2*Math.PI*(R+5)).toFixed(1);
     g+=`<g class="leg" data-i="${i}" style="cursor:pointer" role="button" aria-label="${App.esc(l.name)}">`;
@@ -71,7 +71,7 @@ function voyageSVG(){
       g+=`<circle cx="${p.x}" cy="${p.y}" r="${R+5}" fill="none" stroke="${col}" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="${(C*pct).toString()} ${C}" transform="rotate(-90 ${p.x} ${p.y})"/>`;
     }
     g+=`<circle cx="${p.x}" cy="${p.y}" r="${R}" fill="${st.done?'var(--brass)':'var(--sea2)'}" stroke="var(--line)" stroke-width="1"/>`;
-    g+=nestedIcon(p.x,p.y,l.port?25:21,l.ic,st.done?'var(--brass-ink)':'var(--brass)');
+    g+=nestedIcon(p.x,p.y,l.port?21:18,l.ic,st.done?'var(--brass-ink)':'var(--brass)');
     // התווית לצד התחנה (ולא מתחתיה) — חוסך גובה.
     // שימו לב: בדף RTL כיוון ה-anchor של SVG מתהפך — לכן end/start הפוכים
     const lx=p.x<180?p.x+R+12:p.x-R-12, anchor=p.x<180?'end':'start';
@@ -84,7 +84,8 @@ function voyageSVG(){
         <text x="${bx}" y="${p.y+15}" text-anchor="middle" font-size="9" font-weight="700" fill="var(--brass)">אתם כאן</text></g>`;
     }
   });
-  return `<svg id="voyage" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">${g}</svg>`;
+  // רוחב מוגבל — במסך רחב ה-SVG לא יתנפח לגובה עצום
+  return `<svg id="voyage" viewBox="0 0 ${W} ${H}" style="width:100%;max-width:400px;height:auto;display:block;margin:0 auto">${g}</svg>`;
 }
 
 App.registerView('home',{render(el){

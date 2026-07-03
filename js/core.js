@@ -397,12 +397,22 @@ App.openSettings = ()=>{
 App.TABS=[
   {id:'home',  label:'בית',   icon:'M3 11l9-8 9 8M5 9.5V20h5v-6h4v6h5V9.5'},
   {id:'learn', label:'לימוד', icon:'M12 3L2 8l10 5 10-5-10-5zM6 10.5V15c0 1.7 2.7 3 6 3s6-1.3 6-3v-4.5',
-    subs:[{id:'boat3d',label:'אורות וצורות',ic:'anchor'},{id:'marks',label:'מצופים',ic:'buoy'},{id:'sounds',label:'אותות קול',ic:'horn'},{id:'flags',label:'דגלים',ic:'flag'}]},
+    subs:[
+      {id:'boat3d',label:'אורות וצורות',ic:'anchor',desc:'סובבו כלי שיט בתלת־ממד וראו את האורות מכל כיוון'},
+      {id:'marks',label:'מצופים',ic:'buoy',desc:'מערכת IALA אזור A — עם מקצבי ההבהוב האמיתיים'},
+      {id:'sounds',label:'אותות קול',ic:'horn',desc:'צפירות, פעמון וגונג — עם השמעה אמיתית'},
+      {id:'flags',label:'דגלים',ic:'flag',desc:'דגלי הקוד הבינלאומי ומשמעותם'}]},
   {id:'practice', label:'תרגול', icon:'M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0-18 0M12 12m-5 0a5 5 0 1 0 10 0a5 5 0 1 0-10 0M12 12m-1.2 0a1.2 1.2 0 1 0 2.4 0a1.2 1.2 0 1 0-2.4 0',
-    subs:[{id:'quiz',label:'חידון',ic:'dice'},{id:'scenarios',label:'תרחישים',ic:'ship'},{id:'review',label:'חזרה על טעויות',ic:'broom'}]},
+    subs:[
+      {id:'quiz',label:'חידון',ic:'dice',desc:'שאלות שנוצרות מהתקנות — אינסוף תרגול'},
+      {id:'scenarios',label:'תרחישים',ic:'ship',desc:'שרטטו את התמרון והסימולציה תבדוק אתכם'},
+      {id:'review',label:'חזרה על טעויות',ic:'broom',desc:'כל שאלה שטעיתם בה — עד שתשבו עליה'}]},
   {id:'exam',  label:'מבחן',  icon:'M9 3h6v3H9zM7 4H5v17h14V4h-2M9 13l2 2 4-4.5'},
   {id:'nav',   label:'ניווט', icon:'M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0-18 0M15.5 8.5l-2.2 5-5 2.2 2.2-5z',
-    subs:[{id:'chart',label:'תרגול מפה',ic:'map'},{id:'navcalc',label:'מחשבונים',ic:'calc'},{id:'navlearn',label:'מושגים',ic:'book'}]}
+    subs:[
+      {id:'chart',label:'תרגול מפה',ic:'map',desc:'קביעת מקום, כיוונים ומרחקים על מפת אימונים'},
+      {id:'navcalc',label:'מחשבונים',ic:'calc',desc:'מהירות·זמן·מרחק, המרת כיוונים ו-ETA'},
+      {id:'navlearn',label:'מושגים',ic:'book',desc:'כל מושגי הניווט החופי — בקצרה'}]}
 ];
 const VIEWS={};
 App.registerView=(id,def)=>{ VIEWS[id]=def; };
@@ -411,17 +421,16 @@ App.current={tab:'home',sub:null};
 function tabOf(id){ return App.TABS.find(t=>t.id===id); }
 App.navigate=(tab,sub)=>{
   const t=tabOf(tab)||App.TABS[0];
-  if(t.subs && !sub) sub=t.subs[0].id;
   const hash='#/'+t.id+(sub?'/'+sub:'');
   if(location.hash!==hash){ location.hash=hash; return; } // hashchange יפעיל render
-  App.current={tab:t.id,sub}; App.render();
+  App.current={tab:t.id,sub:sub||null}; App.render();
 };
 function parseHash(){
   const m=location.hash.match(/^#\/([\w-]+)(?:\/([\w-]+))?/);
   if(!m) return {tab:'home',sub:null};
   const t=tabOf(m[1])||App.TABS[0];
   let sub=m[2]||null;
-  if(t.subs){ if(!sub||!t.subs.some(s=>s.id===sub)) sub=t.subs[0].id; }
+  if(t.subs){ if(sub && !t.subs.some(s=>s.id===sub)) sub=null; }  // ללא sub → תפריט המדור
   else sub=null;
   return {tab:t.id,sub};
 }
@@ -433,13 +442,31 @@ function renderTabs(){
     <span>${t.label}</span></button>`).join('');
   $$('#tabs button').forEach(b=>b.addEventListener('click',()=>{ App.sfx('click'); App.navigate(b.dataset.t); }));
 }
+/* בתוך מדור: שורת "חזרה" עם שם המדור — במקום לשוניות קטנות */
 function renderSubnav(){
   const t=tabOf(App.current.tab);
   const host=$('#subnav');
-  if(!t.subs){ host.innerHTML=''; return; }
-  host.innerHTML=`<div class="subnav" role="tablist">${t.subs.map(s=>
-    `<button role="tab" data-s="${s.id}" aria-selected="${App.current.sub===s.id}">${s.ic?App.icon(s.ic,16):''}<span>${s.label}</span></button>`).join('')}</div>`;
-  $$('#subnav button').forEach(b=>b.addEventListener('click',()=>{ App.sfx('click'); App.navigate(t.id,b.dataset.s); }));
+  if(!t.subs || !App.current.sub){ host.innerHTML=''; return; }
+  const s=t.subs.find(x=>x.id===App.current.sub);
+  host.innerHTML=`<div class="backrow">
+    <button class="iconbtn" id="backHub" aria-label="חזרה ל${t.label}">→</button>
+    <span class="bt">${s?App.icon(s.ic,17):''} ${s?s.label:''}</span>
+    <span class="bh">${t.label}</span>
+  </div>`;
+  $('#backHub').addEventListener('click',()=>{ App.sfx('click'); App.navigate(t.id); });
+}
+/* תפריט מדור: כרטיסים גדולים לכל תת-מסך */
+function renderHub(t,el){
+  el.innerHTML=`
+    <div class="section-title"><h2>${t.label}</h2></div>
+    <div class="hubgrid">
+      ${t.subs.map(s=>`<button class="hubcard" data-s="${s.id}">
+        <span class="hi">${App.icon(s.ic,30)}</span>
+        <span><span class="ht">${s.label}</span><span class="hd">${s.desc||''}</span></span>
+        <span class="ha">‹</span>
+      </button>`).join('')}
+    </div>`;
+  $$('.hubcard',el).forEach(b=>b.addEventListener('click',()=>{ App.sfx('click'); App.navigate(t.id,b.dataset.s); }));
 }
 App.renderHUD=()=>{
   const host=$('#hud'); if(!host)return;
@@ -462,7 +489,9 @@ App.render=()=>{
   if(App._lastTabIdx!=null && idx!==App._lastTabIdx) cls = idx>App._lastTabIdx?'view-slide-left':'view-slide-right';
   App._lastTabIdx=idx;
   const el=document.createElement('div'); el.className=cls; host.appendChild(el);
-  if(v) v.render(el);
+  const t=tabOf(App.current.tab);
+  if(t.subs && !App.current.sub) renderHub(t,el);
+  else if(v) v.render(el);
   else el.innerHTML='<div class="card" style="padding:20px;text-align:center">בקרוב…</div>';
 };
 

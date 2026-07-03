@@ -227,14 +227,44 @@ function proposeScenario(allowed){
   return null;
 }
 function solutionTracks(sc){
-  const trackFor=key=>{const e=sc.expected[key], stp={x:sc[key].x,y:sc[key].y}, H=norm(sc[key].heading);
-    if(e.role==='stand-on')return [rayToEdge(stp,H)];
-    const dirs=e.turn==='starboard'?[1]:e.turn==='port'?[-1]:[1,-1], angs=[25,35,45,55,65], c=[];
-    dirs.forEach(s=>angs.forEach(a=>c.push(rayToEdge(stp,norm(rotate(H,s*a))))));
-    return c;};
-  const cA=trackFor('A'), cB=trackFor('B');
-  for(const a of cA) for(const b of cB){ if(evaluateManeuver(sc,a,b).allOk) return {A:a,B:b}; }
-  return null;
+  /* מועמדים לכל כלי שיט, ממוינים לפי גודל הסטייה — כדי שהפתרון המוצג יהיה
+     התמרון המתון והטבעי ביותר שעובר את הבודק (ולא פנייה שרירותית חדה). */
+  const candFor=key=>{
+    const e=sc.expected[key], stp={x:sc[key].x,y:sc[key].y}, H=norm(sc[key].heading);
+    if(e.role==='stand-on') return [{pt:rayToEdge(stp,H),dev:0}];
+    const out=[];
+    // (א) כיוון "לחלוף מאחורי" הכלי השני — היעד הטבעי של נותן זכות קדימה
+    if(e.passAstern||e.keepClear){
+      const oKey=e.passAstern||e.keepClear, o=sc[oKey], oH=norm(o.heading);
+      [55,85,115].forEach(k=>{
+        const tgt={x:o.x-oH.x*k, y:o.y-oH.y*k};
+        const d=norm(vec(stp,tgt));
+        const ang=signedTurnDeg(H,d);
+        if(e.turn==='starboard'&&ang<5) return;
+        if(e.turn==='port'&&ang>-5) return;
+        out.push({pt:rayToEdge(stp,d),dev:Math.abs(ang)});
+      });
+    }
+    // (ב) פניות קבועות בכיוון הנדרש
+    const dirs=e.turn==='starboard'?[1]:e.turn==='port'?[-1]:[1,-1];
+    dirs.forEach(s=>[20,30,40,55,70].forEach(a=>out.push({pt:rayToEdge(stp,norm(rotate(H,s*a))),dev:a})));
+    out.sort((x,y)=>x.dev-y.dev);
+    return out;
+  };
+  const cA=candFor('A'), cB=candFor('B');
+  // מעדיפים תמרון מובהק (סביב 45°) — "פעולה ברורה" כדרישת תקנה 8 — ולא מעבר גבולי
+  const clarity=c=>c.dev===0?0:Math.abs(c.dev-45);
+  const combos=[];
+  cA.forEach(a=>cB.forEach(b=>combos.push([a,b,clarity(a)+clarity(b)])));
+  combos.sort((x,y)=>x[2]-y[2]);
+  let fallback=null;
+  for(const [a,b] of combos){
+    const ev=evaluateManeuver(sc,a.pt,b.pt);
+    if(!ev.allOk) continue;
+    if(ev.minD>=55) return {A:a.pt,B:b.pt};      // עובר במרווח בטוח ומרשים
+    if(!fallback) fallback={A:a.pt,B:b.pt};
+  }
+  return fallback;
 }
 function buildScenario(){
   const allowed=SCN_TYPES().filter(t=>st.types.has(t.vid));
@@ -403,14 +433,21 @@ function drawBoardInner(){
     return `<g><rect x="${b.x-w/2}" y="${b.y+20}" width="${w}" height="16" rx="8" fill="rgba(4,16,26,.72)" stroke="${col}" stroke-width="1"/>
       <text x="${b.x}" y="${b.y+31.5}" fill="${col}" font-size="10" font-weight="700" text-anchor="middle">${App.esc(b.label)}</text></g>`;
   };
+  // בזמן ריצה: במקום כלי השיט במוצא — סמן נקודת־זינוק שהשובל מתחבר אליו
+  const startMark=(b,col)=>`<g opacity=".9">
+    <circle cx="${b.x}" cy="${b.y}" r="7.5" fill="none" stroke="${col}" stroke-width="1.6" stroke-dasharray="2.5 3"/>
+    <circle cx="${b.x}" cy="${b.y}" r="2.2" fill="${col}"/></g>`;
+  const boatsLayer = sim.running
+    ? startMark(sc.A,COLA)+startMark(sc.B,COLB)
+    : drawBoat(sc,'A',sc.A.x,sc.A.y,sc.A.heading)
+      +drawBoat(sc,'B',sc.B.x,sc.B.y,sc.B.heading)
+      +plate(sc.A,COLA)+plate(sc.B,COLB);
   return `${defs}
     <rect width="${BW}" height="${BW}" fill="url(#seaG)"/>
     <rect width="${BW}" height="${BW}" fill="url(#glint)"/>
     ${grid}${rings}${ripples}
     ${aArr}${bArr}
-    ${drawBoat(sc,'A',sc.A.x,sc.A.y,sc.A.heading)}
-    ${drawBoat(sc,'B',sc.B.x,sc.B.y,sc.B.heading)}
-    ${plate(sc.A,COLA)}${plate(sc.B,COLB)}
+    ${boatsLayer}
     ${handle(sim.hA,COLA,'A')}${handle(sim.hB,COLB,'B')}
     <g id="animLayer"></g>
     <rect width="${BW}" height="${BW}" fill="url(#vign)" pointer-events="none"/>
@@ -638,7 +675,11 @@ function paint(el){
   App.$('#nextScn').addEventListener('click',()=>newScenario(el));
   App.$('#resetBtn').addEventListener('click',()=>{initSim();redrawInner();App.$('#verdict').className='verdict';});
   App.$('#simBtn').addEventListener('click',()=>runSim(el));
-  App.$('#solBtn').addEventListener('click',()=>{sim.hA={...sc.solution.A};sim.hB={...sc.solution.B};redrawInner();setTimeout(()=>runSim(el),250);});
+  App.$('#solBtn').addEventListener('click',()=>{
+    sim.hA={...sc.solution.A}; sim.hB={...sc.solution.B};
+    redrawInner();
+    App.toast('זהו תמרון נכון לפי התקנות — לחצו "בדוק תמרון" להרצה');
+  });
   const sr=App.$('#spdRange'); sr.addEventListener('input',()=>{st.speed=+sr.value;App.$('#spdVal').textContent='×'+sr.value;});
   App.$$('#scnOpts .opt').forEach(b=>b.addEventListener('click',()=>{
     if(sim.answered)return; sim.answered=true;

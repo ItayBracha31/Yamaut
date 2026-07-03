@@ -56,11 +56,12 @@
   --good:#0e8a50; --good-bg:rgba(14,138,80,.10); --bad:#d6403a; --bad-bg:rgba(214,64,58,.08);
   --info:#1273a8; --focus:#0e7d94;
   --card-grad:linear-gradient(180deg,#ffffff,#fbf9f1);
-  /* רקע "מפה ימית": רשת קווי אורך/רוחב עדינה + זוהר שמש + שיפוע שמיים→חול */
-  --bg:repeating-linear-gradient(90deg, rgba(18,53,77,.05) 0 1px, transparent 1px 64px),
-       repeating-linear-gradient(0deg, rgba(18,53,77,.05) 0 1px, transparent 1px 64px),
-       radial-gradient(62% 44% at 84% -8%, rgba(255,190,80,.5), transparent 62%),
-       linear-gradient(180deg,#c8e5eb 0%,#f0efe0 46%,#e2dabc 100%);
+  /* רקע "יום קיץ בחוף": רשת מפה עדינה, שמש זורחת, שמיים → קצף → חול חם */
+  --bg:repeating-linear-gradient(90deg, rgba(18,53,77,.055) 0 1px, transparent 1px 64px),
+       repeating-linear-gradient(0deg, rgba(18,53,77,.055) 0 1px, transparent 1px 64px),
+       radial-gradient(70% 48% at 84% -10%, rgba(255,186,70,.55), rgba(255,186,70,.12) 45%, transparent 65%),
+       radial-gradient(120% 34% at 50% 108%, rgba(224,200,140,.65), transparent 70%),
+       linear-gradient(180deg,#b9e0ea 0%,#eef0df 44%,#ecdfbd 78%,#e4d3a8 100%);
   --stage-bg:#0a1c2c; --water:#bfe0e8; --water-line:#7fb8c9;
   --tabbar-bg:rgba(253,252,246,.94); --sheet-shadow:0 -10px 40px rgba(30,60,80,.18);
   --scnA:#0d5a9e; --scnB:#a34d00;
@@ -80,17 +81,17 @@ body{
   -webkit-tap-highlight-color:transparent;
 }
 .wrap{max-width:var(--maxw);margin:0 auto;padding:0 14px;
-  padding-bottom:calc(84px + env(safe-area-inset-bottom));}
+  padding-top:calc(64px + env(safe-area-inset-top,0px));
+  padding-bottom:120px;}
 a{color:var(--brass)}
 button{touch-action:manipulation}
 
 /* ---------- animated waves backdrop ----------
    חשוב: left:0 מפורש — בדף RTL אלמנט מוחלט ברוחב 200% נצמד לימין,
    וההזזה חושפת קצה "חתוך". העוגן השמאלי + נתיב מחזורי = לולאה חלקה. */
-/* בטלפון סרגל הלשוניות מכסה את תחתית המסך — הגלים "שוטפים" בעדינות את שולי
-   התוכן ממש מעל הסרגל (שכבה מעל התוכן, שקופה למגע) */
-.waves{position:fixed;left:0;right:0;bottom:calc(52px + env(safe-area-inset-bottom,0px));
-  height:64px;z-index:5;pointer-events:none;opacity:.45;overflow:hidden}
+/* קו המים בתחתית: שתי שכבות גלים + פס קצף — הסרגל עבר למעלה כך שהחוף פנוי */
+.waves{position:fixed;left:0;right:0;bottom:0;
+  height:96px;z-index:0;pointer-events:none;opacity:.85;overflow:hidden}
 .waves svg{position:absolute;left:0;bottom:-8px;width:200%;height:100%;animation:waveslide 18s linear infinite}
 .waves svg.w2{animation:waveslide2 26s linear infinite;opacity:.6;bottom:-20px}
 @keyframes waveslide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
@@ -121,13 +122,13 @@ header.app .hgrow{flex:1}
   align-items:center;justify-content:center;transition:transform .08s,border-color .15s}
 .iconbtn:active{transform:scale(.93)}
 
-/* ---------- bottom tab bar ---------- */
+/* ---------- main tab bar — למעלה, גם בטלפון ---------- */
 nav.tabs{
-  position:fixed;left:0;right:0;bottom:0;z-index:40;
+  position:fixed;left:0;right:0;top:0;z-index:40;
   display:flex;justify-content:center;gap:2px;
   background:var(--tabbar-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  border-top:1px solid var(--line);
-  padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+  border-bottom:1px solid var(--line);
+  padding:calc(4px + env(safe-area-inset-top,0px)) 6px 4px;
 }
 nav.tabs button{
   flex:1 1 0;max-width:120px;background:none;border:0;color:var(--ink-dim);
@@ -141,18 +142,23 @@ nav.tabs button[aria-selected="true"]{color:var(--brass);background:rgba(217,164
 nav.tabs button:active{transform:scale(.94)}
 nav.tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
-/* ---------- sub navigation ----------
-   לשוניות עם קו תחתון (ולא "גלולות") — מראה עריכתי נקי; עוטפות ולא נגללות */
-.subnav{display:flex;gap:2px;flex-wrap:wrap;padding:0 2px;margin-bottom:12px;
-  border-bottom:1px solid var(--line)}
-.subnav button{flex:0 0 auto;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;
-  border:0;background:none;color:var(--ink-dim);position:relative;
-  padding:9px 10px 11px;transition:color .15s;display:flex;align-items:center;gap:6px}
-.subnav button[aria-selected="true"]{color:var(--parchment)}
-.subnav button[aria-selected="true"] .ic{color:var(--brass)}
-.subnav button[aria-selected="true"]::after{content:"";position:absolute;bottom:-1px;inset-inline:8px;
-  height:3px;border-radius:2px 2px 0 0;background:var(--brass)}
-.subnav button:active{transform:scale(.96)}
+/* ---------- ניווט מדורים: תפריט כרטיסים + שורת חזרה ---------- */
+.hubgrid{display:grid;gap:10px}
+.hubcard{display:flex;align-items:center;gap:14px;text-align:right;cursor:pointer;
+  font-family:inherit;color:var(--ink);background:var(--card-grad);
+  border:1px solid var(--line);border-radius:14px;padding:16px 16px;transition:transform .1s,border-color .15s;min-height:76px}
+.hubcard:active{transform:scale(.98)}
+.hubcard:hover{border-color:var(--brass-dim)}
+.hubcard .hi{color:var(--brass);flex:0 0 auto;display:flex}
+.hubcard>span:nth-child(2){display:flex;flex-direction:column;gap:3px;flex:1}
+.hubcard .ht{font-family:var(--display);font-weight:700;font-size:1.02rem;color:var(--parchment)}
+.hubcard .hd{font-size:.76rem;color:var(--ink-dim)}
+.hubcard .ha{font-size:1.3rem;color:var(--ink-dim);flex:0 0 auto}
+.backrow{display:flex;align-items:center;gap:10px;padding:6px 2px 10px}
+.backrow .bt{display:flex;align-items:center;gap:7px;font-family:var(--display);font-weight:700;
+  font-size:1.05rem;color:var(--parchment)}
+.backrow .bt .ic{color:var(--brass)}
+.backrow .bh{margin-inline-start:auto;font-size:.7rem;color:var(--ink-dim);font-weight:700}
 
 /* ---------- view transitions (מעברי מסך כמו באפליקציה) ---------- */
 .view-enter{animation:fadeup .28s cubic-bezier(.2,.8,.3,1)}
@@ -404,11 +410,10 @@ footer.app{text-align:center;font-size:.7rem;color:var(--ink-dim);padding:24px 0
 
 /* ---------- desktop ---------- */
 @media (min-width:760px){
-  nav.tabs{top:0;bottom:auto;border-top:0;border-bottom:1px solid var(--line);padding:8px;gap:6px}
   nav.tabs button{flex:0 0 auto;flex-direction:row;font-size:.82rem;gap:7px;padding:8px 14px}
-  .wrap{padding-top:64px;padding-bottom:40px}
+  .wrap{padding-top:64px;padding-bottom:150px}
   header.app{padding-top:12px}
-  .waves{bottom:0;height:150px;z-index:0;opacity:.5}   /* במחשב הלשוניות למעלה — הגלים ברקע התחתית */
+  .waves{height:130px}
 }
 @media (prefers-reduced-motion:reduce){
   *{transition:none!important;animation:none!important}

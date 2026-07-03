@@ -346,20 +346,37 @@ D.vesselTop = (x,y,dir,accent,boat,opts)=>{
   const ang=Math.atan2(dir.y,dir.x)*180/Math.PI;
   const cls=boat.class;
   // שובל עדין מאחורי הירכתיים
-  let g=`<path d="M-20,-6 q-10,6 0,12" stroke="rgba(214,236,248,.30)" stroke-width="1.6" fill="none"/>
-         <path d="M-24,-4 q-7,4 0,8" stroke="rgba(214,236,248,.16)" stroke-width="1.3" fill="none"/>`;
-  g+=`<polygon points="20,0 7,-9 -17,-8 -19,0 -17,8 7,9" fill="${accent}" stroke="#06121d" stroke-width="1.5"/>`;
+  let g=`<path d="M-21,-6 q-10,6 0,12" stroke="rgba(214,236,248,.30)" stroke-width="1.6" fill="none"/>
+         <path d="M-25,-4 q-7,4 0,8" stroke="rgba(214,236,248,.16)" stroke-width="1.3" fill="none"/>`;
+  // גוף: קימור אמיתי — חרטום מחודד, דפנות קמורות, ירכתיים מעוגלות
+  const hull='M22,0 C20.5,-5.5 13,-8.6 4,-9.2 L-13,-8.4 C-18,-7.8 -20.4,-4.4 -20.8,0 C-20.4,4.4 -18,7.8 -13,8.4 L4,9.2 C13,8.6 20.5,5.5 22,0 Z';
+  g+=`<path d="${hull}" fill="${accent}" stroke="#06121d" stroke-width="1.4"/>`;
+  // הצללה: צד ימין (התחתון בציור) כהה, פס אור לאורך צד שמאל
+  g+=`<path d="M22,0 C20.5,5.5 13,8.6 4,9.2 L-13,8.4 C-18,7.8 -20.4,4.4 -20.8,0 L22,0 Z" fill="rgba(0,0,0,.16)"/>`;
+  g+=`<path d="M20,-1.6 C18,-5.4 12,-7.6 4,-8.1 L-12,-7.3" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.1"/>`;
+  // סיפון פנימי
+  g+=`<path d="M18.5,0 C17,-4 11,-6.4 3.5,-6.9 L-11.5,-6.2 C-15.6,-5.7 -17.5,-3.4 -17.8,0 C-17.5,3.4 -15.6,5.7 -11.5,6.2 L3.5,6.9 C11,6.4 17,4 18.5,0 Z" fill="rgba(255,248,232,.18)" stroke="rgba(6,18,29,.35)" stroke-width=".7"/>`;
+  // קו סיפון־חרטום
+  g+=`<line x1="21" y1="0" x2="12" y2="0" stroke="rgba(6,18,29,.4)" stroke-width=".8"/>`;
   if(cls==='sail'){
     const side = boat.windSide==='stbd' ? -1 : 1;
-    g+=`<line x1="4" y1="0" x2="-14" y2="${side*13}" stroke="#5b4a2e" stroke-width="2"/>`;
-    g+=`<polygon points="4,0 -14,${side*13} -7,${side*2}" fill="rgba(236,227,206,.93)" stroke="#9fb0c0" stroke-width="1"/>`;
-    g+=`<circle cx="4" cy="0" r="1.8" fill="#cdd9e6"/>`;
+    // מנור + מפרש ראשי קמור לצד המשווה (leeward), חרטום־מפרש קטן
+    g+=`<line x1="4" y1="0" x2="-15" y2="${side*13}" stroke="#5b4a2e" stroke-width="1.8"/>`;
+    g+=`<path d="M4,0 Q${-6},${side*9} -15,${side*13} Q-6,${side*4.5} 4,0 Z" fill="rgba(240,233,214,.95)" stroke="#9fb0c0" stroke-width=".9"/>`;
+    g+=`<path d="M17,0 Q10,${side*4} 5.5,${side*6.5} Q9,${side*2} 17,0 Z" fill="rgba(240,233,214,.8)" stroke="#9fb0c0" stroke-width=".7"/>`;
+    g+=`<circle cx="4" cy="0" r="1.9" fill="#cdd9e6" stroke="#06121d" stroke-width=".6"/>`;
   } else {
-    g+=`<rect x="-9" y="-6" width="13" height="12" rx="2" fill="#0b1822" opacity=".92"/>`;
-    g+=`<circle cx="3" cy="0" r="2.6" fill="#fff4d6"/>`;
+    // תא הגה מעוגל עם שמשה וחלונות
+    g+=`<rect x="-10" y="-5.8" width="14" height="11.6" rx="3" fill="#0e2434" stroke="rgba(255,255,255,.25)" stroke-width=".7"/>`;
+    g+=`<path d="M4,-5 L7.5,-3.4 L7.5,3.4 L4,5 Z" fill="rgba(190,225,245,.55)"/>`;
+    g+=`<rect x="-7.5" y="-4" width="3.4" height="2.6" rx="1" fill="rgba(190,225,245,.4)"/>`;
+    g+=`<rect x="-7.5" y="1.4" width="3.4" height="2.6" rx="1" fill="rgba(190,225,245,.4)"/>`;
+    g+=`<circle cx="3" cy="0" r="2.4" fill="#fff4d6" style="filter:drop-shadow(0 0 3px #fffbe9)"/>`;
   }
-  g+=`<circle cx="16" cy="-6" r="2.6" fill="#ff3b30"/><circle cx="16" cy="6" r="2.6" fill="#22d07a"/>`+
-     `<circle cx="-18" cy="0" r="2.4" fill="#fff4d6"/>`;
+  // פנסי צד + ירכתיים
+  g+=`<circle cx="15" cy="-6.2" r="2.4" fill="#ff3b30" style="filter:drop-shadow(0 0 3px #ff6a5e)"/>
+      <circle cx="15" cy="6.2" r="2.4" fill="#22d07a" style="filter:drop-shadow(0 0 3px #5cf0a6)"/>
+      <circle cx="-19" cy="0" r="2.2" fill="#fff4d6" style="filter:drop-shadow(0 0 3px #fffbe9)"/>`;
   let s=`<g transform="translate(${x},${y}) rotate(${ang})"><circle cx="0" cy="0" r="20" fill="transparent"/>${g}</g>`;
   if(!opts.noBadge) s+=D.signalBadge(x,y,boat.vid);
   return s;
