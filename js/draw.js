@@ -360,10 +360,13 @@ D.vesselTop = (x,y,dir,accent,boat,opts)=>{
   g+=`<line x1="21" y1="0" x2="12" y2="0" stroke="rgba(6,18,29,.4)" stroke-width=".8"/>`;
   if(cls==='sail'){
     const side = boat.windSide==='stbd' ? -1 : 1;
-    // מנור + מפרש ראשי קמור לצד המשווה (leeward), חרטום־מפרש קטן
-    g+=`<line x1="4" y1="0" x2="-15" y2="${side*13}" stroke="#5b4a2e" stroke-width="1.8"/>`;
-    g+=`<path d="M4,0 Q${-6},${side*9} -15,${side*13} Q-6,${side*4.5} 4,0 Z" fill="rgba(240,233,214,.95)" stroke="#9fb0c0" stroke-width=".9"/>`;
-    g+=`<path d="M17,0 Q10,${side*4} 5.5,${side*6.5} Q9,${side*2} 17,0 Z" fill="rgba(240,233,214,.8)" stroke="#9fb0c0" stroke-width=".7"/>`;
+    // מנור + מפרש ראשי מלא ותפוח לצד המשווה (leeward), וחרטום־מפרש (ג'יב)
+    g+=`<line x1="4" y1="0" x2="-16.5" y2="${side*12.5}" stroke="#5b4a2e" stroke-width="1.8"/>`;
+    g+=`<path d="M4.5,-0.5 Q-9,${side*12} -16.5,${side*12.5} Q-4,${side*2.5} 4.5,-0.5 Z"
+        fill="rgba(244,238,220,.97)" stroke="#8fa4b5" stroke-width="1"/>`;
+    g+=`<path d="M4.5,0 Q-6,${side*7.5} -13,${side*10}" fill="none" stroke="rgba(140,160,175,.5)" stroke-width=".7"/>`;
+    g+=`<path d="M18.5,0 Q6.5,${side*8} 2.5,${side*9.5} Q9,${side*2.5} 18.5,0 Z"
+        fill="rgba(244,238,220,.88)" stroke="#8fa4b5" stroke-width=".8"/>`;
     g+=`<circle cx="4" cy="0" r="1.9" fill="#cdd9e6" stroke="#06121d" stroke-width=".6"/>`;
   } else {
     // תא הגה מעוגל עם שמשה וחלונות
