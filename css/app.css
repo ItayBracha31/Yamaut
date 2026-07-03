@@ -87,7 +87,10 @@ button{touch-action:manipulation}
 /* ---------- animated waves backdrop ----------
    חשוב: left:0 מפורש — בדף RTL אלמנט מוחלט ברוחב 200% נצמד לימין,
    וההזזה חושפת קצה "חתוך". העוגן השמאלי + נתיב מחזורי = לולאה חלקה. */
-.waves{position:fixed;left:0;right:0;bottom:0;height:96px;z-index:0;pointer-events:none;opacity:.5;overflow:hidden}
+/* בטלפון סרגל הלשוניות מכסה את תחתית המסך — הגלים "שוטפים" בעדינות את שולי
+   התוכן ממש מעל הסרגל (שכבה מעל התוכן, שקופה למגע) */
+.waves{position:fixed;left:0;right:0;bottom:calc(52px + env(safe-area-inset-bottom,0px));
+  height:64px;z-index:5;pointer-events:none;opacity:.45;overflow:hidden}
 .waves svg{position:absolute;left:0;bottom:-8px;width:200%;height:100%;animation:waveslide 18s linear infinite}
 .waves svg.w2{animation:waveslide2 26s linear infinite;opacity:.6;bottom:-20px}
 @keyframes waveslide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
@@ -399,7 +402,7 @@ footer.app{text-align:center;font-size:.7rem;color:var(--ink-dim);padding:24px 0
   nav.tabs button{flex:0 0 auto;flex-direction:row;font-size:.82rem;gap:7px;padding:8px 14px}
   .wrap{padding-top:64px;padding-bottom:40px}
   header.app{padding-top:12px}
-  .waves{height:150px}
+  .waves{bottom:0;height:150px;z-index:0;opacity:.5}   /* במחשב הלשוניות למעלה — הגלים ברקע התחתית */
 }
 @media (prefers-reduced-motion:reduce){
   *{transition:none!important;animation:none!important}

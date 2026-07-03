@@ -25,11 +25,12 @@ function buntingSVG(){
   return s+'</svg>';
 }
 
-/* תחנות המסלול — סדר לימוד מומלץ, כל תחנה מוליכה למקום התרגול שלה */
+/* תחנות המסלול — סדר לימוד מומלץ; תחנות ידע פותחות חידון מסונן לנושא שלהן */
+const quizOn = ids=>()=>{ if(window.QuizGen) QuizGen.setFilter(ids); App.navigate('practice','quiz'); };
 const LEGS=[
   {id:'lights',   name:'אורות',       ic:'bulb',  go:()=>App.navigate('learn','boat3d')},
-  {id:'shapes',   name:'צורות יום',   ic:'shapes',go:()=>App.navigate('practice','quiz')},
-  {id:'giveway',  name:'זכות קדימה',  ic:'scale', go:()=>App.navigate('practice','quiz')},
+  {id:'shapes',   name:'צורות יום',   ic:'shapes',go:quizOn(['shapes'])},
+  {id:'giveway',  name:'זכות קדימה',  ic:'scale', go:quizOn(['giveway'])},
   {id:'sounds',   name:'אותות קול',   ic:'horn',  go:()=>App.navigate('learn','sounds')},
   {id:'marks',    name:'מצופים',      ic:'buoy',  go:()=>App.navigate('learn','marks')},
   {id:'flags',    name:'דגלים',       ic:'flag',  go:()=>App.navigate('learn','flags')},
@@ -46,9 +47,9 @@ function nestedIcon(x,y,size,name,color){
   return `<g color="${color}"><svg x="${x-size/2}" y="${y-size/2}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${App.ICONS[name]||''}"/></svg></g>`;
 }
 function voyageSVG(){
-  const W=360, step=94, y0=62;
-  const H=y0+(LEGS.length-1)*step+78;
-  const pos=LEGS.map((_,i)=>({x: i%2===0?96:264, y:y0+i*step}));
+  const W=360, step=70, y0=48;
+  const H=y0+(LEGS.length-1)*step+62;
+  const pos=LEGS.map((_,i)=>({x: i%2===0?104:256, y:y0+i*step}));
   const states=LEGS.map(legState);
   let cur=states.findIndex(s=>!s.done); if(cur<0) cur=LEGS.length-1;
   let g='';
@@ -60,24 +61,27 @@ function voyageSVG(){
   }
   // תחנות
   LEGS.forEach((l,i)=>{
-    const p=pos[i], st=states[i], R=l.port?33:27;
+    const p=pos[i], st=states[i], R=l.port?27:22;
     const pct=st.answered?st.m:0;
-    const C=(2*Math.PI*(R+6)).toFixed(1);
+    const C=(2*Math.PI*(R+5)).toFixed(1);
     g+=`<g class="leg" data-i="${i}" style="cursor:pointer" role="button" aria-label="${App.esc(l.name)}">`;
-    g+=`<circle cx="${p.x}" cy="${p.y}" r="${R+6}" fill="none" stroke="var(--abyss)" stroke-width="5"/>`;
+    g+=`<circle cx="${p.x}" cy="${p.y}" r="${R+5}" fill="none" stroke="var(--abyss)" stroke-width="4.5"/>`;
     if(pct>0){
       const col=pct>=0.8?'var(--good)':(pct>=0.5?'var(--yellow)':'var(--bad)');
-      g+=`<circle cx="${p.x}" cy="${p.y}" r="${R+6}" fill="none" stroke="${col}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${(C*pct).toString()} ${C}" transform="rotate(-90 ${p.x} ${p.y})"/>`;
+      g+=`<circle cx="${p.x}" cy="${p.y}" r="${R+5}" fill="none" stroke="${col}" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="${(C*pct).toString()} ${C}" transform="rotate(-90 ${p.x} ${p.y})"/>`;
     }
     g+=`<circle cx="${p.x}" cy="${p.y}" r="${R}" fill="${st.done?'var(--brass)':'var(--sea2)'}" stroke="var(--line)" stroke-width="1"/>`;
-    g+=nestedIcon(p.x,p.y,l.port?30:26,l.ic,st.done?'var(--brass-ink)':'var(--brass)');
-    g+=`<text x="${p.x}" y="${p.y+R+22}" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">${App.esc(l.name)}</text>`;
-    if(st.answered) g+=`<text x="${p.x}" y="${p.y+R+37}" text-anchor="middle" font-size="10" fill="var(--ink-dim)">${Math.round(st.m*100)}%</text>`;
+    g+=nestedIcon(p.x,p.y,l.port?25:21,l.ic,st.done?'var(--brass-ink)':'var(--brass)');
+    // התווית לצד התחנה (ולא מתחתיה) — חוסך גובה.
+    // שימו לב: בדף RTL כיוון ה-anchor של SVG מתהפך — לכן end/start הפוכים
+    const lx=p.x<180?p.x+R+12:p.x-R-12, anchor=p.x<180?'end':'start';
+    g+=`<text x="${lx}" y="${p.y+1}" text-anchor="${anchor}" font-size="12.5" font-weight="700" fill="var(--ink)">${App.esc(l.name)}</text>`;
+    if(st.answered) g+=`<text x="${lx}" y="${p.y+15}" text-anchor="${anchor}" font-size="9.5" fill="var(--ink-dim)">${Math.round(st.m*100)}%</text>`;
     g+=`</g>`;
     if(i===cur){
-      const bx=p.x+(p.x<180?96:-96);
-      g+=`<g style="pointer-events:none">${nestedIcon(bx,p.y-8,24,'ship','var(--brass)')}
-        <text x="${bx}" y="${p.y+16}" text-anchor="middle" font-size="9.5" font-weight="700" fill="var(--brass)">אתם כאן</text></g>`;
+      const bx=p.x<180?p.x-R-24:p.x+R+24;
+      g+=`<g style="pointer-events:none">${nestedIcon(bx,p.y-7,22,'ship','var(--brass)')}
+        <text x="${bx}" y="${p.y+15}" text-anchor="middle" font-size="9" font-weight="700" fill="var(--brass)">אתם כאן</text></g>`;
     }
   });
   return `<svg id="voyage" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">${g}</svg>`;

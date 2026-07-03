@@ -30,8 +30,12 @@ const ASSETS = [
   'fonts/frl-hebrew.woff2',
   'fonts/frl-latin.woff2'
 ];
-/* האיורים הרשמיים (תמונה 1–127) — נכללים במטמון לעבודה לא-מקוונת מלאה */
-for(let i=1;i<=127;i++) ASSETS.push('figures/f'+i+'.png');
+/* האיורים הרשמיים (תמונה 1–127) — הרשימה נלקחת מקובץ המיפוי עצמו,
+   כך ששינוי שמות קבצים לעולם לא ישבור את המטמון */
+try{
+  importScripts('js/data/figures-img.js');
+  ASSETS.push(...Object.values(self.EXAM_FIGURE_IMGS||{}));
+}catch(e){}
 self.addEventListener('install', e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });

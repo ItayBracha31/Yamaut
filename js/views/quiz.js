@@ -200,6 +200,8 @@ G.renderQuestion = (el,q,opts)=>{
 
 /* ---------- תצוגת החידון ---------- */
 const st={allowed:null, q:null, correct:0, total:0};
+/* כניסה מסוננת (ממסלול ההפלגה): חידון על נושא ספציפי */
+G.setFilter = ids=>{ st.allowed=new Set(ids); st.q=null; };
 App.registerView('quiz',{render(el){
   if(!st.allowed) st.allowed=new Set(G.TOPICS.map(t=>t.id));
   paint(el);

@@ -7,7 +7,8 @@
 (function(){
 "use strict";
 const BW=360, COLA='#4aa3ff', COLB='#ff9f43';
-const st={hist:[],idx:-1,types:null,speed:3,night:false,typeselOpen:false};
+const PLAY_SCALE=4.5;   // ×1 בסליידר = קצב הצפייה הנוח (4.5 הישן)
+const st={hist:[],idx:-1,types:null,speed:1,night:false,typeselOpen:false};
 let sim=null;
 
 /* ---------- וקטורים ---------- */
@@ -448,7 +449,7 @@ function runSim(el){
   function frame(now){
     if(!layer.isConnected){ sim.running=false; return; }
     // אינטגרציה מצטברת — שינוי מהירות ההדמיה תוך כדי ריצה לא "משגר" את הסירות
-    t=Math.min(T, t+Math.max(0,(now-lastNow))/1000*st.speed); lastNow=now;
+    t=Math.min(T, t+Math.max(0,(now-lastNow))/1000*st.speed*PLAY_SCALE); lastNow=now;
     const sub=Math.max(1,Math.ceil((t-prevT)/(1/120)));
     for(let i=1;i<=sub && !hit;i++){ const tt=prevT+(t-prevT)*i/sub;
       const a=posAt(A0,dirA,LA,spA,tt), b=posAt(B0,dirB,LB,spB,tt), dd=len(vec(a,b));
@@ -559,7 +560,7 @@ function paint(el){
       <button class="btn" id="nextScn" style="margin-inline-start:auto">הבא ←</button>
     </div>
     <label class="spd">מהירות הדמיה
-      <input type="range" id="spdRange" min="1" max="10" step="0.5" value="${st.speed}">
+      <input type="range" id="spdRange" min="0.5" max="4" step="0.5" value="${st.speed}">
       <span class="val" id="spdVal">×${st.speed}</span></label>
     <div class="verdict" id="verdict"></div>
     <div class="card quiz" style="margin-top:14px">
