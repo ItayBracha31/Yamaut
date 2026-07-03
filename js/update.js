@@ -65,6 +65,14 @@ function topicOf(c){
   if(/ניווט מכשירים|מיקום|מדידה|NAVTEX|מצפן|תדר|מפה|זמן|קווים/.test(c)) return 'inst';
   return 'general';
 }
+/* ניקוי עדין של טקסט מהמאגר: רווחים חסרים אחרי גרשיים/פיסוק (בלי לפגוע בצה"ל וכד') */
+function tidy(s){
+  return String(s).replace(/\s+/g,' ')
+    .replace(/(\d")(?=[א-ת])/g,'$1 ')
+    .replace(/([א-ת][,.])(?=[א-ת])/g,'$1 ')
+    .replace(/\s+([,.?!:;])/g,'$1')
+    .trim();
+}
 function parseRecords(records){
   const groups=[]; let cur=null;
   for(const r of records){
@@ -80,12 +88,12 @@ function parseRecords(records){
     if(String(h.Status||'').trim()!=='פעיל') continue;
     const opts=g.opts
       .filter(o=>o.Description&&String(o.Description).trim())
-      .map(o=>({pos:o.Answers_Num, text:String(o.Description).trim(),
+      .map(o=>({pos:o.Answers_Num, text:tidy(o.Description),
         correct:String(o.Answer).trim()==='+', dq:String(o.Disqualification_Answer).trim()==='+'}));
     opts.sort((a,b)=>(a.pos||99)-(b.pos||99));
     if(opts.length<2 || opts.filter(o=>o.correct).length!==1) continue;
-    const qt=String(h.Questions).trim().replace(/\s+/g,' ');
-    const fig=qt.match(/תמונ(?:ה|ות)\s*(?:מס['׳]?\s*)?(\d+)/);
+    const qt=tidy(h.Questions);
+    const fig=qt.match(/תמונ(?:ה|ות)\s*(?:מס(?:פר|['׳.])?\s*)?["']?(\d+)/);
     const q={ id:'q'+h.Number, n:h.Number, q:qt,
       options:opts.map(o=>o.text), correct:opts.findIndex(o=>o.correct),
       topic:topicOf(String(h.Category||'').trim()), sub:String(h.Category||'').trim(),

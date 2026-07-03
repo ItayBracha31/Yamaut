@@ -34,8 +34,10 @@
   --good:#2fd58a; --good-bg:rgba(47,213,138,.13); --bad:#ff5147; --bad-bg:rgba(255,81,71,.12);
   --info:#4aa3ff; --focus:#2fb3c9;
   --card-grad:linear-gradient(180deg,#122c3f,#0d2231);
-  --bg:radial-gradient(55% 38% at 82% -6%, rgba(140,190,225,.14), transparent 60%),
-       linear-gradient(180deg,#071522 0%,#0b2233 55%,#0c2030 100%);
+  --bg:repeating-linear-gradient(90deg, rgba(150,200,230,.045) 0 1px, transparent 1px 64px),
+       repeating-linear-gradient(0deg, rgba(150,200,230,.045) 0 1px, transparent 1px 64px),
+       radial-gradient(62% 44% at 84% -8%, rgba(150,200,235,.22), transparent 60%),
+       linear-gradient(180deg,#071522 0%,#0d2536 55%,#0c2030 100%);
   --stage-bg:#04101d; --water:#06283d; --water-line:#0e3a55;
   --tabbar-bg:rgba(7,20,32,.92); --sheet-shadow:0 -10px 40px rgba(0,0,0,.5);
   --scnA:#4aa3ff; --scnB:#ff9f43;
@@ -54,8 +56,11 @@
   --good:#0e8a50; --good-bg:rgba(14,138,80,.10); --bad:#d6403a; --bad-bg:rgba(214,64,58,.08);
   --info:#1273a8; --focus:#0e7d94;
   --card-grad:linear-gradient(180deg,#ffffff,#fbf9f1);
-  --bg:radial-gradient(55% 38% at 82% -6%, rgba(255,205,110,.38), transparent 62%),
-       linear-gradient(180deg,#e2f0f2 0%,#f3f2e6 48%,#ebe6d3 100%);
+  /* רקע "מפה ימית": רשת קווי אורך/רוחב עדינה + זוהר שמש + שיפוע שמיים→חול */
+  --bg:repeating-linear-gradient(90deg, rgba(18,53,77,.05) 0 1px, transparent 1px 64px),
+       repeating-linear-gradient(0deg, rgba(18,53,77,.05) 0 1px, transparent 1px 64px),
+       radial-gradient(62% 44% at 84% -8%, rgba(255,190,80,.5), transparent 62%),
+       linear-gradient(180deg,#c8e5eb 0%,#f0efe0 46%,#e2dabc 100%);
   --stage-bg:#0a1c2c; --water:#bfe0e8; --water-line:#7fb8c9;
   --tabbar-bg:rgba(253,252,246,.94); --sheet-shadow:0 -10px 40px rgba(30,60,80,.18);
   --scnA:#0d5a9e; --scnB:#a34d00;
@@ -103,7 +108,7 @@ header.app .hgrow{flex:1}
 .hud{display:flex;align-items:center;gap:6px}
 .hud .pill{display:flex;align-items:center;gap:4px;font-size:.72rem;font-weight:800;
   color:var(--parchment);background:var(--sea2);border:1px solid var(--line);
-  border-radius:999px;padding:4px 10px;white-space:nowrap}
+  border-radius:9px;padding:4px 10px;white-space:nowrap}
 .hud .pill .ico{font-size:.85rem;line-height:1}
 .hud .pill.flame .ic{animation:flame 1.6s ease-in-out infinite;color:#ff9f43}
 .hud .pill.flame .ico{animation:flame 1.6s ease-in-out infinite}
@@ -133,19 +138,26 @@ nav.tabs button[aria-selected="true"]{color:var(--brass);background:rgba(217,164
 nav.tabs button:active{transform:scale(.94)}
 nav.tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
-/* ---------- sub navigation (chips) ---------- */
-.subnav{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.subnav::-webkit-scrollbar{display:none}
-.subnav button{flex:0 0 auto;font-family:inherit;font-size:.78rem;font-weight:700;cursor:pointer;
-  border-radius:999px;border:1px solid var(--line);background:var(--sea2);color:var(--ink-dim);
-  padding:8px 15px;transition:all .15s;display:flex;align-items:center;gap:5px}
-.subnav button[aria-selected="true"]{background:var(--brass);
-  border-color:var(--brass);color:var(--brass-ink)}
-.subnav button:active{transform:scale(.95)}
+/* ---------- sub navigation ----------
+   לשוניות עם קו תחתון (ולא "גלולות") — מראה עריכתי נקי; עוטפות ולא נגללות */
+.subnav{display:flex;gap:2px;flex-wrap:wrap;padding:0 2px;margin-bottom:12px;
+  border-bottom:1px solid var(--line)}
+.subnav button{flex:0 0 auto;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;
+  border:0;background:none;color:var(--ink-dim);position:relative;
+  padding:9px 10px 11px;transition:color .15s;display:flex;align-items:center;gap:6px}
+.subnav button[aria-selected="true"]{color:var(--parchment)}
+.subnav button[aria-selected="true"] .ic{color:var(--brass)}
+.subnav button[aria-selected="true"]::after{content:"";position:absolute;bottom:-1px;inset-inline:8px;
+  height:3px;border-radius:2px 2px 0 0;background:var(--brass)}
+.subnav button:active{transform:scale(.96)}
 
-/* ---------- view transitions ---------- */
+/* ---------- view transitions (מעברי מסך כמו באפליקציה) ---------- */
 .view-enter{animation:fadeup .28s cubic-bezier(.2,.8,.3,1)}
+.view-slide-left{animation:slideL .32s cubic-bezier(.2,.8,.3,1)}
+.view-slide-right{animation:slideR .32s cubic-bezier(.2,.8,.3,1)}
 @keyframes fadeup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes slideL{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:none}}
+@keyframes slideR{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
 @keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
 @keyframes shake{0%,100%{transform:none}25%{transform:translateX(4px)}75%{transform:translateX(-4px)}}
 .shake{animation:shake .3s ease-in-out 2}
@@ -159,8 +171,8 @@ nav.tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .card{background:var(--card-grad);border:1px solid var(--line);border-radius:var(--r)}
 .muted{color:var(--ink-dim)}
 .ref{font-family:var(--mono);font-size:.7rem;color:var(--brass);
-  background:rgba(217,164,65,.10);border:1px solid var(--brass-dim);
-  padding:1px 7px;border-radius:999px;white-space:nowrap}
+  background:transparent;border:1px solid var(--brass-dim);
+  padding:1px 7px;border-radius:6px;white-space:nowrap}
 .btn{font-family:inherit;font-size:.86rem;font-weight:700;cursor:pointer;
   border-radius:11px;border:1px solid var(--line);background:var(--sea3);color:var(--ink);
   padding:11px 16px;transition:transform .08s,background .15s,border-color .15s;min-height:42px;
@@ -239,7 +251,7 @@ nav.tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .opt.wrong{background:var(--bad-bg);border-color:var(--bad);color:var(--parchment)}
 .explain{margin-top:12px;padding:12px;border-radius:11px;background:var(--abyss);border:1px solid var(--line);font-size:.86rem}
 .explain .lbl{font-weight:800;color:var(--brass);font-size:.78rem;letter-spacing:.04em}
-.topicpill{font-size:.68rem;font-family:var(--mono);color:var(--ink-dim);border:1px solid var(--line);padding:1px 7px;border-radius:999px;white-space:nowrap}
+.topicpill{font-size:.68rem;font-family:var(--mono);color:var(--ink-dim);border:1px solid var(--line);padding:1px 7px;border-radius:6px;white-space:nowrap}
 .combo{font-weight:900;color:var(--brass);animation:pop .35s}
 
 /* ---------- scenarios ---------- */
@@ -254,10 +266,11 @@ nav.tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .typesel summary::before{content:"▾ ";color:var(--brass)}
 .typesel[open] summary::before{content:"▴ "}
 .chipbar{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 4px}
-.chip{font-family:inherit;font-size:.74rem;font-weight:700;cursor:pointer;border-radius:999px;
-  border:1px solid var(--line);background:var(--abyss);color:var(--ink-dim);padding:7px 12px;transition:all .12s;min-height:32px;
+/* תגיות מרובעות-עדינות (כמו תוויות במפה) במקום גלולות */
+.chip{font-family:inherit;font-size:.74rem;font-weight:700;cursor:pointer;border-radius:7px;
+  border:1px solid var(--line);background:var(--sea2);color:var(--ink-dim);padding:7px 11px;transition:all .12s;min-height:32px;
   display:inline-flex;align-items:center;gap:5px}
-.chip[aria-pressed="true"]{background:rgba(217,164,65,.16);border-color:var(--brass);color:var(--parchment)}
+.chip[aria-pressed="true"]{background:var(--brass);border-color:var(--brass);color:var(--brass-ink)}
 .spd{display:flex;align-items:center;gap:10px;margin:12px 2px 0;font-size:.8rem;font-weight:700;color:var(--ink-dim)}
 .spd input[type=range]{flex:1;accent-color:var(--brass);max-width:260px;min-height:30px}
 .spd .val{font-family:var(--mono);color:var(--parchment);min-width:34px}

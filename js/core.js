@@ -310,11 +310,18 @@ App.confetti = n=>{
 };
 
 /* ---------------- bottom sheet ---------------- */
+let sheetOpenedAt=0;
 App.openSheet = (title,bodyHTML)=>{
+  sheetOpenedAt=Date.now();
   $('#sheetTitle').textContent=title; $('#sheetBody').innerHTML=bodyHTML;
   $('#sheetBack').classList.add('show'); $('#sheet').classList.add('show');
 };
-App.closeSheet = ()=>{ $('#sheetBack').classList.remove('show'); $('#sheet').classList.remove('show'); };
+/* במגע: פתיחה בזמן pointerdown גורמת ל-click הסינתטי (בהרמת האצבע) לפגוע
+   ברקע שזה עתה נפתח ולסגור את הגיליון מיד — לכן חלון חסד קצר */
+App.closeSheet = ()=>{
+  if(Date.now()-sheetOpenedAt<350) return;
+  $('#sheetBack').classList.remove('show'); $('#sheet').classList.remove('show');
+};
 
 /* ---------------- settings ---------------- */
 /* זהות עיצוב אחת ("רגטה") בשני מצבים: בהיר/כהה, או אוטומטי לפי המערכת */
@@ -390,7 +397,7 @@ App.openSettings = ()=>{
 App.TABS=[
   {id:'home',  label:'בית',   icon:'M3 11l9-8 9 8M5 9.5V20h5v-6h4v6h5V9.5'},
   {id:'learn', label:'לימוד', icon:'M12 3L2 8l10 5 10-5-10-5zM6 10.5V15c0 1.7 2.7 3 6 3s6-1.3 6-3v-4.5',
-    subs:[{id:'study',label:'אורות וצורות',ic:'anchor'},{id:'boat3d',label:'תלת־ממד',ic:'cube'},{id:'marks',label:'מצופים',ic:'buoy'},{id:'sounds',label:'אותות קול',ic:'horn'},{id:'flags',label:'דגלים',ic:'flag'}]},
+    subs:[{id:'boat3d',label:'אורות וצורות',ic:'anchor'},{id:'marks',label:'מצופים',ic:'buoy'},{id:'sounds',label:'אותות קול',ic:'horn'},{id:'flags',label:'דגלים',ic:'flag'}]},
   {id:'practice', label:'תרגול', icon:'M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0-18 0M12 12m-5 0a5 5 0 1 0 10 0a5 5 0 1 0-10 0M12 12m-1.2 0a1.2 1.2 0 1 0 2.4 0a1.2 1.2 0 1 0-2.4 0',
     subs:[{id:'quiz',label:'חידון',ic:'dice'},{id:'scenarios',label:'תרחישים',ic:'ship'},{id:'review',label:'חזרה על טעויות',ic:'broom'}]},
   {id:'exam',  label:'מבחן',  icon:'M9 3h6v3H9zM7 4H5v17h14V4h-2M9 13l2 2 4-4.5'},
@@ -449,7 +456,12 @@ App.render=()=>{
   const v=VIEWS[id];
   const host=$('#view');
   host.innerHTML='';
-  const el=document.createElement('div'); el.className='view-enter'; host.appendChild(el);
+  // מעבר מכוון: לשונית "רחוקה" יותר מחליקה מהצד המתאים (RTL: אינדקס גבוה = שמאלה)
+  const idx=App.TABS.findIndex(t=>t.id===App.current.tab);
+  let cls='view-enter';
+  if(App._lastTabIdx!=null && idx!==App._lastTabIdx) cls = idx>App._lastTabIdx?'view-slide-left':'view-slide-right';
+  App._lastTabIdx=idx;
+  const el=document.createElement('div'); el.className=cls; host.appendChild(el);
   if(v) v.render(el);
   else el.innerHTML='<div class="card" style="padding:20px;text-align:center">בקרוב…</div>';
 };

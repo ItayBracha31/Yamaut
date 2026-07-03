@@ -283,9 +283,12 @@ function nightVesselTop(x,y,dir,boat){
     const ar=v.lights.filter(l=>l.place==='allround'&&!l.optional).map(l=>l.color);
     if(!ar.length && v.lights.some(l=>l.place==='towing')) ar.push('yellow');
     if(ar.length){
-      const gap=10, top=y-24-(ar.length-1)*gap;
-      ar.forEach((c,i)=>{ const col=App.R.lightColors[c];
-        s+=`<circle cx="${x}" cy="${top+i*gap}" r="4" fill="${col.hex}" style="filter:drop-shadow(0 0 5px ${col.glow})"/>`; });
+      const tri=v.signalLayout==='triangle'&&ar.length===3;
+      const gap=10, top=y-24-((tri?2:ar.length)-1)*gap;
+      const dot=(cx,cy,c)=>{ const col=App.R.lightColors[c];
+        return `<circle cx="${cx}" cy="${cy}" r="4" fill="${col.hex}" style="filter:drop-shadow(0 0 5px ${col.glow})"/>`; };
+      if(tri) s+=dot(x,top,ar[0])+dot(x-5.5,top+9,ar[1])+dot(x+5.5,top+9,ar[2]);
+      else ar.forEach((c,i)=>{ s+=dot(x,top+i*gap,c); });
     }
   }
   return s;
@@ -293,6 +296,32 @@ function nightVesselTop(x,y,dir,boat){
 function drawBoat(sc,key,x,y,dir){
   const boat=sc[key], accent=key==='A'?COLA:COLB;
   return st.night ? nightVesselTop(x,y,dir,boat) : Draw.vesselTop(x,y,dir,accent,boat);
+}
+/* שושנת רוחות עתיקה: טבעת שנתות, כוכב רוחות, מחוג צפון קטן — וחץ הרוח במרכז */
+function compassRose(sc){
+  const cx=322, cy=44, R1=27, R2=20;
+  let g=`<g opacity=".95">`;
+  g+=`<circle cx="${cx}" cy="${cy}" r="${R1}" fill="${st.night?'rgba(3,17,29,.72)':'rgba(6,24,38,.6)'}" stroke="#4d748f" stroke-width="1.3"/>`;
+  g+=`<circle cx="${cx}" cy="${cy}" r="${R2}" fill="none" stroke="#33536f" stroke-width=".8"/>`;
+  for(let a=0;a<360;a+=22.5){
+    const main=a%90===0, mid=a%45===0;
+    const rIn=main?R2-3:(mid?R2:R2+2.5), rOut=R1-1.5;
+    const ca=Math.cos((a-90)*Math.PI/180), sa=Math.sin((a-90)*Math.PI/180);
+    g+=`<line x1="${(cx+ca*rIn).toFixed(1)}" y1="${(cy+sa*rIn).toFixed(1)}" x2="${(cx+ca*rOut).toFixed(1)}" y2="${(cy+sa*rOut).toFixed(1)}" stroke="#7fa5bd" stroke-width="${main?1.5:(mid?1:.6)}" opacity="${main?1:.7}"/>`;
+  }
+  // כוכב רוחות עדין ברקע
+  g+=`<polygon points="${cx},${cy-R2+4} ${cx+3},${cy} ${cx},${cy+R2-4} ${cx-3},${cy}" fill="#24465c"/>`;
+  g+=`<polygon points="${cx-R2+4},${cy} ${cx},${cy-3} ${cx+R2-4},${cy} ${cx},${cy+3}" fill="#24465c"/>`;
+  // צפון
+  g+=`<polygon points="${cx},${cy-R2+1} ${cx+2.6},${cy-R2+8} ${cx-2.6},${cy-R2+8}" fill="#ff5147"/>`;
+  g+=`<text x="${cx}" y="${cy-R1-4}" fill="#9aafc4" font-size="9" font-weight="700" text-anchor="middle">N</text>`;
+  // חץ הרוח — לאן הרוח נושבת
+  if(sc.wind){
+    const wf=norm({x:-sc.wind.x,y:-sc.wind.y});
+    g+=arrow({x:cx-wf.x*(R2-3),y:cy-wf.y*(R2-3)},{x:cx+wf.x*(R2-3),y:cy+wf.y*(R2-3)},'#7fd6ff',true);
+  }
+  g+=`<text x="${cx}" y="${cy+R1+12}" fill="#7fd6ff" font-size="10" font-weight="700" text-anchor="middle">רוח</text></g>`;
+  return g;
 }
 function drawBoardInner(){
   const sc=sim.sc;
@@ -306,21 +335,16 @@ function drawBoardInner(){
   for(let i=0;i<7;i++){ const rx=28+((i*53)%300), ry=22+((i*97)%310);
     ripples+=`<path d="M${rx-12},${ry} q6,-4 12,0 t12,0" fill="none" stroke="${st.night?'#0d2c44':'#155b82'}" stroke-width="1.4"/>`; }
   ripples+='</g>';
-  const compass=`<g transform="translate(330,34)" opacity=".85">
-    <circle r="16" fill="none" stroke="#33536f" stroke-width="1"/><polygon points="0,-14 3.5,0 -3.5,0" fill="#ff3b30"/>
-    <text x="0" y="-18" fill="#9aafc4" font-size="9" text-anchor="middle">N</text></g>`;
-  // מחוון הרוח — מקור האמת היחיד לכיוון הרוח בתרחיש (החץ מצביע לאן הרוח נושבת)
-  const windInd = sc.wind ? (()=>{ const wf={x:-sc.wind.x,y:-sc.wind.y};
-    return `<g opacity=".95"><circle cx="32" cy="34" r="19" fill="rgba(127,214,255,.08)" stroke="#3d637f" stroke-width="1"/>
-      ${arrow({x:32-wf.x*13,y:34-wf.y*13},{x:32+wf.x*13,y:34+wf.y*13},'#7fd6ff',true)}
-      <text x="32" y="64" fill="#7fd6ff" font-size="10" font-weight="700" text-anchor="middle">רוח</text></g>`; })() : '';
+  // שושנת רוחות אחת בסגנון ישן: צפון מסומן בשנתות, וחץ הרוח בתוכה —
+  // מקור האמת היחיד לכיוון הרוח (החץ מצביע לאן הרוח נושבת)
+  const compass=compassRose(sc);
   const aArr = sim.running?'':arrow({x:sc.A.x,y:sc.A.y},sim.hA,COLA);
   const bArr = sim.running?'':arrow({x:sc.B.x,y:sc.B.y},sim.hB,COLB);
   const handle=(pt,col,key)=>sim.running?'':`<g class="handle" data-h="${key}">
      <circle cx="${pt.x}" cy="${pt.y}" r="16" fill="${col}" fill-opacity=".12"/>
      <circle cx="${pt.x}" cy="${pt.y}" r="12" fill="${col}" fill-opacity=".25" stroke="${col}" stroke-width="2"/>
      <circle cx="${pt.x}" cy="${pt.y}" r="3.5" fill="${col}"/></g>`;
-  return `<rect width="${BW}" height="${BW}" fill="${seaCol}"/>${grid}${ripples}${compass}${windInd}
+  return `<rect width="${BW}" height="${BW}" fill="${seaCol}"/>${grid}${ripples}${compass}
     ${aArr}${bArr}
     ${drawBoat(sc,'A',sc.A.x,sc.A.y,sc.A.heading)}
     ${drawBoat(sc,'B',sc.B.x,sc.B.y,sc.B.heading)}
@@ -349,7 +373,7 @@ function onDown(e){
   const dA=len(vec(p,sim.hA)), dB=len(vec(p,sim.hB));
   if(Math.min(dA,dB)<=34){ sim.drag = dA<dB?'A':'B'; e.preventDefault(); return; }
   const bA=len(vec(p,{x:sim.sc.A.x,y:sim.sc.A.y})), bB=len(vec(p,{x:sim.sc.B.x,y:sim.sc.B.y}));
-  if(Math.min(bA,bB)<=24){
+  if(Math.min(bA,bB)<=30){
     const key=bA<bB?'A':'B';
     if(st.night) nightIdentify(key); else openVesselInfo(sim.sc[key].vid);
     e.preventDefault();

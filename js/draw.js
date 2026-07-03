@@ -12,7 +12,9 @@ const R = ()=>App.R;
 D.describeNight = v=>{
   if(v.nightDesc) return v.nightDesc;
   const L=v.lights.filter(l=>!l.optional), parts=[];
-  if(L.some(l=>l.place==='anchor')) parts.push('פנס עוגן מעגלי לבן');
+  const anch=L.filter(l=>l.place==='anchor'||l.place==='anchor-aft').length;
+  if(anch===1) parts.push('פנס עוגן מעגלי לבן');
+  else if(anch>1) parts.push('שני פנסי עוגן מעגליים לבנים (קדמי גבוה, אחורי נמוך)');
   const ar=L.filter(l=>l.place==='allround');
   if(ar.length===1) parts.push('פנס מעגלי '+R().lightColors[ar[0].color].name);
   else if(ar.length>1) parts.push(ar.length+' פנסים מעגליים זה מעל זה ('+ar.map(l=>R().lightColors[l.color].name).join('‑')+')');
@@ -75,12 +77,21 @@ D.buildVesselSVG = (v,mode)=>{
        `<text x="62" y="86" fill="#cfe6ff" font-size="13">רוח</text></g>`;
   }
 
-  // ערימת פנסים מעגליים בראש התורן (מלמעלה למטה)
+  // פנסים מעגליים: ערימה אנכית בראש התורן, או משולש (שולת מוקשים —
+  // אחד בראש התורן ואחד בכל קצה של הזרוע, תקנה 27(ו))
   const ar=v.lights.filter(l=>l.place==='allround');
-  let y=82;
-  ar.forEach(l=>{ g+=D.lightSVG(mast,y,l.color,l.label,l.desc,l.optional?'nf-opt':'');
-    if(l.optional){g+=`<circle cx="${mast}" cy="${y}" r="15" fill="none" stroke="#d9a441" stroke-width="1" stroke-dasharray="3 3" opacity=".7"/>`;}
-    y+=26; });
+  if(v.signalLayout==='triangle' && ar.length===3){
+    const yy=120, half=44;
+    g+=`<line x1="${mast-half}" y1="${yy}" x2="${mast+half}" y2="${yy}" stroke="#3a5a78" stroke-width="2.2"/>`;
+    g+=D.lightSVG(mast,82,ar[0].color,ar[0].label,ar[0].desc);
+    g+=D.lightSVG(mast-half,yy,ar[1].color,ar[1].label,ar[1].desc);
+    g+=D.lightSVG(mast+half,yy,ar[2].color,ar[2].label,ar[2].desc);
+  } else {
+    let y=82;
+    ar.forEach(l=>{ g+=D.lightSVG(mast,y,l.color,l.label,l.desc,l.optional?'nf-opt':'');
+      if(l.optional){g+=`<circle cx="${mast}" cy="${y}" r="15" fill="none" stroke="#d9a441" stroke-width="1" stroke-dasharray="3 3" opacity=".7"/>`;}
+      y+=26; });
+  }
 
   // פנסי תורן: 'stack' (גורר — זה מעל זה באותו תורן) או 'aft' (כלי ≥50 מ׳ —
   // קדמי נמוך ליד החרטום + אחורי גבוה בתורן הראשי). ברירת מחדל נגזרת מהנתונים.
@@ -103,6 +114,16 @@ D.buildVesselSVG = (v,mode)=>{
 
   const an=v.lights.find(l=>l.place==='anchor');
   if(an) g+=D.lightSVG(252,168,an.color,an.label,an.desc);
+  const anAft=v.lights.find(l=>l.place==='anchor-aft');
+  if(anAft){ // עמוד עוגן אחורי — נמוך מהקדמי
+    g+=`<line x1="112" y1="230" x2="112" y2="200" stroke="#3a5a78" stroke-width="2"/>`;
+    g+=D.lightSVG(112,196,anAft.color,anAft.label,anAft.desc);
+  }
+  const torch=v.lights.find(l=>l.place==='torch');
+  if(torch){ // פנס יד — מוצג בעת הצורך (מסומן כרשות)
+    g+=D.lightSVG(196,206,torch.color,torch.label,torch.desc,'nf-opt');
+    g+=`<circle cx="196" cy="206" r="15" fill="none" stroke="#d9a441" stroke-width="1" stroke-dasharray="3 3" opacity=".7"/>`;
+  }
   const sp=v.lights.find(l=>l.place==='sidelight-port');
   const ss=v.lights.find(l=>l.place==='sidelight-stbd');
   if(sp) g+=D.lightSVG(300,222,sp.color,sp.label,sp.desc||'אור אדום בצד שמאל (port).');
@@ -112,9 +133,18 @@ D.buildVesselSVG = (v,mode)=>{
   const tw=v.lights.find(l=>l.place==='towing');
   if(tw) g+=D.lightSVG(100,202,tw.color,tw.label,tw.desc);
 
-  // צורות יום — בערימה על מיתר מעט אחורי לתורן
-  let sy=86;
-  v.shapes.filter(s=>s.place!=='fwd').forEach(s=>{ g+=D.shapeSVG(205,sy,s.shape,s.label,s.desc); sy+=30; });
+  // צורות יום — בערימה על מיתר מעט אחורי לתורן; בשולת מוקשים — משולש
+  // (באותם מיקומים כמו הפנסים; ב"שניהם" מוסטות מעט כדי לא לכסות את האורות)
+  if(v.signalLayout==='triangle' && v.shapes.length===3){
+    const off = mode==='both' ? 16 : 0;
+    const yy=120, half=44;
+    g+=D.shapeSVG(mast+off,84,v.shapes[0].shape,v.shapes[0].label,v.shapes[0].desc);
+    g+=D.shapeSVG(mast-half+off,yy+(off?18:0),v.shapes[1].shape,v.shapes[1].label,v.shapes[1].desc);
+    g+=D.shapeSVG(mast+half+off,yy+(off?18:0),v.shapes[2].shape,v.shapes[2].label,v.shapes[2].desc);
+  } else {
+    let sy=86;
+    v.shapes.filter(s=>s.place!=='fwd').forEach(s=>{ g+=D.shapeSVG(205,sy,s.shape,s.label,s.desc); sy+=30; });
+  }
   v.shapes.filter(s=>s.place==='fwd').forEach(s=>{ g+=D.shapeSVG(292,176,s.shape,s.label,s.desc); });
   if(v.dayFlag){ const f=D.flagByLetter(v.dayFlag);
     if(f) g+=`<g class="nf-hot nf-shape" tabindex="0" role="button" data-title="${esc('דגל '+f.letter+' (Alpha) — אות יום')}" data-desc="${esc(f.meaning+' (העתק נוקשה בגובה ≥1 מ׳)')}">
@@ -295,12 +325,18 @@ D.signalBadge = (x,y,vid)=>{
   const shapesCount = shapes.length || flagItem;
   if(!lights.length && !shapesCount) return '';
   const both=lights.length&&shapesCount;
-  const rows=Math.max(lights.length,shapesCount), gap=10, top=y-24-(rows-1)*gap;
-  const lx=both?x-7:x, sx=both?x+7:x;
+  const tri = v.signalLayout==='triangle';
+  const rows=tri?2:Math.max(lights.length,shapesCount), gap=10, top=y-24-(rows-1)*gap;
+  const lx=both?x-8:x, sx=both?x+8:x;
   let g=`<line x1="${x}" y1="${y-13}" x2="${x}" y2="${top-2}" stroke="#33536f" stroke-width="1"/>`;
-  lights.forEach((c,i)=>{ const cy=top+i*gap, col=R().lightColors[c];
-    g+=`<circle cx="${lx}" cy="${cy}" r="4" fill="${col.hex}" stroke="#06121d" stroke-width=".7" style="filter:drop-shadow(0 0 3px ${col.glow})"/>`; });
-  shapes.forEach((sh,i)=>{ g+=D.miniShape(sx,top+i*gap,sh); });
+  const lightDot=(cx,cy,c)=>{ const col=R().lightColors[c];
+    return `<circle cx="${cx}" cy="${cy}" r="4" fill="${col.hex}" stroke="#06121d" stroke-width=".7" style="filter:drop-shadow(0 0 3px ${col.glow})"/>`; };
+  if(tri && lights.length===3){
+    g+=lightDot(lx,top,lights[0])+lightDot(lx-5.5,top+9,lights[1])+lightDot(lx+5.5,top+9,lights[2]);
+  } else lights.forEach((c,i)=>{ g+=lightDot(lx,top+i*gap,c); });
+  if(tri && shapes.length===3){
+    g+=D.miniShape(sx,top,shapes[0])+D.miniShape(sx-5.5,top+9,shapes[1])+D.miniShape(sx+5.5,top+9,shapes[2]);
+  } else shapes.forEach((sh,i)=>{ g+=D.miniShape(sx,top+i*gap,sh); });
   if(flagItem){ const f=D.flagByLetter(v.dayFlag); if(f) g+=`<svg x="${sx-9}" y="${top-6}" width="18" height="12">${D.drawFlag(f)}</svg>`; }
   return g;
 };

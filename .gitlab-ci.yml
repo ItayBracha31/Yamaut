@@ -4,7 +4,7 @@ pages:
   stage: deploy
   script:
     - mkdir public
-    - cp -r index.html rules.js README.md manifest.webmanifest icon.svg apple-touch-icon.png sw.js css js fonts public/
+    - cp -r index.html rules.js README.md manifest.webmanifest icon.svg apple-touch-icon.png sw.js css js fonts figures public/
   artifacts:
     paths:
       - public

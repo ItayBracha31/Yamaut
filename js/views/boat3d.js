@@ -140,6 +140,7 @@ function buildModel(v){
   const mhOnAft =mh&&mh.optional&&hasAR;
   if(mhOnFore||anchor||fwdShape) masts.push({a:V(foreX,0,0.8*d.FB),b:V(foreX,0,foreH),w:0.07});
   if(mhOnAft) masts.push({a:V(aftX,0,deckZ),b:V(aftX,0,aftH),w:0.07});
+  if(v.lights.some(l=>l.place==='anchor-aft')) masts.push({a:V(-d.L/2+0.7,0,d.FB*0.8),b:V(-d.L/2+0.7,0,2.15),w:0.06});
 
   /* מפרשים */
   const sails=[];
@@ -153,10 +154,18 @@ function buildModel(v){
   /* ---------- מיקום אורות (מהנתונים) ---------- */
   const lights=[];
   let arI=0;
+  const triangle = v.signalLayout==='triangle';
+  const yardHalf=1.6, yardZ=d.mastH-1.35;
+  if(triangle) masts.push({a:V(d.mastX,-yardHalf,yardZ),b:V(d.mastX,yardHalf,yardZ),w:0.07}); // זרוע קדמית
   v.lights.forEach(l=>{
     let pos=null;
     switch(l.place){
       case 'allround':
+        if(triangle){ // שולת מוקשים: אחד בראש התורן, אחד בכל קצה זרוע (תקנה 27(ו))
+          pos = arI===0 ? V(d.mastX,0,d.mastH+0.35)
+              : V(d.mastX, arI===1?yardHalf:-yardHalf, yardZ);
+          arI++; break;
+        }
         pos=V(d.mastX,0,d.mastH+0.35-arI*0.95); arI++; break;
       case 'masthead':
         if(mhAft&&layout==='stack') pos=V(d.mastX,0,d.mastH-0.75); // גורר: נמוך בזוג האנכי
@@ -173,6 +182,8 @@ function buildModel(v){
       case 'stern':  pos=V(-d.L/2+0.12,0,d.FB*0.95); break;
       case 'towing': pos=V(-d.L/2+0.12,0,d.FB*0.95+1.0); break;
       case 'anchor': pos=V(foreX,0,foreH-0.55); break;
+      case 'anchor-aft': pos=V(-d.L/2+0.7,0,2.1); break;    // אחורי — נמוך מהקדמי
+      case 'torch':  pos=V(-0.6,0.35,d.FB+1.0); break;      // פנס יד בגובה יד
     }
     if(pos) lights.push({place:l.place,color:l.color,label:l.label,optional:!!l.optional,pos});
   });
@@ -194,6 +205,11 @@ function buildModel(v){
   let shI=0;
   v.shapes.forEach(s=>{
     if(s.place==='fwd') shapes.push({kind:s.shape,pos:V(foreX,0,foreH-1.15),label:s.label});
+    else if(triangle){ // צורות היום של שולת מוקשים — באותם מיקומי משולש
+      shapes.push({kind:s.shape,
+        pos: shI===0 ? V(d.mastX,0,d.mastH+0.35) : V(d.mastX, shI===1?yardHalf:-yardHalf, yardZ),
+        label:s.label}); shI++;
+    }
     else { shapes.push({kind:s.shape,pos:V(d.mastX,0,d.mastH-1.1-shI*1.08),label:s.label}); shI++; }
   });
   /* מחפר: צורות צד-מכשול (כדורים) / צד-מעבר (מעוינים) על הזרוע */
@@ -482,7 +498,10 @@ function seesDesc(v,az,night,quizOn){
   if(L.some(l=>l.place==='sidelight-port')&&vis('sidelight-port')) parts.push('פנס צד אדום');
   if(L.some(l=>l.place==='stern')&&vis('stern')) parts.push('פנס ירכתיים לבן');
   if(L.some(l=>l.place==='towing')&&vis('towing')) parts.push('פנס גרירה צהוב');
-  if(L.some(l=>l.place==='anchor')) parts.push('פנס עוגן לבן');
+  const anch=L.filter(l=>l.place==='anchor'||l.place==='anchor-aft').length;
+  if(anch===1) parts.push('פנס עוגן לבן');
+  else if(anch>1) parts.push('שני פנסי עוגן לבנים (קדמי גבוה, אחורי נמוך)');
+  if(L.some(l=>l.place==='torch')) parts.push('פנס יד לבן (מוצג רק בעת הצורך)');
   if(v.sideLights) parts.push('2 אדומים מעגליים (צד המכשול) + 2 ירוקים מעגליים (צד המעבר)');
   return parts.length?parts.join(' + '):'שום אור אינו נראה מזווית זו';
 }
@@ -495,9 +514,13 @@ App.registerView('boat3d',{ render(el){
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   el.innerHTML=`
-    <div class="section-title"><h2>סובבו את כלי השיט</h2>
-      <span class="hint">גררו הצידה להקפה · מעלה/מטה לגובה המבט</span></div>
-    <div class="subnav" id="d3chips" role="tablist"></div>
+    <div class="section-title"><h2>אורות וצורות</h2>
+      <span class="hint">גררו את כלי השיט להקפה · מעלה/מטה לגובה המבט</span></div>
+    <div class="row" style="justify-content:center;gap:10px;margin-bottom:8px" id="d3pick">
+      <button class="iconbtn" id="d3prev" aria-label="כלי השיט הקודם">›</button>
+      <button class="chip" id="d3cur" style="min-width:180px;justify-content:center;font-size:.84rem" aria-pressed="true"></button>
+      <button class="iconbtn" id="d3next" aria-label="כלי השיט הבא">‹</button>
+    </div>
     <div class="viewer3d" id="d3wrap">
       <canvas id="d3cv"></canvas>
       <div class="bearing" id="d3bear"></div>
@@ -515,13 +538,16 @@ App.registerView('boat3d',{ render(el){
       <div class="row" style="gap:8px"><b id="d3name" style="color:var(--parchment);font-size:.92rem"></b>
         <span class="ref" id="d3ref"></span></div>
       <div style="font-size:.85rem;margin-top:5px"><span class="muted">מה רואים עכשיו: </span><b id="d3sees" style="color:var(--parchment)"></b></div>
+      <div id="d3detail"></div>
     </div>
     <div id="d3quizBox"></div>`;
 
   const cv=App.$('#d3cv',el), wrap=App.$('#d3wrap',el), ctx=cv.getContext('2d');
   const bearEl=App.$('#d3bear',el), nameEl=App.$('#d3name',el), refEl=App.$('#d3ref',el),
-        seesEl=App.$('#d3sees',el), chipsEl=App.$('#d3chips',el), quizBox=App.$('#d3quizBox',el),
-        rotBtn=App.$('#d3rot',el), segEl=App.$('#d3seg',el), quizBtn=App.$('#d3quizBtn',el);
+        seesEl=App.$('#d3sees',el), quizBox=App.$('#d3quizBox',el),
+        rotBtn=App.$('#d3rot',el), segEl=App.$('#d3seg',el), quizBtn=App.$('#d3quizBtn',el),
+        detEl=App.$('#d3detail',el),
+        prevBtn=App.$('#d3prev',el), nextBtn=App.$('#d3next',el), curBtn=App.$('#d3cur',el);
 
   const st={ az:38, el:16, vaz:0, mode:'night', nightK:1, time:0,
     rot:!reduced, anim:!reduced, stars:[], w:0,h:0,dpr:1,
@@ -533,26 +559,46 @@ App.registerView('boat3d',{ render(el){
     App.store.seen.d3=App.store.seen.d3||{};
     App.store.seen.d3[id]=1; App.save(); App.checkBadges();
   }
-  function buildChips(){
-    chipsEl.innerHTML=vessels.map(v=>
-      `<button role="tab" data-v="${v.id}" aria-selected="${v.id===st.vid&&!st.quiz.active}" ${st.quiz.active?'disabled style="opacity:.4"':''}>${App.esc(v.shortName)}</button>`).join('');
-    App.$$('button',chipsEl).forEach(b=>b.addEventListener('click',()=>{
-      if(st.quiz.active) return;
-      App.sfx('click'); selectVessel(b.dataset.v);
-    }));
+  /* דפדוף בין כלי השיט — כמו נגן: הקודם/הבא, והקשה על השם פותחת רשימה מלאה */
+  function buildPicker(){
+    const v=vessels.find(x=>x.id===st.vid);
+    curBtn.textContent = st.quiz.active ? '? כלי שיט לא מזוהה' : v.shortName;
+    prevBtn.disabled=nextBtn.disabled=curBtn.disabled=st.quiz.active;
   }
+  function stepVessel(d){
+    const i=vessels.findIndex(v=>v.id===st.vid);
+    selectVessel(vessels[(i+d+vessels.length)%vessels.length].id);
+  }
+  prevBtn.addEventListener('click',()=>{ if(!st.quiz.active){ App.sfx('click'); stepVessel(-1); } });
+  nextBtn.addEventListener('click',()=>{ if(!st.quiz.active){ App.sfx('click'); stepVessel(1); } });
+  curBtn.addEventListener('click',()=>{
+    if(st.quiz.active) return;
+    App.openSheet('בחרו כלי שיט', `<div class="chipbar" style="padding:6px 0">${vessels.map(v=>
+      `<button class="chip" data-v="${v.id}" aria-pressed="${v.id===st.vid}">${App.esc(v.shortName)}</button>`).join('')}</div>`);
+    App.$$('#sheetBody .chip').forEach(b=>b.addEventListener('click',()=>{
+      App.sfx('click'); selectVessel(b.dataset.v);
+      setTimeout(App.closeSheet,360);
+    }));
+  });
   function selectVessel(id){
     st.vid=id; st.model=buildModel(vessels.find(v=>v.id===id));
     if(!st.quiz.active) markSeen(id);
-    buildChips(); updateInfo();
+    buildPicker(); updateInfo();
   }
   function updateInfo(){
     const v=vessels.find(x=>x.id===st.vid);
     if(st.quiz.active&&!st.quiz.answered){
       nameEl.textContent='כלי שיט לא מזוהה'; refEl.style.display='none';
+      detEl.innerHTML='';
     }else{
       nameEl.textContent=v.name; refEl.style.display='';
       refEl.textContent=v.ref&&v.ref.colreg?v.ref.colreg:'';
+      // פרטי הלימוד המלאים (מוזגו לכאן מהלומדה הדו-ממדית)
+      detEl.innerHTML=`
+        <p style="font-size:.86rem;margin:8px 0 4px">${App.esc(v.summary)}</p>
+        <p class="muted" style="font-size:.8rem;margin:4px 0"><b>בלילה:</b> ${App.esc(Draw.describeNight(v))}<br><b>ביום:</b> ${App.esc(Draw.describeDay(v))}</p>
+        ${v.note?`<p class="muted" style="font-size:.78rem;line-height:1.5;margin:4px 0">${App.esc(v.note)}</p>`:''}
+        <div class="tip" style="margin-top:8px">${App.icon('bulb',14)} ${App.esc(v.examTip)}</div>`;
     }
     st.lastSees=null;
   }

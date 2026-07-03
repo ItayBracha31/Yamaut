@@ -64,6 +64,11 @@ function splitFigDesc(desc){
 function figCaption(q){ return `<div class="muted" style="font-size:.76rem;text-align:center">תמונה ${q.figure} — שחזור מהחוברת הרשמית${'</div>'}`; }
 function renderFigure(q){
   const f=figSpec(q); if(!f) return '';
+  // עדיפות ראשונה: האיור הרשמי האמיתי מהחוברת (חולץ מה-PDF הממשלתי)
+  const img=window.EXAM_FIGURE_IMGS && window.EXAM_FIGURE_IMGS[String(q.figure)];
+  if(img) return `<div class="visual" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px;background:#fdfdfa">
+    <img src="${img}" alt="תמונה ${q.figure}" loading="lazy" style="max-width:min(340px,100%);height:auto;border-radius:6px">
+    <div class="muted" style="font-size:.74rem">תמונה ${q.figure} — מהחוברת הרשמית</div></div>`;
   const parts=splitFigDesc(f.desc||'');
   // דגל — מציירים את הדגל האמיתי לפי האות, בלי לחשוף את שמו
   if(f.kind==='flag'){
@@ -163,7 +168,7 @@ function startTimer(){
       // מציירים את התוצאות רק אם המשתמש נמצא כרגע בלשונית המבחן —
       // אחרת אין לדרוס תצוגה אחרת (התוצאות יופיעו כשיחזור)
       if(App.current && App.current.tab==='exam'){
-        const el=document.querySelector('#view .view-enter'); if(el) paint(el);
+        const el=document.querySelector('#view > div'); if(el) paint(el);
       }
       App.toast('הזמן נגמר — המבחן הוגש');
     }
@@ -245,27 +250,44 @@ function configScreen(el){
     const nElig=eligible(tr.id,cfg.topics,cfg.includeFigures).length;
     const figN=tq.filter(q=>q.figure&&figSpec(q)).length;
     const figMissing=tq.filter(q=>q.figure&&!figSpec(q)).length;
+    const starN=eligible(tr.id,cfg.topics,cfg.includeFigures).filter(q=>q.dq).length;
+    const timeMin=Math.max(10,Math.round(tr.time*Math.min(cfg.n,nElig)/tr.n));
+    const lbl=t=>`<div style="font-size:.72rem;font-weight:700;color:var(--ink-dim);letter-spacing:.04em;margin:12px 0 6px">${t}</div>`;
     bankCard=`
     <div class="card" style="padding:14px;margin-bottom:12px">
-      <h3 style="margin:0 0 4px;color:var(--parchment)">המאגר הרשמי</h3>
-      <p class="muted" style="font-size:.8rem;margin:0 0 10px">${b.questions.length} שאלות אמיתיות — ${App.esc(b.meta.source)}.
-      ${figMissing?` <i>(${figMissing} שאלות איור שלא ניתן לשחזר הוסתרו)</i>`:''}</p>
-      <div class="chipbar" style="padding:0 0 10px" id="trackChips">
-        ${b.tracks.map(t=>`<button class="chip" data-tr="${t.id}" aria-pressed="${t.id===cfg.track}">${t.name} · ${trackQuestions(t.id).length}</button>`).join('')}
+      <h3 style="margin:0 0 2px;color:var(--parchment)">המבחן הרשמי</h3>
+      <p class="muted" style="font-size:.78rem;margin:0">
+        ${b.questions.length} שאלות אמיתיות מתוך מאגר רשות הספנות והנמלים${b.meta.live?' (עדכון חי)':''}.</p>
+
+      ${lbl('1 · מסלול ההסמכה')}
+      <div class="chipbar" style="padding:0" id="trackChips">
+        ${b.tracks.map(t=>`<button class="chip" data-tr="${t.id}" aria-pressed="${t.id===cfg.track}">${t.name}</button>`).join('')}
       </div>
-      <div class="chipbar" style="padding:0 0 10px" id="bankTopics">
-        ${topicIds.map(t=>{const tp=(b.topics||[]).find(x=>x.id===t)||{name:t};
-          return `<button class="chip" data-t="${t}" aria-pressed="${cfg.topics.has(t)}">${tp.name} · ${tq.filter(q=>q.topic===t).length}</button>`;}).join('')}
+
+      ${lbl('2 · נושאים')}
+      <details class="typesel">
+        <summary>נבחרו ${cfg.topics.size}/${topicIds.length} נושאים · ${nElig} שאלות זמינות</summary>
+        <div class="chipbar" id="bankTopics">
+          ${topicIds.map(t=>{const tp=(b.topics||[]).find(x=>x.id===t)||{name:t};
+            return `<button class="chip" data-t="${t}" aria-pressed="${cfg.topics.has(t)}">${tp.name} · ${tq.filter(q=>q.topic===t).length}</button>`;}).join('')}
+        </div>
+      </details>
+
+      ${lbl('3 · היקף')}
+      <div class="row">
+        <div class="seg" id="bankCount">${[10,25,50].map(n=>`<button data-n="${n}" aria-pressed="${cfg.n===n}">${n} שאלות</button>`).join('')}</div>
+        ${figN?`<button class="btn mini ${cfg.includeFigures?'primary':''}" id="figTgl">איורים רשמיים (${figN})</button>`:''}
       </div>
-      <div class="row" style="margin-bottom:10px">
-        <div class="seg" id="bankCount">${[10,25,50].map(n=>`<button data-n="${n}" aria-pressed="${cfg.n===n}">${n}</button>`).join('')}</div>
-        ${figN?`<button class="btn mini ${cfg.includeFigures?'primary':''}" id="figTgl">שאלות איור (${figN})</button>`:''}
+
+      <div style="border-top:1px solid var(--line);margin:14px 0 10px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:.78rem">
+        <div><span class="muted">משך:</span> <b>${timeMin} דק׳</b></div>
+        <div><span class="muted">ציון עובר:</span> <b dir="ltr">~${tr.passPct}%</b> <span class="muted">(לפי בתי ספר)</span></div>
+        <div style="grid-column:1/-1"><b style="color:var(--bad)">★</b> ${starN} שאלות כוכבית בבחירה —
+          <span class="muted">בחירה בתשובה פוסלת בשאלת כוכבית נכשלת את המבחן כולו, כמו במבחן האמיתי.</span></div>
+        ${figMissing?`<div style="grid-column:1/-1" class="muted">${figMissing} שאלות איור שלא ניתן להציג הוסתרו.</div>`:''}
       </div>
-      <p class="muted" style="font-size:.74rem;margin:0 0 10px">
-        ${Math.max(10,Math.round(tr.time*Math.min(cfg.n,nElig)/tr.n))} דק׳ · ציון עובר ~${tr.passPct}% (לפי דיווחי בתי ספר) ·
-        תשובה פוסלת = פסילה אוטומטית, כמו במבחן האמיתי · ${nElig} שאלות זמינות
-      </p>
-      <button class="btn primary" id="startBank" style="width:100%">התחל מבחן — ${App.esc(tr.name)}</button>
+      <button class="btn primary" id="startBank" style="width:100%;margin-top:12px">התחל מבחן — ${App.esc(tr.name)}</button>
     </div>`;
   } else {
     bankCard=`<div class="card" style="padding:14px;margin-bottom:12px;text-align:center">
@@ -276,11 +298,6 @@ function configScreen(el){
     <div class="section-title"><h2>מבחן סימולציה</h2>
       <span class="hint">כמו בבחינה האמיתית: טיימר, בלי משוב עד ההגשה, ושאלות פוסלות.</span></div>
     ${bankCard}
-    <div class="card" style="padding:14px">
-      <h3 style="margin:0 0 4px;color:var(--parchment)">מבחן תרגול מחולל</h3>
-      <p class="muted" style="font-size:.8rem;margin:0 0 10px">שאלות שנוצרות אוטומטית מהתקנות — שונה בכל פעם.</p>
-      <button class="btn" id="startGen" style="width:100%">התחל מבחן תרגול (${cfg.n} שאלות)</button>
-    </div>
     ${App.store.examHistory.length?`
     <div class="section-title"><h2>היסטוריה</h2></div>
     <div style="display:grid;gap:8px">
@@ -300,7 +317,7 @@ function configScreen(el){
   App.$$('#bankCount button',el).forEach(x=>x.addEventListener('click',()=>{ cfg.n=+x.dataset.n; configScreen(el); }));
   const ft=App.$('#figTgl',el); if(ft) ft.addEventListener('click',()=>{ cfg.includeFigures=!cfg.includeFigures; configScreen(el); });
   const sb=App.$('#startBank',el); if(sb) sb.addEventListener('click',()=>{ startExam('bank'); paint(el); });
-  App.$('#startGen',el).addEventListener('click',()=>{ startExam('gen'); paint(el); });
+  const sg=App.$('#startGen',el); if(sg) sg.addEventListener('click',()=>{ startExam('gen'); paint(el); });
 }
 
 /* ---------- מסך מבחן רץ ---------- */
@@ -311,7 +328,7 @@ function runScreen(el){
   el.innerHTML=`
     <div class="card quiz">
       <div class="scorebar">
-        <span class="topicpill">${App.esc(topicName(q.topic))}${q.dq?' <b style="color:var(--bad)">·פוסלת·</b>':''}</span>
+        <span class="topicpill">${App.esc(topicName(q.topic))}${q.dq?' <b style="color:var(--bad)" title="שאלת כוכבית — תשובה פוסלת נכשלת את המבחן">★</b>':''}</span>
         <span>שאלה ${exam.idx+1}/${exam.qs.length}</span>
         <span class="exam-timer" id="examTimer">${fmtTime(exam.endsAt-Date.now())}</span>
       </div>
@@ -369,7 +386,7 @@ function resultScreen(el){
       <div style="color:${r.passed?'var(--good)':'var(--bad)'}">${App.icon(r.passed?'grad':(r.disqualified?'scale':'anchor'),44)}</div>
       <div class="bigscore ${r.passed?'pass':'fail'}">${r.score}%</div>
       <div style="font-weight:800;color:${r.passed?'var(--good)':'var(--bad)'}">
-        ${r.passed?'עברת את המבחן!':(r.disqualified?'נפסלת — תשובה פוסלת':'הפעם לא — ממשיכים לתרגל')}</div>
+        ${r.passed?'עברת את המבחן!':(r.disqualified?'נפסלת — טעות בשאלת כוכבית':'הפעם לא — ממשיכים לתרגל')}</div>
       <p class="muted" style="font-size:.8rem">${r.correct} נכונות מתוך ${r.total} · ציון עובר: ${r.passPct}%</p>
       ${r.disqualified?`<p style="font-size:.8rem;color:var(--bad);font-weight:700">
         במבחן האמיתי, בחירה בתשובה המסומנת במאגר הרשמי כ"פוסלת" גוררת פסילה אוטומטית —
@@ -385,7 +402,7 @@ function resultScreen(el){
     <div style="display:grid;gap:10px">
       ${wrong.map(({q,i})=>`
         <div class="card" style="padding:13px;${r.disq.includes(i)?'border-color:var(--bad)':''}">
-          <div style="font-weight:700;font-size:.88rem;color:var(--parchment);margin-bottom:6px">${i+1}. ${App.esc(q.q)} ${r.disq.includes(i)?'<span style="color:var(--bad)">⛔ פוסלת</span>':''}</div>
+          <div style="font-weight:700;font-size:.88rem;color:var(--parchment);margin-bottom:6px">${i+1}. ${App.esc(q.q)} ${r.disq.includes(i)?'<span style="color:var(--bad)">★ פוסלת</span>':''}</div>
           ${exam.answers[i]!=null?`<div class="chk no"><span>✗</span><span>ענית: ${App.esc(q.options[exam.answers[i]])}</span></div>`:'<div class="chk no"><span>—</span><span>לא נענתה</span></div>'}
           <div class="chk ok"><span>✓</span><span>נכון: ${App.esc(q.options[q.correct])}</span></div>
           ${q.explain?`<div class="muted" style="font-size:.78rem;margin-top:4px">${App.esc(q.explain)}</div>`:''}
