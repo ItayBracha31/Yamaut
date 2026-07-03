@@ -540,14 +540,39 @@ App.registerView('boat3d',{ render(el){
       <div style="font-size:.85rem;margin-top:5px"><span class="muted">מה רואים עכשיו: </span><b id="d3sees" style="color:var(--parchment)"></b></div>
       <div id="d3detail"></div>
     </div>
+    <div id="d3figs"></div>
     <div id="d3quizBox"></div>`;
 
   const cv=App.$('#d3cv',el), wrap=App.$('#d3wrap',el), ctx=cv.getContext('2d');
   const bearEl=App.$('#d3bear',el), nameEl=App.$('#d3name',el), refEl=App.$('#d3ref',el),
         seesEl=App.$('#d3sees',el), quizBox=App.$('#d3quizBox',el),
         rotBtn=App.$('#d3rot',el), segEl=App.$('#d3seg',el), quizBtn=App.$('#d3quizBtn',el),
-        detEl=App.$('#d3detail',el),
+        detEl=App.$('#d3detail',el), figsEl=App.$('#d3figs',el),
         prevBtn=App.$('#d3prev',el), nextBtn=App.$('#d3next',el), curBtn=App.$('#d3cur',el);
+
+  /* "כך זה נראה במבחן" — האיורים הרשמיים הקשורים לכלי השיט הנבחר */
+  function paintFigs(){
+    const VF=window.VESSEL_FIGURES, IM=window.EXAM_FIGURE_IMGS, FD=window.EXAM_FIGURES;
+    const nums=(VF&&VF[st.vid])||[];
+    if(st.quiz.active || !nums.length || !IM){ figsEl.innerHTML=''; return; }
+    figsEl.innerHTML=`
+      <div class="section-title" style="margin-top:14px"><h2 style="font-size:.95rem">כך זה נראה במבחן</h2>
+        <span class="hint">האיורים הרשמיים מהחוברת · הקישו להגדלה</span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px">
+        ${nums.filter(n=>IM[String(n)]).map(n=>`
+          <button class="tile" data-fig="${n}" style="padding:6px;background:#fdfdfa">
+            <img src="${IM[String(n)]}" alt="תמונה ${n}" loading="lazy" style="width:100%;height:72px;object-fit:contain">
+            <div class="nm" style="color:#4a5a66">תמונה ${n}</div>
+          </button>`).join('')}
+      </div>`;
+    App.$$('[data-fig]',figsEl).forEach(b=>b.addEventListener('click',()=>{
+      const n=b.dataset.fig, f=FD&&FD[String(n)];
+      App.openSheet('תמונה '+n+' — מהחוברת הרשמית',
+        `<div style="background:#fdfdfa;border-radius:10px;padding:10px;text-align:center">
+           <img src="${IM[String(n)]}" alt="תמונה ${n}" style="max-width:100%;height:auto"></div>
+         ${f?`<p style="font-size:.86rem">${App.esc(f.desc)}</p>`:''}`);
+    }));
+  }
 
   const st={ az:38, el:16, vaz:0, mode:'night', nightK:1, time:0,
     rot:!reduced, anim:!reduced, stars:[], w:0,h:0,dpr:1,
@@ -583,7 +608,7 @@ App.registerView('boat3d',{ render(el){
   function selectVessel(id){
     st.vid=id; st.model=buildModel(vessels.find(v=>v.id===id));
     if(!st.quiz.active) markSeen(id);
-    buildPicker(); updateInfo();
+    buildPicker(); updateInfo(); paintFigs();
   }
   function updateInfo(){
     const v=vessels.find(x=>x.id===st.vid);
@@ -650,13 +675,13 @@ App.registerView('boat3d',{ render(el){
   function startQuiz(){
     st.quiz.active=true; st.rot=false; st.vaz=0; st.mode='night';
     quizBtn.textContent='סיום החידון';
-    paintRot(); paintSeg(); buildChips(); nextRound();
+    paintRot(); paintSeg(); buildPicker(); paintFigs(); nextRound();
   }
   function endQuiz(){
     st.quiz={active:false,v:null,answered:false};
     quizBox.innerHTML=''; quizBtn.textContent='זהה מהחשכה';
-    st.rot=!reduced; paintRot(); paintSeg(); buildChips();
-    markSeen(st.vid); updateInfo();
+    st.rot=!reduced; paintRot(); paintSeg(); buildPicker();
+    markSeen(st.vid); updateInfo(); paintFigs();
   }
   quizBtn.addEventListener('click',()=>{ App.sfx('click'); st.quiz.active?endQuiz():startQuiz(); });
 
@@ -673,7 +698,7 @@ App.registerView('boat3d',{ render(el){
       ${opts.map(o=>`<button class="opt" data-id="${o.id}">${App.esc(o.shortName)}</button>`).join('')}
       <div id="d3after"></div></div>`;
     App.$$('.opt',quizBox).forEach(b=>b.addEventListener('click',()=>answerQuiz(b)));
-    buildChips(); updateInfo();
+    buildPicker(); updateInfo();
   }
   function answerQuiz(btn){
     if(st.quiz.answered) return;

@@ -11,6 +11,7 @@ const ASSETS = [
   'js/data/exam-bank.js',
   'js/data/figures.js',
   'js/data/figures-img.js',
+  'js/data/vessel-figures.js',
   'js/data/navdata.js',
   'js/views/home.js',
   'js/views/boat3d.js',

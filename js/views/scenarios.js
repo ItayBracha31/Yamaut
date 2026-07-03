@@ -298,61 +298,123 @@ function drawBoat(sc,key,x,y,dir){
   const boat=sc[key], accent=key==='A'?COLA:COLB;
   return st.night ? nightVesselTop(x,y,dir,boat) : Draw.vesselTop(x,y,dir,accent,boat);
 }
-/* שושנת רוחות עתיקה: טבעת שנתות, כוכב רוחות, מחוג צפון קטן — וחץ הרוח במרכז */
+/* שושנת רוחות עתיקה: טבעת שנתות כפולה עם N/E/S/W, כוכב רוחות,
+   מחוג צפון — וחץ הרוח בתוכה. "רוח" כתוב מתחת. */
 function compassRose(sc){
-  const cx=322, cy=44, R1=27, R2=20;
-  let g=`<g opacity=".95">`;
-  g+=`<circle cx="${cx}" cy="${cy}" r="${R1}" fill="${st.night?'rgba(3,17,29,.72)':'rgba(6,24,38,.6)'}" stroke="#4d748f" stroke-width="1.3"/>`;
-  g+=`<circle cx="${cx}" cy="${cy}" r="${R2}" fill="none" stroke="#33536f" stroke-width=".8"/>`;
-  for(let a=0;a<360;a+=22.5){
-    const main=a%90===0, mid=a%45===0;
-    const rIn=main?R2-3:(mid?R2:R2+2.5), rOut=R1-1.5;
+  const cx=318, cy=48, R1=32, R2=21;
+  let g=`<g opacity=".97">`;
+  // דיסקה + טבעות
+  g+=`<circle cx="${cx}" cy="${cy}" r="${R1+2}" fill="${st.night?'rgba(3,17,29,.78)':'rgba(5,22,36,.68)'}" stroke="#d9a441" stroke-width="1" opacity=".95"/>`;
+  g+=`<circle cx="${cx}" cy="${cy}" r="${R1-8.5}" fill="none" stroke="#4d748f" stroke-width=".9"/>`;
+  g+=`<circle cx="${cx}" cy="${cy}" r="${R2-3}" fill="none" stroke="#33536f" stroke-width=".7"/>`;
+  // שנתות: ראשיות (90°), משניות (45°/22.5°) ועדינות (11.25°)
+  for(let a=0;a<360;a+=11.25){
+    const main=a%90===0, mid=a%45===0, sub=a%22.5===0;
+    if(main) continue; // במקום שנת ראשית — אות רוח
+    const rIn=mid?R1-8:(sub?R1-6.5:R1-5), rOut=R1-1.5;
     const ca=Math.cos((a-90)*Math.PI/180), sa=Math.sin((a-90)*Math.PI/180);
-    g+=`<line x1="${(cx+ca*rIn).toFixed(1)}" y1="${(cy+sa*rIn).toFixed(1)}" x2="${(cx+ca*rOut).toFixed(1)}" y2="${(cy+sa*rOut).toFixed(1)}" stroke="#7fa5bd" stroke-width="${main?1.5:(mid?1:.6)}" opacity="${main?1:.7}"/>`;
+    g+=`<line x1="${(cx+ca*rIn).toFixed(1)}" y1="${(cy+sa*rIn).toFixed(1)}" x2="${(cx+ca*rOut).toFixed(1)}" y2="${(cy+sa*rOut).toFixed(1)}" stroke="#7fa5bd" stroke-width="${mid?1.1:.55}" opacity="${mid?.95:.6}"/>`;
   }
-  // כוכב רוחות עדין ברקע
-  g+=`<polygon points="${cx},${cy-R2+4} ${cx+3},${cy} ${cx},${cy+R2-4} ${cx-3},${cy}" fill="#24465c"/>`;
-  g+=`<polygon points="${cx-R2+4},${cy} ${cx},${cy-3} ${cx+R2-4},${cy} ${cx},${cy+3}" fill="#24465c"/>`;
-  // צפון
-  g+=`<polygon points="${cx},${cy-R2+1} ${cx+2.6},${cy-R2+8} ${cx-2.6},${cy-R2+8}" fill="#ff5147"/>`;
-  g+=`<text x="${cx}" y="${cy-R1-4}" fill="#9aafc4" font-size="9" font-weight="700" text-anchor="middle">N</text>`;
+  // אותיות הרוחות בתוך הטבעת החיצונית
+  const LR=R1-4.5;
+  [['N',0,'#ff5147'],['E',90,'#a9c6d8'],['S',180,'#a9c6d8'],['W',270,'#a9c6d8']].forEach(([L,a,col])=>{
+    const ca=Math.cos((a-90)*Math.PI/180), sa=Math.sin((a-90)*Math.PI/180);
+    g+=`<text x="${(cx+ca*LR).toFixed(1)}" y="${(cy+sa*LR).toFixed(1)}" fill="${col}" font-size="8.5" font-weight="800" text-anchor="middle" dominant-baseline="central" style="font-family:var(--mono)">${L}</text>`;
+  });
+  // כוכב רוחות: 4 קרניים ראשיות + 4 משניות מסובבות
+  const star=(len,wid,col,rot)=>{
+    let s=`<g transform="rotate(${rot} ${cx} ${cy})">`;
+    for(let a=0;a<360;a+=90){
+      s+=`<g transform="rotate(${a} ${cx} ${cy})">
+        <polygon points="${cx},${cy-len} ${cx+wid},${cy} ${cx},${cy}" fill="${col}"/>
+        <polygon points="${cx},${cy-len} ${cx-wid},${cy} ${cx},${cy}" fill="${col}" opacity=".55"/></g>`;
+    }
+    return s+'</g>';
+  };
+  g+=star(R2-8,2.6,'#24465c',45);
+  g+=star(R2-3,3.2,'#3d637f',0);
+  // מחוג צפון אדום קטן על הקרן העליונה
+  g+=`<polygon points="${cx},${cy-R2+2} ${cx+2.2},${cy-R2+8} ${cx-2.2},${cy-R2+8}" fill="#ff5147"/>`;
+  g+=`<circle cx="${cx}" cy="${cy}" r="2" fill="#d9a441"/>`;
   // חץ הרוח — לאן הרוח נושבת
   if(sc.wind){
     const wf=norm({x:-sc.wind.x,y:-sc.wind.y});
-    g+=arrow({x:cx-wf.x*(R2-3),y:cy-wf.y*(R2-3)},{x:cx+wf.x*(R2-3),y:cy+wf.y*(R2-3)},'#7fd6ff',true);
+    g+=arrow({x:cx-wf.x*(R2-4),y:cy-wf.y*(R2-4)},{x:cx+wf.x*(R2-4),y:cy+wf.y*(R2-4)},'#7fd6ff',true);
   }
-  g+=`<text x="${cx}" y="${cy+R1+12}" fill="#7fd6ff" font-size="10" font-weight="700" text-anchor="middle">רוח</text></g>`;
+  g+=`<text x="${cx}" y="${cy+R1+13}" fill="#7fd6ff" font-size="10" font-weight="700" text-anchor="middle">רוח</text></g>`;
   return g;
 }
 function drawBoardInner(){
   const sc=sim.sc;
-  const seaCol = st.night ? '#03111d' : '#06283d';
-  const gridCol= st.night ? '#092338' : '#0e3a55';
+  const deep = st.night ? ['#04202f','#02111c'] : ['#0d425f','#052236'];
+  const gridCol= st.night ? '#0a2a3f' : '#10405c';
+  // עומק: גרדיאנט רדיאלי + שני משטחי נצנוץ אלכסוניים
+  const defs=`<defs>
+    <radialGradient id="seaG" cx="42%" cy="30%" r="95%">
+      <stop offset="0" stop-color="${deep[0]}"/><stop offset="1" stop-color="${deep[1]}"/>
+    </radialGradient>
+    <linearGradient id="glint" x1="0" y1="0" x2="1" y2="1">
+      <stop offset=".25" stop-color="rgba(160,220,255,0)"/>
+      <stop offset=".5" stop-color="rgba(160,220,255,.05)"/>
+      <stop offset=".75" stop-color="rgba(160,220,255,0)"/>
+    </linearGradient>
+    <radialGradient id="vign" cx="50%" cy="50%" r="72%">
+      <stop offset=".62" stop-color="rgba(0,0,0,0)"/><stop offset="1" stop-color="rgba(0,0,0,.35)"/>
+    </radialGradient>
+  </defs>`;
+  // רשת עדינה
   let grid='';
-  for(let i=1;i<6;i++){grid+=`<line x1="${i*60}" y1="0" x2="${i*60}" y2="${BW}" stroke="${gridCol}" stroke-width="1" opacity=".5"/>`;
-    grid+=`<line x1="0" y1="${i*60}" x2="${BW}" y2="${i*60}" stroke="${gridCol}" stroke-width="1" opacity=".5"/>`;}
-  // אדוות מונפשות עדינות
-  let ripples='<g class="scn-ripples" opacity=".35">';
-  for(let i=0;i<7;i++){ const rx=28+((i*53)%300), ry=22+((i*97)%310);
-    ripples+=`<path d="M${rx-12},${ry} q6,-4 12,0 t12,0" fill="none" stroke="${st.night?'#0d2c44':'#155b82'}" stroke-width="1.4"/>`; }
+  for(let i=1;i<6;i++){grid+=`<line x1="${i*60}" y1="0" x2="${i*60}" y2="${BW}" stroke="${gridCol}" stroke-width="1" opacity=".4"/>`;
+    grid+=`<line x1="0" y1="${i*60}" x2="${BW}" y2="${i*60}" stroke="${gridCol}" stroke-width="1" opacity=".4"/>`;}
+  // טבעות טווח (מכ"ם) סביב מרכז הלוח
+  let rings='';
+  [70,140].forEach(r=>{ rings+=`<circle cx="180" cy="180" r="${r}" fill="none" stroke="#7fb8d8" stroke-width="1" opacity=".08" stroke-dasharray="1 5"/>`; });
+  // מסגרת "מכשיר": שנתות לאורך השוליים
+  let frame=`<rect x="1" y="1" width="${BW-2}" height="${BW-2}" fill="none" stroke="#d9a441" stroke-width="1" opacity=".35" rx="3"/>`;
+  for(let t=30;t<BW;t+=30){
+    const main=t%60===0, L=main?7:4;
+    frame+=`<line x1="${t}" y1="1" x2="${t}" y2="${1+L}" stroke="#d9a441" stroke-width="1" opacity=".4"/>`;
+    frame+=`<line x1="${t}" y1="${BW-1}" x2="${t}" y2="${BW-1-L}" stroke="#d9a441" stroke-width="1" opacity=".4"/>`;
+    frame+=`<line x1="1" y1="${t}" x2="${1+L}" y2="${t}" stroke="#d9a441" stroke-width="1" opacity=".4"/>`;
+    frame+=`<line x1="${BW-1}" y1="${t}" x2="${BW-1-L}" y2="${t}" stroke="#d9a441" stroke-width="1" opacity=".4"/>`;
+  }
+  // אדוות
+  let ripples='<g opacity=".3">';
+  for(let i=0;i<8;i++){ const rx=26+((i*53)%300), ry=20+((i*97)%310);
+    ripples+=`<path d="M${rx-12},${ry} q6,-4 12,0 t12,0" fill="none" stroke="${st.night?'#0d2c44':'#1b6a94'}" stroke-width="1.3"/>`; }
   ripples+='</g>';
-  // שושנת רוחות אחת בסגנון ישן: צפון מסומן בשנתות, וחץ הרוח בתוכה —
-  // מקור האמת היחיד לכיוון הרוח (החץ מצביע לאן הרוח נושבת)
   const compass=compassRose(sc);
-  const aArr = sim.running?'':arrow({x:sc.A.x,y:sc.A.y},sim.hA,COLA);
-  const bArr = sim.running?'':arrow({x:sc.B.x,y:sc.B.y},sim.hB,COLB);
+  // נתיבים מתוכננים — קו "נמלים צועדות" זורם אל היעד + ראש חץ
+  const track=(from,to,col)=>{
+    const d=norm(vec(from,to)), tip=to, back={x:tip.x-d.x*12,y:tip.y-d.y*12}, perp={x:-d.y,y:d.x};
+    return `<g><line class="trk" x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" stroke="${col}" stroke-width="2.6" opacity=".95"/>
+      <polygon points="${tip.x},${tip.y} ${back.x+perp.x*6},${back.y+perp.y*6} ${back.x-perp.x*6},${back.y-perp.y*6}" fill="${col}"/></g>`;
+  };
+  const aArr = sim.running?'':track({x:sc.A.x,y:sc.A.y},sim.hA,COLA);
+  const bArr = sim.running?'':track({x:sc.B.x,y:sc.B.y},sim.hB,COLB);
   const handle=(pt,col,key)=>sim.running?'':`<g class="handle" data-h="${key}">
-     <circle cx="${pt.x}" cy="${pt.y}" r="16" fill="${col}" fill-opacity=".12"/>
-     <circle cx="${pt.x}" cy="${pt.y}" r="12" fill="${col}" fill-opacity=".25" stroke="${col}" stroke-width="2"/>
-     <circle cx="${pt.x}" cy="${pt.y}" r="3.5" fill="${col}"/></g>`;
-  return `<rect width="${BW}" height="${BW}" fill="${seaCol}"/>${grid}${ripples}${compass}
+     <circle class="hpulse" cx="${pt.x}" cy="${pt.y}" r="17" fill="none" stroke="${col}" stroke-width="1.5"/>
+     <circle cx="${pt.x}" cy="${pt.y}" r="12" fill="${col}" fill-opacity=".22" stroke="${col}" stroke-width="2"/>
+     <line x1="${pt.x-5}" y1="${pt.y}" x2="${pt.x+5}" y2="${pt.y}" stroke="${col}" stroke-width="1.6"/>
+     <line x1="${pt.x}" y1="${pt.y-5}" x2="${pt.x}" y2="${pt.y+5}" stroke="${col}" stroke-width="1.6"/></g>`;
+  // לוחיות שם לכלי השיט
+  const plate=(b,col)=>{
+    const w=b.label.length*6.4+16;
+    return `<g><rect x="${b.x-w/2}" y="${b.y+20}" width="${w}" height="16" rx="8" fill="rgba(4,16,26,.72)" stroke="${col}" stroke-width="1"/>
+      <text x="${b.x}" y="${b.y+31.5}" fill="${col}" font-size="10" font-weight="700" text-anchor="middle">${App.esc(b.label)}</text></g>`;
+  };
+  return `${defs}
+    <rect width="${BW}" height="${BW}" fill="url(#seaG)"/>
+    <rect width="${BW}" height="${BW}" fill="url(#glint)"/>
+    ${grid}${rings}${ripples}
     ${aArr}${bArr}
     ${drawBoat(sc,'A',sc.A.x,sc.A.y,sc.A.heading)}
     ${drawBoat(sc,'B',sc.B.x,sc.B.y,sc.B.heading)}
-    <text x="${sc.A.x}" y="${sc.A.y+27}" fill="${COLA}" font-size="11" font-weight="700" text-anchor="middle">${App.esc(sc.A.label)}</text>
-    <text x="${sc.B.x}" y="${sc.B.y+27}" fill="${COLB}" font-size="11" font-weight="700" text-anchor="middle">${App.esc(sc.B.label)}</text>
+    ${plate(sc.A,COLA)}${plate(sc.B,COLB)}
     ${handle(sim.hA,COLA,'A')}${handle(sim.hB,COLB,'B')}
-    <g id="animLayer"></g>`;
+    <g id="animLayer"></g>
+    <rect width="${BW}" height="${BW}" fill="url(#vign)" pointer-events="none"/>
+    ${frame}${compass}`;
 }
 function redrawInner(){ const s=App.$('#boardSvg'); if(s) s.innerHTML=drawBoardInner(); }
 

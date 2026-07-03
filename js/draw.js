@@ -345,7 +345,10 @@ D.vesselTop = (x,y,dir,accent,boat,opts)=>{
   opts=opts||{};
   const ang=Math.atan2(dir.y,dir.x)*180/Math.PI;
   const cls=boat.class;
-  let g=`<polygon points="20,0 7,-9 -17,-8 -19,0 -17,8 7,9" fill="${accent}" stroke="#06121d" stroke-width="1.5"/>`;
+  // שובל עדין מאחורי הירכתיים
+  let g=`<path d="M-20,-6 q-10,6 0,12" stroke="rgba(214,236,248,.30)" stroke-width="1.6" fill="none"/>
+         <path d="M-24,-4 q-7,4 0,8" stroke="rgba(214,236,248,.16)" stroke-width="1.3" fill="none"/>`;
+  g+=`<polygon points="20,0 7,-9 -17,-8 -19,0 -17,8 7,9" fill="${accent}" stroke="#06121d" stroke-width="1.5"/>`;
   if(cls==='sail'){
     const side = boat.windSide==='stbd' ? -1 : 1;
     g+=`<line x1="4" y1="0" x2="-14" y2="${side*13}" stroke="#5b4a2e" stroke-width="2"/>`;

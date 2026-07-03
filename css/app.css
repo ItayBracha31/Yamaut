@@ -261,6 +261,12 @@ nav.tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .board{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--water);touch-action:none;position:relative}
 .board svg{display:block;width:100%;height:auto}
 .board .windovl{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+/* נתיב מתוכנן: "נמלים צועדות" אל היעד */
+.board .trk{stroke-dasharray:7 7;animation:trkflow 1s linear infinite}
+@keyframes trkflow{to{stroke-dashoffset:-14}}
+/* ידית גרירה נושמת */
+.board .hpulse{animation:hpulse 1.8s ease-in-out infinite}
+@keyframes hpulse{0%,100%{opacity:.25}50%{opacity:.75}}
 .scn-head{display:flex;align-items:center;gap:8px;justify-content:space-between;margin:4px 2px 10px}
 .scn-head .t{font-weight:800;color:var(--parchment);font-size:.92rem}
 .typesel{margin:0 2px 4px;border:1px solid var(--line);border-radius:11px;background:var(--sea);overflow:hidden}
