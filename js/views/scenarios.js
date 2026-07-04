@@ -660,10 +660,10 @@ function helpSheet(){
 
 function paint(el){
   if(!st.types) st.types=new Set(SCN_TYPES().map(t=>t.vid));
-  const head=`<div class="section-title"><h2>תרחישי זכות קדימה</h2>
-    <span class="grow"></span>
+  const head=`<div class="scn-topbar">
     <button class="btn mini ${st.night?'primary':''}" id="nightBtn">${App.icon(st.night?'moon':'sun',15)} ${st.night?'לילה':'יום'}</button>
-    <button class="btn mini ghost" id="helpBtn">?</button>
+    <span class="grow"></span>
+    <button class="btn mini ghost" id="helpBtn">${App.icon('bulb',14)} איך משחקים?</button>
     </div>${chipsBar()}`;
   const cur=currentScenario();
   if(!cur){
@@ -684,7 +684,7 @@ function paint(el){
       <button class="iconbtn" id="newScn" aria-label="תרחיש חדש" title="תרחיש חדש">↻</button>
     </div>
     <div class="board" id="board"><svg id="boardSvg" viewBox="0 0 ${BW} ${BW}">${drawBoardInner()}</svg><svg class="windovl" id="windOvl" viewBox="0 0 ${BW} ${BW}" aria-hidden="true"></svg></div>
-    <p class="drag-hint">${App.icon('target',14)} גררו את העיגול שבקצה כל נתיב כדי לקבוע את כיוון ההפלגה (course) של הכלי — ואז «בדוק תמרון».</p>
+    <p class="drag-hint">${App.icon('target',14)} גררו את העיגולים לקביעת הכיוון, ואז «בדוק תמרון»</p>
     <div class="scn-controls">
       <div class="scn-actions">
         <button class="btn primary" id="simBtn">▶ בדוק תמרון</button>
@@ -699,8 +699,8 @@ function paint(el){
       </div>
     </div>
     <div class="verdict" id="verdict"></div>
-    <div class="card quiz" style="margin-top:14px">
-      <div class="qtext">מי נותן זכות קדימה (give‑way)?</div>
+    <div class="card quiz" style="margin-top:8px;padding:12px 14px">
+      <div class="qtext" style="margin:2px 0 8px">מי נותן זכות קדימה (give‑way)?</div>
       <div id="scnOpts">${opts.map((o,i)=>`<button class="opt" data-i="${i}" ${sim.answered?'disabled':''}>${App.esc(o)}</button>`).join('')}</div>
       <div id="scnExp"></div>
     </div>`;

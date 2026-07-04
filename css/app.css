@@ -328,7 +328,10 @@ svg.marksvg{background:linear-gradient(180deg,#315270 0%,#1d3a55 62%,#0d2c44 100
 .voyage-wrap{margin:2px 0 8px}
 
 /* ---------- scenarios ---------- */
-.board{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--water);touch-action:none;position:relative}
+.board{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--water);touch-action:none;position:relative;
+  max-width:min(100%,52vh);margin-inline:auto}
+/* סרגל עליון קומפקטי לתרחישים (יום/לילה + עזרה) — במקום כותרת גדולה */
+.scn-topbar{display:flex;align-items:center;gap:8px;margin:2px 2px 8px}
 .board svg{display:block;width:100%;height:auto}
 .board .windovl{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 /* נתיב מתוכנן: "נמלים צועדות" אל היעד */
@@ -338,9 +341,9 @@ svg.marksvg{background:linear-gradient(180deg,#315270 0%,#1d3a55 62%,#0d2c44 100
 .board .hpulse{animation:hpulse 1.8s ease-in-out infinite}
 @keyframes hpulse{0%,100%{opacity:.25}50%{opacity:.75}}
 .drag-hint{display:flex;align-items:center;gap:6px;justify-content:center;text-align:center;
-  margin:9px 2px 0;font-size:.78rem;font-weight:600;color:var(--ink-dim)}
+  margin:5px 2px 2px;font-size:.76rem;font-weight:600;color:var(--ink-dim)}
 .drag-hint .ic{color:var(--brass);flex:0 0 auto}
-.scn-head{display:flex;align-items:center;gap:8px;justify-content:space-between;margin:4px 2px 10px}
+.scn-head{display:flex;align-items:center;gap:8px;justify-content:space-between;margin:2px 2px 6px}
 .scn-head .t{font-weight:800;color:var(--parchment);font-size:.92rem}
 .typesel{margin:0 2px 4px;border:1px solid var(--line);border-radius:11px;background:var(--sea);overflow:hidden}
 .typesel summary{cursor:pointer;padding:10px 12px;font-size:.82rem;font-weight:700;color:var(--ink);list-style:none}
@@ -354,7 +357,7 @@ svg.marksvg{background:linear-gradient(180deg,#315270 0%,#1d3a55 62%,#0d2c44 100
   display:inline-flex;align-items:center;gap:5px}
 .chip[aria-pressed="true"]{background:var(--brass);border-color:var(--brass);color:var(--brass-ink)}
 /* לוח הכפתורים של התרחיש: שורת פעולות (בדוק/פתרון/איפוס) + שורת מטא (מהירות · הבא) */
-.scn-controls{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.scn-controls{display:flex;flex-direction:column;gap:8px;margin-top:8px}
 .scn-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .scn-actions .btn.primary{flex:1 1 auto;min-width:150px}
 .scn-meta{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
