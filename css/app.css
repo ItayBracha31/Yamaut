@@ -85,8 +85,13 @@ body{
    (מציג פסים לבנים בזמן גלילה שמתמלאים באיחור) */
 body::before{content:"";position:fixed;inset:0;z-index:-1;background:var(--bg)}
 .wrap{max-width:var(--maxw);margin:0 auto;padding:0 14px;
-  padding-top:calc(64px + env(safe-area-inset-top,0px));
-  padding-bottom:120px;}
+  padding-top:calc(60px + env(safe-area-inset-top,0px));
+  padding-bottom:80px;}
+/* גיליון פתוח → נועלים את גלילת הרקע (לא ניתן לגלול את מה שמאחורי החלון) */
+body.sheet-open{overflow:hidden}
+body.sheet-open .wrap{overflow:hidden}
+/* שורת רמז דקה במקום כותרת כפולה במסכי‑משנה (סרגל ה"חזרה" כבר מציג את שם המסך) */
+.screen-hint{font-size:.74rem;color:var(--ink-dim);text-align:center;margin:1px 2px 8px;font-weight:600}
 a{color:var(--brass)}
 button{touch-action:manipulation}
 
@@ -109,8 +114,8 @@ button{touch-action:manipulation}
 .wrap,nav.tabs,.sheet,.sheet-back,#toasts{position:relative;z-index:1}
 
 /* ---------- header ---------- */
-header.app{display:flex;align-items:center;gap:11px;padding:14px 2px 12px;
-  padding-top:calc(14px + env(safe-area-inset-top,0px));position:relative}
+header.app{display:flex;align-items:center;gap:11px;padding:9px 2px 8px;
+  padding-top:calc(9px + env(safe-area-inset-top,0px));position:relative}
 /* "סרט הדגלים" — פס כפול בסגנון חולצת מלחים, חתימת העיצוב של האפליקציה */
 header.app::after{content:"";position:absolute;inset-inline:2px;bottom:0;height:5px;border-radius:3px;
   background:linear-gradient(180deg,var(--rib1) 0 2px,transparent 2px 3px,var(--rib2) 3px 5px)}

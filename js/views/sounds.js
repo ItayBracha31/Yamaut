@@ -32,8 +32,7 @@ App.registerView('sounds',{render(el){
   const R=App.R;
   const groups={};
   R.sounds.forEach(s=>{ (groups[s.when]=groups[s.when]||[]).push(s); });
-  let html=`<div class="section-title"><h2>אותות קול</h2>
-      <span class="hint">• = צפירה קצרה (~1 שנ׳) · ▬ = צפירה ממושכת (4–6 שנ׳)</span></div>`;
+  let html=`<p class="screen-hint">• = צפירה קצרה (~1 שנ׳) · ▬ = צפירה ממושכת (4–6 שנ׳)</p>`;
   Object.keys(groups).forEach(when=>{
     html+=`<div class="section-title" style="margin-top:16px"><h2 style="font-size:.86rem;color:var(--brass)">${App.esc(when)}</h2></div>
       <div style="display:grid;gap:10px">`+

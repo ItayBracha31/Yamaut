@@ -514,8 +514,7 @@ App.registerView('boat3d',{ render(el){
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   el.innerHTML=`
-    <div class="section-title"><h2>אורות וצורות</h2>
-      <span class="hint">גררו את כלי השיט להקפה · מעלה/מטה לגובה המבט</span></div>
+    <p class="screen-hint">גררו את כלי השיט להקפה · מעלה/מטה לגובה המבט</p>
     <div class="row" style="justify-content:center;gap:10px;margin-bottom:8px" id="d3pick">
       <button class="iconbtn" id="d3prev" aria-label="כלי השיט הקודם">›</button>
       <button class="chip" id="d3cur" style="min-width:180px;justify-content:center;font-size:.84rem" aria-pressed="true"></button>

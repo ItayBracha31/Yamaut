@@ -315,12 +315,14 @@ App.openSheet = (title,bodyHTML)=>{
   sheetOpenedAt=Date.now();
   $('#sheetTitle').textContent=title; $('#sheetBody').innerHTML=bodyHTML;
   $('#sheetBack').classList.add('show'); $('#sheet').classList.add('show');
+  document.body.classList.add('sheet-open');   // נעילת גלילת הרקע כל עוד הגיליון פתוח
 };
 /* במגע: פתיחה בזמן pointerdown גורמת ל-click הסינתטי (בהרמת האצבע) לפגוע
    ברקע שזה עתה נפתח ולסגור את הגיליון מיד — לכן חלון חסד קצר */
 App.closeSheet = ()=>{
   if(Date.now()-sheetOpenedAt<350) return;
   $('#sheetBack').classList.remove('show'); $('#sheet').classList.remove('show');
+  document.body.classList.remove('sheet-open');
 };
 
 /* ---------------- settings ---------------- */
@@ -483,12 +485,11 @@ App.render=()=>{
   const v=VIEWS[id];
   const host=$('#view');
   host.innerHTML='';
-  // מעבר מכוון: לשונית "רחוקה" יותר מחליקה מהצד המתאים (RTL: אינדקס גבוה = שמאלה)
+  // מעבר עדין ואחיד בין מסכים — עלייה קלה ודהייה (בלי החלקה אופקית של כל הדף,
+  // שהרגישה "מוזרה" בטלפון בעת מעבר בין לשוניות).
   const idx=App.TABS.findIndex(t=>t.id===App.current.tab);
-  let cls='view-enter';
-  if(App._lastTabIdx!=null && idx!==App._lastTabIdx) cls = idx>App._lastTabIdx?'view-slide-left':'view-slide-right';
   App._lastTabIdx=idx;
-  const el=document.createElement('div'); el.className=cls; host.appendChild(el);
+  const el=document.createElement('div'); el.className='view-enter'; host.appendChild(el);
   const t=tabOf(App.current.tab);
   if(t.subs && !App.current.sub) renderHub(t,el);
   else if(v) v.render(el);

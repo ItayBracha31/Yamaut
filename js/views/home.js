@@ -93,17 +93,16 @@ function chartBg(W,H,rm){
     <path d="M14,${(H*0.26)|0} Q${(W*0.45)|0},${(H*0.2)|0} ${W-14},${(H*0.3)|0}"/>
     <path d="M14,${(H*0.55)|0} Q${(W*0.5)|0},${(H*0.48)|0} ${W-14},${(H*0.58)|0}"/>
     <path d="M14,${(H*0.83)|0} Q${(W*0.5)|0},${(H*0.77)|0} ${W-14},${(H*0.86)|0}"/></g>`;
-  g+=`<path d="M${W-4},4 Q${W-66},14 ${W-92},60 Q${W-64},98 ${W-34},106 Q${W-14},110 ${W-4},102 Z" fill="url(#vland)" opacity=".5" stroke="#a98d52" stroke-width="1"/>`;
-  g+=`<g opacity=".75"><rect x="${W-46}" y="30" width="4" height="14" fill="#c0492f"/><polygon points="${W-48},30 ${W-40},30 ${W-44},24" fill="#7a2c1d"/><circle cx="${W-44}" cy="27" r="2.2" fill="#ffd23b"/></g>`;
-  g+=`<path d="M4,${H-4} Q56,${H-16} 82,${H-58} Q50,${H-92} 4,${H-100} Z" fill="url(#vland)" opacity=".38" stroke="#a98d52" stroke-width="1"/>`;
+  // חופים בפינות התחתונות (הרחק משושנת הרוחות ומהתחנה הנוכחית שבראש) + מגדלור על החוף השמאלי
+  g+=`<path d="M4,${H-4} Q56,${H-16} 82,${H-58} Q50,${H-92} 4,${H-100} Z" fill="url(#vland)" opacity=".42" stroke="#a98d52" stroke-width="1"/>`;
+  g+=`<g opacity=".75"><rect x="38" y="${H-74}" width="4" height="13" fill="#c0492f"/><polygon points="36,${H-74} 44,${H-74} 40,${H-80}" fill="#7a2c1d"/><circle cx="40" cy="${H-77}" r="2.1" fill="#ffd23b"/></g>`;
+  g+=`<path d="M${W-4},${H-4} Q${W-56},${H-16} ${W-82},${H-58} Q${W-50},${H-92} ${W-4},${H-100} Z" fill="url(#vland)" opacity=".34" stroke="#a98d52" stroke-width="1"/>`;
   g+='<g fill="var(--ink-dim)" opacity=".5" font-size="8" font-style="italic" font-family="Georgia,serif" style="pointer-events:none">';
-  [[46,140,'12'],[300,210,'18'],[76,265,'24'],[288,312,'31'],[50,392,'27'],[300,430,'19'],[176,150,'9'],[196,486,'22'],[150,338,'14']].forEach(d=>g+=`<text x="${d[0]}" y="${d[1]}">${d[2]}</text>`);
+  [[46,150,'12'],[300,205,'18'],[300,300,'31'],[150,235,'9'],[300,410,'19'],[176,150,'7'],[196,470,'22'],[60,330,'24']].forEach(d=>g+=`<text x="${d[0]}" y="${d[1]}">${d[2]}</text>`);
   g+='</g>';
   g+=chartBoat(H*0.2,26,1,0,1,rm)+chartBoat(H*0.47,34,-1,4,.8,rm)+chartBoat(H*0.72,30,1,9,.9,rm);
   g+=compassRoseHome(W-40,50,24);
-  g+=`<rect x="2" y="2" width="${W-4}" height="${H-4}" rx="16" fill="none" stroke="var(--brass)" stroke-width="1.5" opacity=".55"/>`;
-  g+=`<rect x="6.5" y="6.5" width="${W-13}" height="${H-13}" rx="12" fill="none" stroke="var(--brass)" stroke-width=".7" opacity=".35"/>`;
-  return g;
+  return g;   // המסגרת מצוירת ב-voyageSVG, מעל תוכן שנחתך לפינות מעוגלות
 }
 function voyageSVG(){
   const W=360, step=58, y0=52;
@@ -136,7 +135,12 @@ function voyageSVG(){
     if(i===cur){ const bx=p.x<180?p.x-R-26:p.x+R+26;
       g+=`<g style="pointer-events:none">${nestedIcon(bx,p.y-7,22,'ship','var(--brass)')}<text x="${bx}" y="${p.y+15}" text-anchor="middle" font-size="9" font-weight="800" fill="var(--brass)">אתם כאן</text></g>`; }
   });
-  return `<svg id="voyage" viewBox="0 0 ${W} ${H}" style="width:100%;max-width:440px;height:auto;display:block;margin:0 auto">${chartDefs()}${g}</svg>`;
+  return `<svg id="voyage" viewBox="0 0 ${W} ${H}" style="width:100%;max-width:440px;height:auto;display:block;margin:0 auto">${chartDefs()}
+    <clipPath id="vclip"><rect x="2" y="2" width="${W-4}" height="${H-4}" rx="16"/></clipPath>
+    <g clip-path="url(#vclip)">${g}</g>
+    <rect x="2" y="2" width="${W-4}" height="${H-4}" rx="16" fill="none" stroke="var(--brass)" stroke-width="1.5" opacity=".55"/>
+    <rect x="6.5" y="6.5" width="${W-13}" height="${H-13}" rx="12" fill="none" stroke="var(--brass)" stroke-width=".7" opacity=".35"/>
+  </svg>`;
 }
 
 App.registerView('home',{render(el){

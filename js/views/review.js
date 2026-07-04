@@ -32,7 +32,6 @@ function paint(el){
   if(!deck.length){
     st.cur=null;
     el.innerHTML=`
-      <div class="section-title"><h2>חזרה על טעויות</h2></div>
       <div class="card" style="padding:28px;text-align:center">
         <div style="color:var(--good)">${App.icon('broom',40)}</div>
         <p style="font-weight:800;color:var(--parchment)">אין טעויות לחזרה — הסיפון נקי!</p>
@@ -55,8 +54,7 @@ function paint(el){
   }
   q.options=App.shuffle(q.options);
   el.innerHTML=`
-    <div class="section-title"><h2>חזרה על טעויות</h2>
-      <span class="hint">${deck.length} שאלות בחפיסה · נכון פעמיים = יוצאת</span></div>
+    <p class="screen-hint">${deck.length} שאלות בחפיסה · נכון פעמיים = יוצאת</p>
     <div id="qhost"></div>`;
   QuizGen.renderQuestion(App.$('#qhost'), q, {
     headerHTML:`<div style="font-size:.72rem;color:var(--ink-dim);margin-bottom:6px">טעויות קודמות: ${item.wrong||1} · תשובות נכונות ברצף: ${item.ok||0}/2</div>`,

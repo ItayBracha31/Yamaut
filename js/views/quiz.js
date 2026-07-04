@@ -309,7 +309,7 @@ function buildQuestion(){
 
 App.registerView('quiz',{render(el){
   if(!st.selected) st.selected=new Set(['colreg']);
-  if(!st.openCats) st.openCats=new Set(['yam']);
+  if(!st.openCats) st.openCats=new Set();   // קטגוריות מקופלות כברירת מחדל — השאלה גבוהה במסך, בלי גלילה
   if(st.genFilter && !st.genFilterFresh) st.genFilter=null;   // סינון‑תחנה חד‑פעמי — לא נדבק לביקור הבא
   st.genFilterFresh=false;
   st.q=null;                                                  // שאלה טרייה בכל כניסה למסך (מונע מענה כפול)
@@ -326,8 +326,6 @@ function paint(el){
       <div class="chipbar">${chips}</div></details>`;
   }).join('');
   el.innerHTML=`
-    <div class="section-title"><h2>חידון עיוני</h2>
-      <span class="hint">בחרו מקצוע ותת‑נושא — שאלות מהמאגר הרשמי, ותרגול אינסופי בחוקי הדרך.</span></div>
     <div class="quiz-cats">${cats}</div>
     <div class="row" style="padding:2px 4px 0"><button class="btn ghost mini" id="selNone">נקה בחירה</button></div>
     <div class="scorebar" style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--ink-dim);padding:8px 4px">

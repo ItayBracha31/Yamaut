@@ -20,8 +20,7 @@ App.registerView('flags',{render(el){
   const inExam=R.flags.filter(f=>EXAM_FLAGS.has(f.letter));
   const notExam=R.flags.filter(f=>!EXAM_FLAGS.has(f.letter));
   el.innerHTML=`
-    <div class="section-title"><h2>דגלי קוד בינלאומי (ICS)</h2>
-      <span class="hint">דגל אות בודד ומשמעותו. לחצו לפרטים.</span></div>
+    <p class="screen-hint">דגלי הקוד הבינלאומי · דגל אות בודד ומשמעותו · לחצו לפרטים</p>
     <h3 class="flag-group">מופיעים בבחינה <span class="flag-count">${inExam.length}</span></h3>
     <p class="flag-note">דגלים אלו מופיעים במאגר השאלות הרשמי — כדאי לשלוט בהם היטב.</p>
     ${grid(inExam)}

@@ -21,8 +21,7 @@ App.registerView('marks',{render(el){
       ${Draw.buildMarkSVG(m)}<div class="nm">${App.esc(m.shortName)}</div>
     </div>`).join('');
   el.innerHTML=`
-    <div class="section-title"><h2>מצופים — מערכת IALA אזור A</h2>
-      <span class="hint">האור מהבהב במקצב האמיתי. לחצו למידע מלא.</span></div>
+    <p class="screen-hint">מערכת IALA אזור A · האור מהבהב במקצב האמיתי · לחצו למידע מלא</p>
     <div class="chipbar" style="padding:0 0 10px">${chips}</div>
     <div class="grid">${cards}</div>
     <div class="card" style="padding:12px;margin-top:14px;font-size:.8rem" id="memoCard">
