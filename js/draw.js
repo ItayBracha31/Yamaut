@@ -19,7 +19,10 @@ D.describeNight = v=>{
   if(ar.length===1) parts.push('פנס מעגלי '+R().lightColors[ar[0].color].name);
   else if(ar.length>1) parts.push(ar.length+' פנסים מעגליים זה מעל זה ('+ar.map(l=>R().lightColors[l.color].name).join('‑')+')');
   const mh=L.filter(l=>l.place==='masthead'||l.place==='masthead-aft').length;
-  if(mh===1) parts.push('פנס תורן'); else if(mh>1) parts.push(mh+' פנסי תורן');
+  if(mh===1) parts.push('פנס תורן');
+  else if(mh>1) parts.push(v.mastheadLayout==='stack'
+    ? mh+' פנסי תורן זה מעל זה בקו אנכי (על אותו תורן)'
+    : mh+' פנסי תורן על תרנים נפרדים (הקדמי נמוך, האחורי גבוה — כלי ≥50 מ׳)');
   if(L.some(l=>l.place==='sidelight-stbd'||l.place==='sidelight-port')) parts.push('פנסי צד (ירוק‑ימין, אדום‑שמאל)');
   if(L.some(l=>l.place==='stern')) parts.push('פנס ירכתיים');
   if(L.some(l=>l.place==='towing')) parts.push('פנס גרירה צהוב מעל הירכתיים');
@@ -65,8 +68,15 @@ D.buildVesselSVG = (v,mode)=>{
   const W=400,H=340,water=250, mast=235;
   let g='';
   // גוף + תא + תורן (חרטום מימין)
-  g+=`<polygon points="95,230 300,230 332,242 300,254 120,254 95,242" fill="#10202e" stroke="#2c4a66" stroke-width="1.4"/>`;
-  g+=`<rect x="150" y="212" width="74" height="19" rx="3" fill="#16293a" stroke="#2c4a66" stroke-width="1"/>`;
+  // גוף הכלי — צללית חלקה עם חרטום מחודד מימין, פס דופן חם וקו מים
+  const hullPath='M90,229 Q200,223 300,229 L340,240 Q343,246 335,250 L300,256 L118,256 Q97,254 90,244 Z';
+  g+=`<path d="${hullPath}" fill="url(#hullG)" stroke="#2c4a66" stroke-width="1.3"/>`;
+  g+=`<path d="M90,229 Q200,223 300,229 L340,240" fill="none" stroke="#5580a0" stroke-width="1.5" opacity=".75"/>`;   // קו סיפון מודגש
+  g+=`<path d="M99,249 Q210,247 331,249" fill="none" stroke="#c9973f" stroke-width="1.5" opacity=".55"/>`;           // פס דופן חם (rubrail)
+  // תא ההגה — גג מעוגל + שני חלונות מוארים
+  g+=`<path d="M150,229 L150,213 Q150,206 158,206 L206,206 Q214,206 214,213 L214,229 Z" fill="url(#cabinG)" stroke="#2c4a66" stroke-width="1"/>`;
+  g+=`<rect x="157" y="211" width="14" height="10" rx="1.5" fill="#ffd089" opacity=".5"/>`;
+  g+=`<rect x="178" y="211" width="14" height="10" rx="1.5" fill="#ffd089" opacity=".3"/>`;
   g+=`<line x1="${mast}" y1="231" x2="${mast}" y2="72" stroke="#3a5a78" stroke-width="2.4"/>`;
 
   if(v.sail){
@@ -132,6 +142,21 @@ D.buildVesselSVG = (v,mode)=>{
   if(st) g+=D.lightSVG(100,222,st.color,st.label,st.desc||'אור לבן בירכתיים.');
   const tw=v.lights.find(l=>l.place==='towing');
   if(tw) g+=D.lightSVG(100,202,tw.color,tw.label,tw.desc);
+  // השתקפויות רכות על פני המים — פסי אור בצבע הפנסים (מוסיפות עומק לסצנה)
+  let refl='';
+  // השתקפות גוף הכלי — עותק כהה, הפוך ומטושטש על פני המים (בכל המצבים)
+  refl+=`<g transform="matrix(1,0,0,-1,0,${2*water+2})" opacity=".3" filter="url(#reflBlur)" style="pointer-events:none"><path d="${hullPath}" fill="#0a1826"/></g>`;
+  // נתיב נצנוץ של מקור האור (שמש/ירח) על המים, בצד ימין
+  refl+=`<rect x="336" y="${water}" width="30" height="${H-water}" fill="url(#glitter${mode==='night'?'N':'D'})" opacity="${mode==='night'?.55:.8}"/>`;
+  // השתקפויות פנסים — רק כשהם דולקים (לילה/דמדומים), לא ביום
+  if(mode!=='day'){
+    const _rfl=(x,ck,op,h)=>{ const c=R().lightColors[ck]; return c?`<rect x="${x-4}" y="${water}" width="8" height="${h||54}" rx="4" fill="${c.hex}" opacity="${op||.24}" filter="url(#reflBlur)"/>`:''; };
+    if(sp) refl+=_rfl(300,sp.color);
+    if(ss) refl+=_rfl(316,ss.color);
+    if(st) refl+=_rfl(100,st.color);
+    if(tw) refl+=_rfl(100,tw.color,.2,44);
+    if(ar.length) refl+=_rfl(mast, ar[ar.length-1].color, .18, 62);
+  }
 
   // צורות יום — בערימה על מיתר מעט אחורי לתורן; בשולת מוקשים — משולש
   // (באותם מיקומים כמו הפנסים; ב"שניהם" מוסטות מעט כדי לא לכסות את האורות)
@@ -155,28 +180,48 @@ D.buildVesselSVG = (v,mode)=>{
     (v.sideShapes[k]||[]).forEach((sh,i)=>{ g+=D.shapeSVG(xs,114+i*28,sh,lbl,(k==='port'?'שני כדורים = צד המכשול (אל תעבור).':'שני מעוינים = הצד הבטוח למעבר.')); }); }); }
 
   // שמיים: כוכבים בלילה, שמש ביום (קישוט עדין)
+  const cloud=(x,y,s)=>`<g opacity=".92"><ellipse cx="${x}" cy="${y}" rx="${26*s}" ry="${10*s}" fill="#fff"/><ellipse cx="${x+17*s}" cy="${y-5*s}" rx="${17*s}" ry="${9*s}" fill="#fff"/><ellipse cx="${x-15*s}" cy="${y+s}" rx="${14*s}" ry="${7*s}" fill="#fff"/><ellipse cx="${x+s}" cy="${y+5*s}" rx="${24*s}" ry="${7*s}" fill="#e9f2fb"/></g>`;
   let deco='';
   if(mode==='night'){
-    deco='<g fill="#cfe0ff" opacity=".8">'+
-      [[30,40,1.2],[70,24,.9],[120,54,1],[330,30,1.1],[370,60,.8],[190,26,.9],[300,64,.7]]
-      .map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="${p[2]}"/>`).join('')+'</g>'+
-      `<circle cx="352" cy="38" r="13" fill="#e8ecf4" opacity=".9"/><circle cx="346" cy="34" r="12" fill="url(#skyNight)"/>`;
+    deco='<g fill="#dce8ff">'+
+      [[30,40,1.3,.9],[70,24,.9,.7],[118,54,1,.8],[168,20,.7,.6],[210,44,1.1,.85],[262,30,.8,.7],[300,60,.9,.75],[332,86,1,.8],[95,72,.8,.6],[145,96,.7,.55],[240,74,.8,.6]]
+      .map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="${p[2]}" opacity="${p[3]}"/>`).join('')+'</g>'+
+      `<circle cx="349" cy="40" r="27" fill="url(#moonGlow)"/>`+
+      `<circle cx="352" cy="38" r="13" fill="#eef2fb"/><circle cx="346.5" cy="34.5" r="11" fill="url(#skyNight)"/>`;
   } else if(mode==='day'){
-    deco=`<circle cx="352" cy="40" r="16" fill="#ffd23b" opacity=".95"/>`+
-      `<g fill="#ffffff" opacity=".85"><ellipse cx="80" cy="42" rx="26" ry="9"/><ellipse cx="102" cy="36" rx="18" ry="7"/></g>`;
+    deco=`<circle cx="352" cy="42" r="32" fill="url(#sunGlow)"/><circle cx="352" cy="42" r="16" fill="#ffd86b"/><circle cx="352" cy="42" r="16" fill="#ffc132" opacity=".45"/>`+
+      cloud(80,44,1)+cloud(158,28,.72);
+  } else {
+    deco=`<circle cx="352" cy="48" r="28" fill="url(#sunGlow)"/><circle cx="352" cy="48" r="14" fill="#ffb15e"/>`+cloud(90,40,.85);
   }
 
+  const waterFill = mode==='day' ? 'url(#waterDay)' : (mode==='night'?'url(#waterNight)':'url(#waterDusk)');
+  const waveC = mode==='day' ? 'rgba(232,246,255,.5)' : (mode==='night' ? '#123f5e' : 'rgba(214,228,240,.32)');
   return `<svg viewBox="0 0 ${W} ${H}" data-mode="${mode}" role="img" aria-label="${esc(v.name)}">
     <defs>
-      <linearGradient id="skyDay" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe3ff"/><stop offset="1" stop-color="#e8f5ff"/></linearGradient>
-      <linearGradient id="skyNight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#04101d"/><stop offset="1" stop-color="#0a2236"/></linearGradient>
-      <linearGradient id="skyDusk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#26425f"/><stop offset="1" stop-color="#3c5d80"/></linearGradient>
+      <linearGradient id="skyDay" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5fb0ee"/><stop offset="1" stop-color="#cfe9fb"/></linearGradient>
+      <linearGradient id="skyNight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#050f20"/><stop offset="1" stop-color="#123657"/></linearGradient>
+      <linearGradient id="skyDusk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a4a6e"/><stop offset=".6" stop-color="#7a6a86"/><stop offset="1" stop-color="#e0956a"/></linearGradient>
+      <linearGradient id="waterNight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#103a55"/><stop offset="1" stop-color="#04131e"/></linearGradient>
+      <linearGradient id="waterDay" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a9cc0"/><stop offset="1" stop-color="#16455f"/></linearGradient>
+      <linearGradient id="waterDusk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a5877"/><stop offset="1" stop-color="#0f2d43"/></linearGradient>
+      <linearGradient id="hullG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#23405a"/><stop offset="1" stop-color="#0a1826"/></linearGradient>
+      <linearGradient id="cabinG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a4460"/><stop offset="1" stop-color="#142838"/></linearGradient>
+      <radialGradient id="sunGlow"><stop offset="0" stop-color="#ffe9a0" stop-opacity=".9"/><stop offset="1" stop-color="#ffe9a0" stop-opacity="0"/></radialGradient>
+      <radialGradient id="moonGlow"><stop offset="0" stop-color="#cfe0ff" stop-opacity=".65"/><stop offset="1" stop-color="#cfe0ff" stop-opacity="0"/></radialGradient>
+      <linearGradient id="glitterD" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe6a0" stop-opacity=".85"/><stop offset="1" stop-color="#ffe6a0" stop-opacity="0"/></linearGradient>
+      <linearGradient id="glitterN" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe0ff" stop-opacity=".7"/><stop offset="1" stop-color="#cfe0ff" stop-opacity="0"/></linearGradient>
       <filter id="nfglow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4"/></filter>
+      <filter id="reflBlur" x="-40%" y="-20%" width="180%" height="160%"><feGaussianBlur stdDeviation="2.6"/></filter>
     </defs>
     <rect x="0" y="0" width="${W}" height="${water}" fill="${sky}"/>
     ${deco}
-    <rect x="0" y="${water}" width="${W}" height="${H-water}" fill="#06283d"/>
-    <path d="M0,${water} Q100,${water-6} 200,${water} T400,${water}" fill="none" stroke="#0e3a55" stroke-width="2" opacity=".7"/>
+    <rect x="0" y="${water}" width="${W}" height="${H-water}" fill="${waterFill}"/>
+    <rect x="0" y="${water}" width="${W}" height="7" fill="#ffffff" opacity="${mode==='day'?.22:.1}"/>
+    ${refl}
+    <path d="M0,${water} Q100,${water-6} 200,${water} T400,${water}" fill="none" stroke="${waveC}" stroke-width="2" opacity=".8"/>
+    <path d="M0,${water+15} Q120,${water+10} 240,${water+15} T400,${water+15}" fill="none" stroke="${waveC}" stroke-width="1.3" opacity=".5"/>
+    <path d="M0,${water+32} Q90,${water+27} 210,${water+32} T400,${water+32}" fill="none" stroke="${waveC}" stroke-width="1.1" opacity=".36"/>
     <style>.nf-halo{filter:url(#nfglow)}</style>
     ${g}
   </svg>`;

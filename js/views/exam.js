@@ -211,7 +211,7 @@ function finishExam(){
     const t=byTopic[q.topic]||(byTopic[q.topic]={c:0,t:0}); t.t++; if(ok)t.c++;
     const ts=App.store.topics[q.topic==='rules_dq'?'rules':q.topic]||(App.store.topics[q.topic==='rules_dq'?'rules':q.topic]={c:0,t:0,recent:[]});
     ts.t++; if(ok)ts.c++; ts.recent.push(ok?1:0); if(ts.recent.length>20)ts.recent.shift();
-    if(!ok){
+    if(!ok && a!=null){
       if(q.id) App.reviewAdd({sig:'x'+q.id, kind:'exam', id:q.id, topic:q.topic});
       else App.reviewAdd({sig:QuizGen.sigOf({q:q.q,correct:q.options[q.correct]}), kind:'gen', topic:q.topic,
         q:{topic:q.topic, topicName:topicName(q.topic), q:q.q, options:q.options, correct:q.options[q.correct],

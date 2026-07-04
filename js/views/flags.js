@@ -3,12 +3,31 @@
    ========================================================================== */
 (function(){
 "use strict";
+
+/* אילו דגלים מופיעים בפועל במאגר הבחינה הרשמי — מקור אמת יחיד ב-rules.js (R.examFlags),
+   משותף גם לחידון (שאלות דגלים). "נס אדום" הוא אות ישראלי נפרד ואינו דגל ICS — לא נכלל. */
+const EXAM_FLAGS=new Set((App.R&&App.R.examFlags)||[]);
+
+function tile(f){
+  return `<div class="tile flagtile" role="button" tabindex="0" data-flag="${f.letter}">
+    <div class="flagimg">${Draw.drawFlag(f)}</div>
+    <div class="nm">${App.esc(f.letter)} · ${App.esc(f.phonetic.split(' ')[0])}</div></div>`;
+}
+
 App.registerView('flags',{render(el){
   const R=App.R;
-  const cards=R.flags.map(f=>`<div class="tile flagtile" role="button" tabindex="0" data-flag="${f.letter}">
-    <div class="flagimg">${Draw.drawFlag(f)}</div><div class="nm">${App.esc(f.letter)} · ${App.esc(f.phonetic.split(' ')[0])}</div></div>`).join('');
-  el.innerHTML=`<div class="section-title"><h2>דגלי קוד בינלאומי (ICS)</h2>
-    <span class="hint">דגל אות בודד ומשמעותו. לחצו לפרטים.</span></div><div class="grid small">${cards}</div>`;
+  const grid=list=>`<div class="grid small">${list.map(tile).join('')}</div>`;
+  const inExam=R.flags.filter(f=>EXAM_FLAGS.has(f.letter));
+  const notExam=R.flags.filter(f=>!EXAM_FLAGS.has(f.letter));
+  el.innerHTML=`
+    <div class="section-title"><h2>דגלי קוד בינלאומי (ICS)</h2>
+      <span class="hint">דגל אות בודד ומשמעותו. לחצו לפרטים.</span></div>
+    <h3 class="flag-group">מופיעים בבחינה <span class="flag-count">${inExam.length}</span></h3>
+    <p class="flag-note">דגלים אלו מופיעים במאגר השאלות הרשמי — כדאי לשלוט בהם היטב.</p>
+    ${grid(inExam)}
+    <h3 class="flag-group">להעשרה · לא בבחינה <span class="flag-count">${notExam.length}</span></h3>
+    <p class="flag-note">שאר דגלי הקוד הבינלאומי. לא נבחנים עליהם, אך טוב להכירם.</p>
+    ${grid(notExam)}`;
   App.$$('.flagtile',el).forEach(t=>{
     const f=R.flags.find(x=>x.letter===t.dataset.flag);
     const open=()=>App.openSheet('דגל '+f.letter+' · '+f.phonetic,

@@ -102,7 +102,7 @@ button{touch-action:manipulation}
 @keyframes waveslide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @keyframes waveslide2{from{transform:translateX(-50%)}to{transform:translateX(0)}}
 /* המפרשית הנודדת: החוצה את המסך בגובה קו המים, מתנדנדת על הגל */
-.saildrift{position:absolute;bottom:26px;left:0;opacity:0;pointer-events:none;
+.saildrift{position:absolute;bottom:14px;left:0;opacity:0;pointer-events:none;
   will-change:transform;transition:opacity .8s}
 .saildrift .bob{display:block;transform-origin:50% 92%;animation:sailbob 3.4s ease-in-out infinite}
 @keyframes sailbob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-4px) rotate(3deg)}}
@@ -254,6 +254,12 @@ svg.marksvg{background:linear-gradient(180deg,#315270 0%,#1d3a55 62%,#0d2c44 100
 .tile .mastery.m1{background:var(--yellow)}.tile .mastery.m2{background:var(--good)}
 .flagtile .flagimg{padding:10px 14px 4px}
 .flagtile .flagimg svg{height:auto;width:100%;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+.flag-group{display:flex;align-items:center;gap:8px;margin:20px 2px 2px;
+  font-size:.98rem;font-weight:800;color:var(--parchment)}
+.flag-group:first-of-type{margin-top:8px}
+.flag-count{font-size:.72rem;font-weight:800;color:var(--brass);
+  background:var(--sea2);border:1px solid var(--line);border-radius:999px;padding:1px 8px}
+.flag-note{margin:0 2px 10px;font-size:.76rem;color:var(--ink-dim)}
 
 /* segmented toggle */
 .seg{display:inline-flex;background:var(--abyss);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px}
@@ -298,12 +304,21 @@ svg.marksvg{background:linear-gradient(180deg,#315270 0%,#1d3a55 62%,#0d2c44 100
 .opt:hover{border-color:var(--brass-dim)}
 .opt:active{transform:scale(.99)}
 .opt:disabled{cursor:default}
-.opt.correct{background:var(--good-bg);border-color:var(--good);color:var(--parchment);animation:pop .3s}
+.opt.correct{background:var(--good-bg);border-color:var(--good);color:var(--parchment);animation:okpop .55s cubic-bezier(.2,1.4,.4,1)}
 .opt.wrong{background:var(--bad-bg);border-color:var(--bad);color:var(--parchment)}
+@keyframes okpop{0%{transform:scale(.94)}40%{transform:scale(1.045);box-shadow:0 0 16px rgba(34,208,122,.55)}100%{transform:scale(1);box-shadow:none}}
+/* אפשרויות חזותיות (למשל שאלת "באיזה דגל") — רשת עם ציור מעל הטקסט */
+.opts-visual{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opts-visual .opt{margin:0;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .explain{margin-top:12px;padding:12px;border-radius:11px;background:var(--abyss);border:1px solid var(--line);font-size:.86rem}
 .explain .lbl{font-weight:800;color:var(--brass);font-size:.78rem;letter-spacing:.04em}
 .topicpill{font-size:.68rem;font-family:var(--mono);color:var(--ink-dim);border:1px solid var(--line);padding:1px 7px;border-radius:6px;white-space:nowrap}
 .combo{font-weight:900;color:var(--brass);animation:pop .35s}
+/* חידון עיוני — קטגוריות‑אב ותתי‑נושאים */
+.quiz-cats{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.quiz-cats .typesel{margin:0}
+.cat-sel{margin-inline-start:auto;font-size:.7rem;font-family:var(--mono);color:var(--brass);font-weight:800}
+.chip-n{font-size:.66rem;font-family:var(--mono);opacity:.6;margin-inline-start:3px}
 
 /* ---------- scenarios ---------- */
 .board{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--water);touch-action:none;position:relative}
@@ -315,6 +330,9 @@ svg.marksvg{background:linear-gradient(180deg,#315270 0%,#1d3a55 62%,#0d2c44 100
 /* ידית גרירה נושמת */
 .board .hpulse{animation:hpulse 1.8s ease-in-out infinite}
 @keyframes hpulse{0%,100%{opacity:.25}50%{opacity:.75}}
+.drag-hint{display:flex;align-items:center;gap:6px;justify-content:center;text-align:center;
+  margin:9px 2px 0;font-size:.78rem;font-weight:600;color:var(--ink-dim)}
+.drag-hint .ic{color:var(--brass);flex:0 0 auto}
 .scn-head{display:flex;align-items:center;gap:8px;justify-content:space-between;margin:4px 2px 10px}
 .scn-head .t{font-weight:800;color:var(--parchment);font-size:.92rem}
 .typesel{margin:0 2px 4px;border:1px solid var(--line);border-radius:11px;background:var(--sea);overflow:hidden}
@@ -328,9 +346,15 @@ svg.marksvg{background:linear-gradient(180deg,#315270 0%,#1d3a55 62%,#0d2c44 100
   border:1px solid var(--line);background:var(--sea2);color:var(--ink-dim);padding:7px 11px;transition:all .12s;min-height:32px;
   display:inline-flex;align-items:center;gap:5px}
 .chip[aria-pressed="true"]{background:var(--brass);border-color:var(--brass);color:var(--brass-ink)}
-.spd{display:flex;align-items:center;gap:10px;margin:12px 2px 0;font-size:.8rem;font-weight:700;color:var(--ink-dim)}
-.spd input[type=range]{flex:1;accent-color:var(--brass);max-width:260px;min-height:30px}
-.spd .val{font-family:var(--mono);color:var(--parchment);min-width:34px}
+/* לוח הכפתורים של התרחיש: שורת פעולות (בדוק/פתרון/איפוס) + שורת מטא (מהירות · הבא) */
+.scn-controls{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.scn-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.scn-actions .btn.primary{flex:1 1 auto;min-width:150px}
+.scn-meta{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.scn-meta #nextScn{margin-inline-start:auto}
+.spd{display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:700;color:var(--ink-dim)}
+.spd .spd-lbl{white-space:nowrap}
+.seg.spd-seg button{padding:7px 12px;min-width:40px}
 .verdict{margin-top:10px;padding:11px 14px;border-radius:11px;font-weight:800;text-align:center;display:none}
 .verdict.show{display:block;animation:fadeup .25s}
 .verdict.safe{background:var(--good-bg);border:1px solid var(--good);color:var(--parchment)}
@@ -479,6 +503,7 @@ footer.app{text-align:center;font-size:.7rem;color:var(--ink-dim);padding:24px 0
   .wrap{padding-top:64px;padding-bottom:150px}
   header.app{padding-top:12px}
   .waves{height:130px}
+  .saildrift{bottom:26px}
 }
 @media (prefers-reduced-motion:reduce){
   *{transition:none!important;animation:none!important}

@@ -17,7 +17,16 @@ U.loadOverride = ()=>{
   try{
     const raw=localStorage.getItem(KEY); if(!raw) return false;
     const b=JSON.parse(raw);
-    if(b && b.questions && b.questions.length && b.tracks){ window.EXAM_BANK=b; App.BANK=b; return true; }
+    if(b && b.questions && b.questions.length && b.tracks){
+      // תיקון עדכונים שמורים: שאלות איור עם figure=-1 יורשות את מספר התמונה מהמאגר
+      // המובנה (לפי id, עדיין טעון בשלב זה) כדי שלא יוסתרו — בלי צורך לעדכן מחדש.
+      const cur=window.EXAM_BANK;
+      if(cur && cur.questions){
+        const fmap=new Map(cur.questions.map(q=>[q.id,q.figure]));
+        b.questions.forEach(q=>{ if(!(q.figure>0)){ const bf=fmap.get(q.id); if(bf>0) q.figure=bf; } });
+      }
+      window.EXAM_BANK=b; App.BANK=b; return true;
+    }
   }catch(e){}
   return false;
 };
@@ -126,6 +135,11 @@ U.refreshBank = async onProgress=>{
   const questions=parseRecords(records);
   if(questions.length<500) throw new Error('המקור החזיר '+questions.length+' שאלות בלבד — העדכון בוטל ליתר ביטחון');
   const base=window.EXAM_BANK||{};
+  // שאלות איור שמספר התמונה שלהן לא נותח מטקסט השאלה (figure=-1) — יורשות את מספר
+  // התמונה מהשאלה המקבילה במאגר הקיים (לפי id), שם המיפוי כבר מלא ומדויק. כך שאלות
+  // איור קיימות אינן "נעלמות"/מוסתרות אחרי עדכון חי מהמקור הרשמי.
+  const baseFig=new Map((base.questions||[]).map(q=>[q.id,q.figure]));
+  questions.forEach(q=>{ if(!(q.figure>0)){ const bf=baseFig.get(q.id); if(bf>0) q.figure=bf; } });
   const diff=diffBanks((base.questions||[]),questions);
   const bank={
     meta:Object.assign({},base.meta,{ fetched:App.todayStr(), live:true,

@@ -29,6 +29,25 @@ function rayToEdge(start,h){
   const t=Math.max(20,Math.min(tx,ty));
   return clampPt({x:start.x+h.x*t, y:start.y+h.y*t});
 }
+/* ידית הגרירה ההתחלתית: קרובה לכלי כדי שתהיה קלה לראייה ולגרירה (לא בשפת הלוח).
+   מיקום הידית קובע רק את הכיוון והתצוגה — לא את מרחק ההפלגה בסימולציה (ראו simLen). */
+const HANDLE_DEF=150;
+function defaultHandle(start,h){
+  const edge=rayToEdge(start,h), d=len(vec(start,edge));
+  if(d<=HANDLE_DEF) return edge;
+  const n=norm(h);
+  return clampPt({x:start.x+n.x*HANDLE_DEF, y:start.y+n.y*HANDLE_DEF});
+}
+/* אורך ההפלגה בסימולציה: הכלי ממשיך לאורך הכיוון עד קרוב לשפת הלוח, אך נעצר במרווח
+   שמשאיר את כל גוף הכלי גלוי עם מעט ים סביבו (לא נגזר בשפה). כך תמיד רואים את מלוא
+   המסלול — חץ קצר "ממשיך" קדימה, וחץ ארוך אינו מוציא את הכלי אל מחוץ לתמונה. */
+const SIM_MARGIN=42;
+function simLen(start,dir){
+  const lo=SIM_MARGIN, hi=BW-SIM_MARGIN;
+  const tx = dir.x>0?(hi-start.x)/dir.x : dir.x<0?(lo-start.x)/dir.x : Infinity;
+  const ty = dir.y>0?(hi-start.y)/dir.y : dir.y<0?(lo-start.y)/dir.y : Infinity;
+  return Math.max(20, Math.min(tx,ty));
+}
 
 /* ---------- COLREG resolver ---------- */
 const RANK_MAP={power:2,sail:3,fishing:4,cbd:5,nuc:6,ram:6};
@@ -116,7 +135,7 @@ function evaluateManeuver(sc,hA,hB){
   hA=hA||sim.hA; hB=hB||sim.hB;
   const A0={x:sc.A.x,y:sc.A.y}, B0={x:sc.B.x,y:sc.B.y};
   const D={A:norm(vec(A0,hA)), B:norm(vec(B0,hB))};
-  const L={A:len(vec(A0,hA)), B:len(vec(B0,hB))};
+  const L={A:simLen(A0,D.A), B:simLen(B0,D.B)};
   const SP={A:BASE_SPEED*(sc.A.spd||1), B:BASE_SPEED*(sc.B.spd||1)};
   const P={A:A0,B:B0};
   const cpa=computeCPA(A0,D.A,L.A,SP.A,B0,D.B,L.B,SP.B);
@@ -142,7 +161,7 @@ function evaluateManeuver(sc,hA,hB){
     return o;
   }
   const cA=checks('A'), cB=checks('B');
-  const coll={ok:!hit, t:!hit?('אין התנגשות (מרחק מינימלי '+Math.round(cpa.minD)+' יח׳)'):'התנגשות! הנתיבים מצטלבים בו‑זמנית'};
+  const coll={ok:!hit, t:!hit?'אין התנגשות — נשמר מרחק בטוח':'התנגשות! הנתיבים מצטלבים בו‑זמנית'};
   const allOk = cA.every(x=>x.ok)&&cB.every(x=>x.ok)&&!hit;
   return {A:cA, B:cB, coll, allOk, minD:cpa.minD, hit};
 }
@@ -237,13 +256,15 @@ function solutionTracks(sc){
     // (א) כיוון "לחלוף מאחורי" הכלי השני — היעד הטבעי של נותן זכות קדימה
     if(e.passAstern||e.keepClear){
       const oKey=e.passAstern||e.keepClear, o=sc[oKey], oH=norm(o.heading);
+      // מכוונים אל נקודה מעט מאחורי ירכתי הכלי השני — קצה החץ נעצר שם כדי שהפתרון
+      // יראה בבירור "פנה אל הירכתיים". הכלי עצמו ימשיך את מלוא המסלול (simLen).
       [55,85,115].forEach(k=>{
         const tgt={x:o.x-oH.x*k, y:o.y-oH.y*k};
         const d=norm(vec(stp,tgt));
         const ang=signedTurnDeg(H,d);
         if(e.turn==='starboard'&&ang<5) return;
         if(e.turn==='port'&&ang>-5) return;
-        out.push({pt:rayToEdge(stp,d),dev:Math.abs(ang)});
+        out.push({pt:clampPt(tgt),dev:Math.abs(ang),astern:true});
       });
     }
     // (ב) פניות קבועות בכיוון הנדרש
@@ -254,7 +275,7 @@ function solutionTracks(sc){
   };
   const cA=candFor('A'), cB=candFor('B');
   // מעדיפים תמרון מובהק (סביב 45°) — "פעולה ברורה" כדרישת תקנה 8 — ולא מעבר גבולי
-  const clarity=c=>c.dev===0?0:Math.abs(c.dev-45);
+  const clarity=c=>c.dev===0?0:Math.abs(c.dev-45)-(c.astern?100:0);
   const combos=[];
   cA.forEach(a=>cB.forEach(b=>combos.push([a,b,clarity(a)+clarity(b)])));
   combos.sort((x,y)=>x[2]-y[2]);
@@ -287,8 +308,8 @@ function currentScenario(){
 function initSim(){
   const sc=currentScenario(); if(!sc){sim=null;return;}
   sim={ sc, answered:false, running:false, rewarded:false,
-    hA:rayToEdge({x:sc.A.x,y:sc.A.y},sc.A.heading),
-    hB:rayToEdge({x:sc.B.x,y:sc.B.y},sc.B.heading),
+    hA:defaultHandle({x:sc.A.x,y:sc.A.y},sc.A.heading),
+    hB:defaultHandle({x:sc.B.x,y:sc.B.y},sc.B.heading),
     drag:null };
 }
 
@@ -416,18 +437,27 @@ function drawBoardInner(){
   ripples+='</g>';
   const compass=compassRose(sc);
   // נתיבים מתוכננים — קו "נמלים צועדות" זורם אל היעד + ראש חץ
-  const track=(from,to,col)=>{
-    const d=norm(vec(from,to)), tip=to, back={x:tip.x-d.x*12,y:tip.y-d.y*12}, perp={x:-d.y,y:d.x};
-    return `<g><line class="trk" x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" stroke="${col}" stroke-width="2.6" opacity=".95"/>
-      <polygon points="${tip.x},${tip.y} ${back.x+perp.x*6},${back.y+perp.y*6} ${back.x-perp.x*6},${back.y-perp.y*6}" fill="${col}"/></g>`;
-  };
+  // נתיב מתוכנן: קו "נמלים צועדות" בלבד (ללא ראש חץ — ידית ההגה מסמנת את היעד).
+  const track=(from,to,col)=>
+    `<line class="trk" x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" stroke="${col}" stroke-width="2.6" opacity=".95"/>`;
   const aArr = sim.running?'':track({x:sc.A.x,y:sc.A.y},sim.hA,COLA);
   const bArr = sim.running?'':track({x:sc.B.x,y:sc.B.y},sim.hB,COLB);
-  const handle=(pt,col,key)=>sim.running?'':`<g class="handle" data-h="${key}">
-     <circle class="hpulse" cx="${pt.x}" cy="${pt.y}" r="17" fill="none" stroke="${col}" stroke-width="1.5"/>
-     <circle cx="${pt.x}" cy="${pt.y}" r="12" fill="${col}" fill-opacity=".22" stroke="${col}" stroke-width="2"/>
-     <line x1="${pt.x-5}" y1="${pt.y}" x2="${pt.x+5}" y2="${pt.y}" stroke="${col}" stroke-width="1.6"/>
-     <line x1="${pt.x}" y1="${pt.y-5}" x2="${pt.x}" y2="${pt.y+5}" stroke="${col}" stroke-width="1.6"/></g>`;
+  // ידית הגרירה = הגה ספינה (helm): טבעת עם חישורים וידיות אחיזה, בצבע הכלי.
+  // מסמל "כאן קובעים את הכיוון". טבעת ה‑hpulse סביב מושכת את העין לגרירה.
+  const handle=(pt,col,key)=>{
+    if(sim.running) return '';
+    const x=pt.x, y=pt.y, R=8, Rk=11.5;
+    let spokes='', knobs='';
+    for(let i=0;i<6;i++){ const a=i*Math.PI/3, dx=Math.cos(a), dy=Math.sin(a);
+      spokes+=`<line x1="${(x+dx*2.5).toFixed(1)}" y1="${(y+dy*2.5).toFixed(1)}" x2="${(x+dx*R).toFixed(1)}" y2="${(y+dy*R).toFixed(1)}" stroke="${col}" stroke-width="1.35"/>`;
+      knobs+=`<circle cx="${(x+dx*Rk).toFixed(1)}" cy="${(y+dy*Rk).toFixed(1)}" r="2" fill="${col}"/>`; }
+    return `<g class="handle" data-h="${key}" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))">
+       <circle class="hpulse" cx="${x}" cy="${y}" r="16" fill="none" stroke="${col}" stroke-width="1.2"/>
+       ${knobs}
+       <circle cx="${x}" cy="${y}" r="${R}" fill="${col}" fill-opacity=".16" stroke="${col}" stroke-width="1.6"/>
+       ${spokes}
+       <circle cx="${x}" cy="${y}" r="2.3" fill="${col}"/></g>`;
+  };
   // לוחיות שם לכלי השיט
   const plate=(b,col)=>{
     const w=b.label.length*6.4+16;
@@ -533,7 +563,7 @@ function runSim(el){
   if(!layer){ sim.running=false; return; }
   const A0={x:sc.A.x,y:sc.A.y}, B0={x:sc.B.x,y:sc.B.y};
   const dirA=norm(vec(A0,sim.hA)), dirB=norm(vec(B0,sim.hB));
-  const LA=len(vec(A0,sim.hA)), LB=len(vec(B0,sim.hB));
+  const LA=simLen(A0,dirA), LB=simLen(B0,dirB);
   const spA=BASE_SPEED*(sc.A.spd||1), spB=BASE_SPEED*(sc.B.spd||1);
   const T=Math.max(LA/spA, LB/spB, 0.15);
   const posAt=(s,dir,L,sp,t)=>{ const d=Math.min(t*sp,L); return {x:s.x+dir.x*d,y:s.y+dir.y*d}; };
@@ -585,7 +615,8 @@ function showEvaluation(sc){
   });
   v.className='verdict show '+(ev.allOk?'safe':'hit');
   v.innerHTML=`<div class="evtop">${ev.allOk?'✓ תמרון נכון לפי התקנות!':'✗ התמרון אינו תקין — ראו פירוט'}</div>
-    <div class="evgrid">${col('A')}${col('B')}</div>${item(ev.coll)}${snd}`;
+    <div class="evgrid">${col('A')}${col('B')}</div>${item(ev.coll)}${snd}
+    <div class="explain" style="text-align:start">${App.icon(sc.ref&&sc.ref.colreg?'book':'bulb',14)} <span class="lbl">${App.esc(sc.title)}${sc.ref&&sc.ref.colreg?' · '+App.esc(sc.ref.colreg):''}</span><br>${App.esc(sc.explain)}</div>`;
   App.$$('[data-snd]',v).forEach(b=>b.addEventListener('click',()=>{
     App.playSeq(b.dataset.snd.split(''));
   }));
@@ -653,15 +684,20 @@ function paint(el){
       <button class="iconbtn" id="newScn" aria-label="תרחיש חדש" title="תרחיש חדש">↻</button>
     </div>
     <div class="board" id="board"><svg id="boardSvg" viewBox="0 0 ${BW} ${BW}">${drawBoardInner()}</svg><svg class="windovl" id="windOvl" viewBox="0 0 ${BW} ${BW}" aria-hidden="true"></svg></div>
-    <div class="row" style="margin-top:10px">
-      <button class="btn primary" id="simBtn">▶ בדוק תמרון</button>
-      <button class="btn" id="solBtn">הצג פתרון</button>
-      <button class="btn ghost" id="resetBtn">איפוס</button>
-      <button class="btn" id="nextScn" style="margin-inline-start:auto">הבא ←</button>
+    <p class="drag-hint">${App.icon('target',14)} גררו את העיגול שבקצה כל נתיב כדי לקבוע את כיוון ההפלגה (course) של הכלי — ואז «בדוק תמרון».</p>
+    <div class="scn-controls">
+      <div class="scn-actions">
+        <button class="btn primary" id="simBtn">▶ בדוק תמרון</button>
+        <button class="btn" id="solBtn">הצג פתרון</button>
+        <button class="btn ghost" id="resetBtn">איפוס</button>
+      </div>
+      <div class="scn-meta">
+        <div class="spd"><span class="spd-lbl">מהירות</span>
+          <div class="seg spd-seg" id="spdSeg">${[0.5,1,2,4].map(v=>`<button type="button" data-spd="${v}" aria-pressed="${st.speed===v}">${v===0.5?'½':v}×</button>`).join('')}</div>
+        </div>
+        <button class="btn ghost" id="nextScn">הבא ←</button>
+      </div>
     </div>
-    <label class="spd">מהירות הדמיה
-      <input type="range" id="spdRange" min="0.5" max="4" step="0.5" value="${st.speed}">
-      <span class="val" id="spdVal">×${st.speed}</span></label>
     <div class="verdict" id="verdict"></div>
     <div class="card quiz" style="margin-top:14px">
       <div class="qtext">מי נותן זכות קדימה (give‑way)?</div>
@@ -681,7 +717,10 @@ function paint(el){
     redrawInner();
     App.toast('זהו תמרון נכון לפי התקנות — לחצו "בדוק תמרון" להרצה');
   });
-  const sr=App.$('#spdRange'); sr.addEventListener('input',()=>{st.speed=+sr.value;App.$('#spdVal').textContent='×'+sr.value;});
+  App.$$('#spdSeg button').forEach(b=>b.addEventListener('click',()=>{
+    st.speed=+b.dataset.spd;
+    App.$$('#spdSeg button').forEach(x=>x.setAttribute('aria-pressed', x.dataset.spd===b.dataset.spd));
+  }));
   App.$$('#scnOpts .opt').forEach(b=>b.addEventListener('click',()=>{
     if(sim.answered)return; sim.answered=true;
     const i=+b.dataset.i;

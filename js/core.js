@@ -500,14 +500,16 @@ function startSailDrift(){
   const el=document.getElementById('sailDrift'); if(!el || !el.animate) return;
   if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
   const fw=el.querySelector('.fw');
+  let anim=null;
   function voyage(){
     const w=innerWidth, ltr=Math.random()<0.5;
     fw.style.transform = ltr ? 'scaleX(1)' : 'scaleX(-1)';   // החרטום לכיוון ההפלגה
     const from = ltr ? -70 : w+70, to = ltr ? w+70 : -70;
+    if(anim) anim.cancel();
     el.style.opacity='1';
-    const anim=el.animate(
+    anim=el.animate(
       [{transform:`translateX(${from}px)`},{transform:`translateX(${to}px)`}],
-      {duration:17000+Math.random()*9000, easing:'linear'});
+      {duration:17000+Math.random()*9000, easing:'linear', fill:'forwards'});
     anim.onfinish=()=>{ el.style.opacity='0'; schedule(false); };
   }
   function schedule(first){
@@ -529,7 +531,6 @@ App.start=()=>{
     App.save();
   }
   App.applyTheme(store.settings.theme||'light');
-  document.getElementById('subtitle').textContent=App.R.meta.subtitle;
   const foot=document.getElementById('footer');
   if(foot) foot.innerHTML=App.esc(App.R.meta.source)+'<br>גרסה '+App.esc(App.R.meta.version)+' · עודכן '+App.esc(App.R.meta.updated)+
     '<br><span dir="ltr">© 2026 Itay Bracha</span> · כל הזכויות שמורות';
