@@ -9,8 +9,10 @@
 /* צבעי הצוותים — מתוך פלטת "רגטה": טורקיז-ים מול כתום-שקיעה החלטי */
 const BW=360, COLA='#2aa7bd', COLB='#f0932b';
 const PLAY_SCALE=4.5;   // ×1 בסליידר = קצב הצפייה הנוח (4.5 הישן)
-const st={hist:[],idx:-1,types:null,speed:1,night:false,typeselOpen:false};
+const st={hist:[],idx:-1,types:null,speed:1,night:false,typeselOpen:false,sweep:true,autoNext:false};
 let sim=null;
+let advTimer=null;   // טיימר "המשך אוטומטית" — מבוטל בכל ציור מחדש כדי לא להתנגש בניווט ידני
+let boardDragged=false;   // האם התרחשה גרירת ידית — כדי שכפתורי הלוח לא "יגנבו" בחירת ידית
 
 /* ---------- וקטורים ---------- */
 function vec(a,b){return {x:b.x-a.x,y:b.y-a.y};}
@@ -383,15 +385,19 @@ function compassRose(sc){
     }
     return s+'</g>';
   };
-  g+=star(R2-8,2.6,'#24465c',45);
-  g+=star(R2-3,3.2,'#3d637f',0);
+  g+=`<g opacity=".6">`+star(R2-8,2.6,'#24465c',45)+star(R2-3,3.2,'#3d637f',0)+`</g>`;
   // מחוג צפון אדום קטן על הקרן העליונה
   g+=`<polygon points="${cx},${cy-R2+2} ${cx+2.2},${cy-R2+8} ${cx-2.2},${cy-R2+8}" fill="#ff5147"/>`;
   g+=`<circle cx="${cx}" cy="${cy}" r="2" fill="#d9a441"/>`;
-  // חץ הרוח — לאן הרוח נושבת
+  // חץ הרוח — דמות אחת נקייה (חץ עם זנב סנונית) המצביעה לאן הרוח נושבת
   if(sc.wind){
     const wf=norm({x:-sc.wind.x,y:-sc.wind.y});
-    g+=arrow({x:cx-wf.x*(R2-4),y:cy-wf.y*(R2-4)},{x:cx+wf.x*(R2-4),y:cy+wf.y*(R2-4)},'#7fd6ff',true);
+    const ang=(Math.atan2(wf.y,wf.x)*180/Math.PI).toFixed(1);
+    const pts=`${cx+17},${cy} ${cx+6.5},${cy-6} ${cx+6.5},${cy-2.1} ${cx-16},${cy-3.4} ${cx-10.5},${cy} ${cx-16},${cy+3.4} ${cx+6.5},${cy+2.1} ${cx+6.5},${cy+6}`;
+    g+=`<g transform="rotate(${ang} ${cx} ${cy})" style="filter:drop-shadow(0 0 1.6px rgba(127,214,255,.6))">
+      <polygon points="${pts}" fill="#7fd6ff" stroke="#1e5876" stroke-width=".6" stroke-linejoin="round"/>
+      <polygon points="${cx+17},${cy} ${cx+6.5},${cy-6} ${cx+6.5},${cy}" fill="#cdeeff"/>
+    </g>`;
   }
   g+=`<text x="${cx}" y="${cy+R1+13}" fill="#7fd6ff" font-size="10" font-weight="700" text-anchor="middle">רוח</text></g>`;
   return g;
@@ -493,13 +499,16 @@ function svgPt(evt){
 }
 let winDragInstalled=false;
 function bindBoard(){
-  const svg=App.$('#boardSvg'); if(svg) svg.addEventListener('pointerdown',onDown);
+  // מאזינים על מיכל הלוח כולו (ולא רק על ה-SVG) — כך לחיצה שנוחתת על כפתור מוטמע
+  // עדיין מגיעה ל-onDown, ואם היא ליד ידית — מתחילה גרירה במקום להפעיל את הכפתור.
+  const b=App.$('#board'); if(b) b.addEventListener('pointerdown',onDown);
   if(winDragInstalled)return; winDragInstalled=true;
   window.addEventListener('pointermove',onMove);
   window.addEventListener('pointerup',onUp);
 }
 function onDown(e){
   if(!sim||sim.running)return;
+  boardDragged=false;
   const p=svgPt(e);
   const dA=len(vec(p,sim.hA)), dB=len(vec(p,sim.hB));
   if(Math.min(dA,dB)<=34){ sim.drag = dA<dB?'A':'B'; e.preventDefault(); return; }
@@ -512,6 +521,7 @@ function onDown(e){
 }
 function onMove(e){
   if(!sim||!sim.drag||sim.running)return;
+  boardDragged=true;
   const p=svgPt(e); if(sim.drag==='A')sim.hA=p; else sim.hB=p;
   redrawInner(); e.preventDefault();
 }
@@ -593,14 +603,14 @@ function runSim(el){
       sim.running=false;
       const board=App.$('#board'); if(board){ board.classList.remove('shake'); void board.offsetWidth; board.classList.add('shake'); }
       App.haptic('bad'); App.sfx('bad');
-      showEvaluation(sc); return;
+      showEvaluation(sc,el); return;
     }
     if(t<T){ requestAnimationFrame(frame); }
-    else { sim.running=false; showEvaluation(sc); }
+    else { sim.running=false; showEvaluation(sc,el); }
   }
   requestAnimationFrame(frame);
 }
-function showEvaluation(sc){
+function showEvaluation(sc,el){
   const ev=evaluateManeuver(sc), v=App.$('#verdict');
   if(!v)return;
   const item=it=>`<div class="chk ${it.ok?'ok':'no'}"><span>${it.ok?'✓':'✗'}</span><span>${App.esc(it.t)}</span></div>`;
@@ -623,6 +633,8 @@ function showEvaluation(sc){
   if(ev.allOk){
     App.sfx('good'); App.haptic('good');
     if(!sim.rewarded){ sim.rewarded=true; App.addXP(20); App.bump('scenarioOk'); App.toast('תמרון מושלם! ‎+20 XP'); App.confetti(50); }
+    // "המשך אוטומטית": קופצים לתרחיש הבא מיד אחרי תמרון נכון (עם סריקת מכ"ם)
+    if(st.autoNext && el && !sim.advancing){ sim.advancing=true; advTimer=setTimeout(()=>{ if(App.$('#boardSvg')) newScenario(el); }, 800); }
   }
 }
 
@@ -646,9 +658,9 @@ function bindChips(el){
   if(sa) sa.addEventListener('click',()=>{st.types=new Set(SCN_TYPES().map(t=>t.vid));regen(el);});
   if(sn) sn.addEventListener('click',()=>{st.types=new Set();regen(el);});
 }
-function regen(el){ st.hist=[]; st.idx=-1; sim=null; paint(el); }
-function newScenario(el){ const sc=buildScenario(); if(sc){st.hist.push(sc); st.idx=st.hist.length-1;} sim=null; paint(el); }
-function prevScenario(el){ if(st.idx>0){ st.idx--; sim=null; paint(el); } }
+function regen(el){ st.hist=[]; st.idx=-1; sim=null; st.sweep=true; paint(el); }
+function newScenario(el){ const sc=buildScenario(); if(sc){st.hist.push(sc); st.idx=st.hist.length-1;} sim=null; st.sweep=true; paint(el); }
+function prevScenario(el){ if(st.idx>0){ st.idx--; sim=null; st.sweep=true; paint(el); } }
 
 function helpSheet(){
   App.openSheet('איך משחקים?', `
@@ -658,16 +670,20 @@ function helpSheet(){
     <p><b>מצב לילה:</b> רואים רק אורות! לחיצה על כלי שיט פותחת חידון זיהוי.</p>`);
 }
 
+/* אייקונים לכפתורים המוטמעים בלוח: משקפת (הצג פתרון) וחץ איפוס */
+const SPYGLASS_IC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="7"/><path d="M15.5 15.5l5.5 5.5"/><path d="M7 10.5a3.5 3.5 0 0 1 3.5-3.5" opacity=".5"/></svg>';
+const RESET_IC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.5-5.8"/><path d="M4 4.5V8h3.6"/></svg>';
 function paint(el){
+  clearTimeout(advTimer);   // מבטל "המשך אוטומטית" ממתין — כל ניווט/ציור גובר עליו
   if(!st.types) st.types=new Set(SCN_TYPES().map(t=>t.vid));
   const head=`<div class="scn-topbar">
     <button class="btn mini ${st.night?'primary':''}" id="nightBtn">${App.icon(st.night?'moon':'sun',15)} ${st.night?'לילה':'יום'}</button>
     <span class="grow"></span>
     <button class="btn mini ghost" id="helpBtn">${App.icon('bulb',14)} איך משחקים?</button>
-    </div>${chipsBar()}`;
+    </div>`;
   const cur=currentScenario();
   if(!cur){
-    el.innerHTML=head+`<div class="card" style="padding:20px;text-align:center;color:var(--ink-dim);margin-top:12px">לא ניתן ליצור תרחיש מהבחירה הנוכחית.<br>בחרו לפחות סוג אחד שיכול לתמרן: <b>ממונע</b> / <b>מפרשית</b> / <b>דיג</b>.</div>`;
+    el.innerHTML=head+`<div class="card" style="padding:20px;text-align:center;color:var(--ink-dim);margin-top:12px">לא ניתן ליצור תרחיש מהבחירה הנוכחית.<br>בחרו לפחות סוג אחד שיכול לתמרן: <b>ממונע</b> / <b>מפרשית</b> / <b>דיג</b>.</div>`+chipsBar();
     bindChips(el);
     App.$('#nightBtn').addEventListener('click',()=>{st.night=!st.night;paint(el);});
     App.$('#helpBtn').addEventListener('click',helpSheet);
@@ -677,27 +693,29 @@ function paint(el){
   const sc=sim.sc;
   const opts=['כלי שיט א׳ נותן זכות קדימה','כלי שיט ב׳ נותן זכות קדימה','שני כלי השיט מתמרנים','אף אחד — שמירת נתיב'];
   const correctIdx = sc.giveWay==='A'?0 : sc.giveWay==='B'?1 : sc.giveWay==='both'?2 : 3;
+  const sweepOn = st.sweep && !matchMedia('(prefers-reduced-motion:reduce)').matches;   // סריקה רק כשאין reduced-motion
   el.innerHTML=head+`
-    <div class="scn-head">
-      <button class="iconbtn" id="prevScn" aria-label="הקודם" title="תרחיש קודם">›</button>
-      <div class="t">${App.esc(sc.title)} <span class="ref">${App.esc(sc.ref.colreg)}</span></div>
-      <button class="iconbtn" id="newScn" aria-label="תרחיש חדש" title="תרחיש חדש">↻</button>
+    <div class="board" id="board">
+      <svg id="boardSvg" viewBox="0 0 ${BW} ${BW}">${drawBoardInner()}</svg>
+      <svg class="windovl" id="windOvl" viewBox="0 0 ${BW} ${BW}" aria-hidden="true"></svg>
+      <button class="board-btn" id="resetBtn" title="איפוס תמרון" aria-label="איפוס" style="inset-inline-start:8px;bottom:8px">${RESET_IC}</button>
+      <button class="board-btn" id="solBtn" title="הצג פתרון" aria-label="הצג פתרון" style="inset-inline-end:8px;bottom:8px">${SPYGLASS_IC}</button>
+      ${sweepOn?'<div class="radar-sweep"></div>':''}
     </div>
-    <div class="board" id="board"><svg id="boardSvg" viewBox="0 0 ${BW} ${BW}">${drawBoardInner()}</svg><svg class="windovl" id="windOvl" viewBox="0 0 ${BW} ${BW}" aria-hidden="true"></svg></div>
     <p class="drag-hint">${App.icon('target',14)} גררו את העיגולים לקביעת הכיוון, ואז «בדוק תמרון»</p>
     <div class="scn-controls">
-      <div class="scn-actions">
-        <button class="btn primary" id="simBtn">▶ בדוק תמרון</button>
-        <button class="btn" id="solBtn">הצג פתרון</button>
-        <button class="btn ghost" id="resetBtn">איפוס</button>
+      <div class="scn-primary">
+        <button class="btn primary scn-check" id="simBtn">▶ בדוק תמרון</button>
+        <button class="btn" id="nextScn">הבא ←</button>
       </div>
       <div class="scn-meta">
         <div class="spd"><span class="spd-lbl">מהירות</span>
           <div class="seg spd-seg" id="spdSeg">${[0.5,1,2,4].map(v=>`<button type="button" data-spd="${v}" aria-pressed="${st.speed===v}">${v===0.5?'½':v}×</button>`).join('')}</div>
         </div>
-        <button class="btn ghost" id="nextScn">הבא ←</button>
+        <label class="autonext"><input type="checkbox" id="autoNext" ${st.autoNext?'checked':''}> המשך אוטומטית</label>
       </div>
     </div>
+    <div class="scn-types">${chipsBar()}</div>
     <div class="verdict" id="verdict"></div>
     <div class="card quiz" style="margin-top:8px;padding:12px 14px">
       <div class="qtext" style="margin:2px 0 8px">מי נותן זכות קדימה (give‑way)?</div>
@@ -707,12 +725,11 @@ function paint(el){
   bindChips(el);
   App.$('#nightBtn').addEventListener('click',()=>{st.night=!st.night;paint(el);});
   App.$('#helpBtn').addEventListener('click',helpSheet);
-  App.$('#prevScn').addEventListener('click',()=>prevScenario(el));
-  App.$('#newScn').addEventListener('click',()=>newScenario(el));
   App.$('#nextScn').addEventListener('click',()=>newScenario(el));
-  App.$('#resetBtn').addEventListener('click',()=>{initSim();redrawInner();App.$('#verdict').className='verdict';});
+  App.$('#resetBtn').addEventListener('click',()=>{ if(boardDragged){boardDragged=false;return;} initSim();redrawInner();App.$('#verdict').className='verdict';});
   App.$('#simBtn').addEventListener('click',()=>runSim(el));
   App.$('#solBtn').addEventListener('click',()=>{
+    if(boardDragged){boardDragged=false;return;}
     sim.hA={...sc.solution.A}; sim.hB={...sc.solution.B};
     redrawInner();
     App.toast('זהו תמרון נכון לפי התקנות — לחצו "בדוק תמרון" להרצה');
@@ -721,6 +738,8 @@ function paint(el){
     st.speed=+b.dataset.spd;
     App.$$('#spdSeg button').forEach(x=>x.setAttribute('aria-pressed', x.dataset.spd===b.dataset.spd));
   }));
+  const anEl=App.$('#autoNext'); if(anEl) anEl.addEventListener('change',e=>{ st.autoNext=e.target.checked; });
+  st.sweep=false;   // סריקת המכ"ם רצה פעם אחת לכל תרחיש חדש
   App.$$('#scnOpts .opt').forEach(b=>b.addEventListener('click',()=>{
     if(sim.answered)return; sim.answered=true;
     const i=+b.dataset.i;
