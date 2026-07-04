@@ -402,20 +402,79 @@ function compassRose(sc){
   g+=`<text x="${cx}" y="${cy+R1+13}" fill="#7fd6ff" font-size="10" font-weight="700" text-anchor="middle">רוח</text></g>`;
   return g;
 }
-function drawBoardInner(){
-  const sc=sim.sc;
-  const deep = st.night ? ['#04202f','#02111c'] : ['#0d425f','#052236'];
-  const gridCol= st.night ? '#0a2a3f' : '#10405c';
-  // עומק: גרדיאנט רדיאלי + שני משטחי נצנוץ אלכסוניים
+/* ---------- שכבת ים חיה (drawSea) ----------
+   רקע הים החי יושב בשכבת SVG נפרדת (#seaOvl) שאינה מצוירת מחדש בעת גרירה,
+   כדי שהאנימציה תרוץ ברציפות. הכול CSS-אנימציות (ראו app.css) עם כיבוי
+   ב-prefers-reduced-motion. נבנית מחדש רק במעבר תרחיש → מיקומי דגים חדשים בכל פעם. */
+function drawSea(){
+  const night=st.night;
+  const deep = night ? ['#06263a','#02111c'] : ['#0f4a6a','#04202f'];
+  const rippleCol = night ? '#0d2c44' : '#1b6a94';
   const defs=`<defs>
-    <radialGradient id="seaG" cx="42%" cy="30%" r="95%">
+    <radialGradient id="seaG2" cx="42%" cy="28%" r="98%">
       <stop offset="0" stop-color="${deep[0]}"/><stop offset="1" stop-color="${deep[1]}"/>
     </radialGradient>
-    <linearGradient id="glint" x1="0" y1="0" x2="1" y2="1">
-      <stop offset=".25" stop-color="rgba(160,220,255,0)"/>
-      <stop offset=".5" stop-color="rgba(160,220,255,.05)"/>
-      <stop offset=".75" stop-color="rgba(160,220,255,0)"/>
+    <linearGradient id="glint2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset=".32" stop-color="rgba(170,224,255,0)"/>
+      <stop offset=".5" stop-color="rgba(170,224,255,${night?.03:.055})"/>
+      <stop offset=".68" stop-color="rgba(170,224,255,0)"/>
     </linearGradient>
+  </defs>`;
+  // אדוות קטנות — 12 אדוות, קבוצה בשקיפות .3, פזורות אחיד (טקסטורה, לא סימן בודד)
+  let ripples='<g opacity=".3">';
+  for(let i=0;i<12;i++){ const rx=26+((i*53)%300), ry=20+((i*97)%310);
+    ripples+=`<path d="M${rx-12},${ry} q6,-4 12,0 t12,0" fill="none" stroke="${rippleCol}" stroke-width="1.3"/>`; }
+  ripples+='</g>';
+  return `${defs}
+    <rect width="${BW}" height="${BW}" fill="url(#seaG2)"/>
+    <rect x="${(-0.3*BW).toFixed(0)}" y="0" width="${(1.6*BW).toFixed(0)}" height="${BW}" fill="url(#glint2)"/>
+    ${ripples}`;
+}
+/* דג בודד ונדיר: כל 40–100 שנ' נוצר דג במקום/צבע/כיוון אקראי, קופץ פעם אחת ונמחק.
+   הטיימר עצמאי לחלוטין ממעבר תרחיש/איפוס — לולאה יחידה מתמשכת שרצה בקצב שלה,
+   מאתרת את #seaOvl החי בכל קפיצה, ונעצרת בנקייה רק כשעוזבים את מסך התרחישים.
+   startFish() אידמפוטנטית: קריאה חוזרת (בכל paint) לא מאתחלת את הטיימר. */
+let fishRunning=false;
+function startFish(){
+  if(fishRunning) return;
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  fishRunning=true;
+  function spawn(){
+    const ovl=App.$('#seaOvl');
+    if(!ovl){ fishRunning=false; return; }   // עזבנו את מסך התרחישים — עצירה נקייה (יתחיל מחדש בכניסה הבאה)
+    const palettes = st.night
+      ? [{b:'#4a6377',f:'#8fb0c4'},{b:'#3f5a6d',f:'#7ea0b5'}]
+      : [{b:'#f0932b',f:'#ffd9a0'},{b:'#9fb8c9',f:'#ecf6fd'},{b:'#2aa7bd',f:'#c6eef5'},{b:'#e8b84b',f:'#fff0c4'}];
+    const foamCol = st.night ? 'rgba(95,155,190,.15)' : 'rgba(190,232,252,.20)';
+    const fx=48+Math.random()*(BW-96), fy=155+Math.random()*140;
+    const scale=.72+Math.random()*.4, flip=Math.random()<.5;
+    const col=palettes[Math.floor(Math.random()*palettes.length)];
+    const dur=2.2+Math.random()*1.0;
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('transform',`translate(${fx.toFixed(1)},${fy.toFixed(1)}) scale(${((flip?-1:1)*scale).toFixed(2)},${scale.toFixed(2)})`);
+    // שתי פעימות תז: יציאה (~20% מהקשת, סמוך למוצא) וכניסה (~80%, בנקודת הצלילה קדימה)
+    const spIn=(0.2*dur).toFixed(2), spOut=(0.8*dur).toFixed(2);
+    g.innerHTML=`<ellipse class="splash" cx="-2" cy="2" rx="6" ry="1.6" fill="${foamCol}" style="animation:fsplashp .55s ease-out ${spIn}s both"/>
+      <ellipse class="splash" cx="20" cy="2" rx="6" ry="1.6" fill="${foamCol}" style="animation:fsplashp .55s ease-out ${spOut}s both"/>
+      <g class="fish" style="animation:fishleap ${dur.toFixed(1)}s ease-in-out 1 both">
+        <ellipse cx="0" cy="0" rx="7" ry="3.4" fill="${col.b}"/>
+        <polygon points="-6,0 -12.5,-4.2 -12.5,4.2" fill="${col.b}"/>
+        <path d="M-1,-3.1 Q2.4,-6.6 5.4,-3" fill="${col.f}" opacity=".85"/>
+        <ellipse cx="1" cy="1.5" rx="4" ry="1.5" fill="${col.f}" opacity=".45"/>
+        <circle cx="4.4" cy="-1" r="1.15" fill="#fff"/><circle cx="4.7" cy="-1" r=".55" fill="#0a1622"/>
+      </g>`;
+    ovl.appendChild(g);
+    setTimeout(()=>{ if(g.parentNode) g.parentNode.removeChild(g); }, dur*1000+500);
+    schedule();
+  }
+  function schedule(){ setTimeout(spawn, (40+Math.random()*60)*1000); }
+  setTimeout(spawn, (12+Math.random()*22)*1000);   // הראשון מוקדם יחסית, ואז נדיר
+}
+function drawBoardInner(){
+  const sc=sim.sc;
+  const gridCol= st.night ? '#0a2a3f' : '#10405c';
+  // רקע הים המונפש חי בשכבת #seaOvl (drawSea) — כאן שקוף, רק רשת/טווח/כלים/מסגרת
+  const defs=`<defs>
     <radialGradient id="vign" cx="50%" cy="50%" r="72%">
       <stop offset=".62" stop-color="rgba(0,0,0,0)"/><stop offset="1" stop-color="rgba(0,0,0,.35)"/>
     </radialGradient>
@@ -436,11 +495,6 @@ function drawBoardInner(){
     frame+=`<line x1="1" y1="${t}" x2="${1+L}" y2="${t}" stroke="#d9a441" stroke-width="1" opacity=".4"/>`;
     frame+=`<line x1="${BW-1}" y1="${t}" x2="${BW-1-L}" y2="${t}" stroke="#d9a441" stroke-width="1" opacity=".4"/>`;
   }
-  // אדוות
-  let ripples='<g opacity=".3">';
-  for(let i=0;i<8;i++){ const rx=26+((i*53)%300), ry=20+((i*97)%310);
-    ripples+=`<path d="M${rx-12},${ry} q6,-4 12,0 t12,0" fill="none" stroke="${st.night?'#0d2c44':'#1b6a94'}" stroke-width="1.3"/>`; }
-  ripples+='</g>';
   const compass=compassRose(sc);
   // נתיבים מתוכננים — קו "נמלים צועדות" זורם אל היעד + ראש חץ
   // נתיב מתוכנן: קו "נמלים צועדות" בלבד (ללא ראש חץ — ידית ההגה מסמנת את היעד).
@@ -480,9 +534,7 @@ function drawBoardInner(){
       +drawBoat(sc,'B',sc.B.x,sc.B.y,sc.B.heading)
       +plate(sc.A,COLA)+plate(sc.B,COLB);
   return `${defs}
-    <rect width="${BW}" height="${BW}" fill="url(#seaG)"/>
-    <rect width="${BW}" height="${BW}" fill="url(#glint)"/>
-    ${grid}${rings}${ripples}
+    ${grid}${rings}
     ${aArr}${bArr}
     ${boatsLayer}
     ${handle(sim.hA,COLA,'A')}${handle(sim.hB,COLB,'B')}
@@ -501,10 +553,30 @@ let winDragInstalled=false;
 function bindBoard(){
   // מאזינים על מיכל הלוח כולו (ולא רק על ה-SVG) — כך לחיצה שנוחתת על כפתור מוטמע
   // עדיין מגיעה ל-onDown, ואם היא ליד ידית — מתחילה גרירה במקום להפעיל את הכפתור.
-  const b=App.$('#board'); if(b) b.addEventListener('pointerdown',onDown);
+  const b=App.$('#board'); if(b){
+    b.addEventListener('pointerdown',onDown);
+    // הלוח מאפשר גלילת עמוד אנכית (touch-action:pan-y). כדי שגרירת ידית לכל כיוון
+    // לא "תיגנב" ע"י הגלילה — חוסמים את ברירת המחדל רק כשהמגע נוחת על ידית/כלי.
+    b.addEventListener('touchstart',onTouchStart,{passive:false});
+  }
   if(winDragInstalled)return; winDragInstalled=true;
   window.addEventListener('pointermove',onMove);
   window.addEventListener('pointerup',onUp);
+}
+/* בדיקת פגיעה: האם נקודת מסך (client) נוחתת על ידית או על כלי שיט הניתן לגרירה/זיהוי */
+function hitDraggable(clientX,clientY){
+  if(!sim||sim.running) return false;
+  const svg=App.$('#boardSvg'); if(!svg) return false;
+  const r=svg.getBoundingClientRect();
+  const p=clampPt({x:(clientX-r.left)/r.width*BW, y:(clientY-r.top)/r.height*BW});
+  const dA=len(vec(p,sim.hA)), dB=len(vec(p,sim.hB));
+  if(Math.min(dA,dB)<=34) return true;
+  const bA=len(vec(p,{x:sim.sc.A.x,y:sim.sc.A.y})), bB=len(vec(p,{x:sim.sc.B.x,y:sim.sc.B.y}));
+  return Math.min(bA,bB)<=30;
+}
+function onTouchStart(e){
+  const t=e.touches[0]; if(!t) return;
+  if(hitDraggable(t.clientX,t.clientY)) e.preventDefault();   // מונע גלילת עמוד — מאפשר גרירה חופשית
 }
 function onDown(e){
   if(!sim||sim.running)return;
@@ -601,14 +673,19 @@ function runSim(el){
     draw(pa,pb);
     if(hit){
       sim.running=false;
-      const board=App.$('#board'); if(board){ board.classList.remove('shake'); void board.offsetWidth; board.classList.add('shake'); }
-      App.haptic('bad'); App.sfx('bad');
+      App.haptic('bad'); App.sfx('bad'); setHalo('bad');
       showEvaluation(sc,el); return;
     }
     if(t<T){ requestAnimationFrame(frame); }
     else { sim.running=false; showEvaluation(sc,el); }
   }
   requestAnimationFrame(frame);
+}
+/* הילת משוב מתמשכת סביב הלוח: 'good'/'bad' נשארת עד מעבר תרחיש או איפוס (null=ניקוי) */
+function setHalo(kind){
+  const board=App.$('#board'); if(!board) return;
+  board.classList.remove('halo-good','halo-bad');
+  if(kind){ void board.offsetWidth; board.classList.add('halo-'+kind); }   // reflow → אנימציה מתחילה מחדש
 }
 function showEvaluation(sc,el){
   const ev=evaluateManeuver(sc), v=App.$('#verdict');
@@ -631,10 +708,14 @@ function showEvaluation(sc,el){
     App.playSeq(b.dataset.snd.split(''));
   }));
   if(ev.allOk){
-    App.sfx('good'); App.haptic('good');
+    App.sfx('good'); App.haptic('good'); setHalo('good');
     if(!sim.rewarded){ sim.rewarded=true; App.addXP(20); App.bump('scenarioOk'); App.toast('תמרון מושלם! ‎+20 XP'); App.confetti(50); }
     // "המשך אוטומטית": קופצים לתרחיש הבא מיד אחרי תמרון נכון (עם סריקת מכ"ם)
     if(st.autoNext && el && !sim.advancing){ sim.advancing=true; advTimer=setTimeout(()=>{ if(App.$('#boardSvg')) newScenario(el); }, 800); }
+  } else if(!ev.hit){
+    // תמרון שגוי ללא התנגשות — הילה אדומה מתמשכת (עד מעבר תרחיש/איפוס), רעד וצליל
+    App.sfx('bad'); App.haptic('bad'); setHalo('bad');
+    App.toast('התמרון אינו תקין — ראו פירוט');
   }
 }
 
@@ -696,6 +777,7 @@ function paint(el){
   const sweepOn = st.sweep && !matchMedia('(prefers-reduced-motion:reduce)').matches;   // סריקה רק כשאין reduced-motion
   el.innerHTML=head+`
     <div class="board" id="board">
+      <svg class="seaovl" id="seaOvl" viewBox="0 0 ${BW} ${BW}" aria-hidden="true">${drawSea()}</svg>
       <svg id="boardSvg" viewBox="0 0 ${BW} ${BW}">${drawBoardInner()}</svg>
       <svg class="windovl" id="windOvl" viewBox="0 0 ${BW} ${BW}" aria-hidden="true"></svg>
       <button class="board-btn" id="resetBtn" title="איפוס תמרון" aria-label="איפוס" style="inset-inline-start:8px;bottom:8px">${RESET_IC}</button>
@@ -715,8 +797,8 @@ function paint(el){
         <label class="autonext"><input type="checkbox" id="autoNext" ${st.autoNext?'checked':''}> המשך אוטומטית</label>
       </div>
     </div>
-    <div class="scn-types">${chipsBar()}</div>
     <div class="verdict" id="verdict"></div>
+    <div class="scn-types">${chipsBar()}</div>
     <div class="card quiz" style="margin-top:8px;padding:12px 14px;display:none">
       <div class="qtext" style="margin:2px 0 8px">מי נותן זכות קדימה (give‑way)?</div>
       <div id="scnOpts">${opts.map((o,i)=>`<button class="opt" data-i="${i}" ${sim.answered?'disabled':''}>${App.esc(o)}</button>`).join('')}</div>
@@ -726,7 +808,7 @@ function paint(el){
   App.$('#nightBtn').addEventListener('click',()=>{st.night=!st.night;paint(el);});
   App.$('#helpBtn').addEventListener('click',helpSheet);
   App.$('#nextScn').addEventListener('click',()=>newScenario(el));
-  App.$('#resetBtn').addEventListener('click',()=>{ if(boardDragged){boardDragged=false;return;} initSim();redrawInner();App.$('#verdict').className='verdict';});
+  App.$('#resetBtn').addEventListener('click',()=>{ if(boardDragged){boardDragged=false;return;} initSim();redrawInner();App.$('#verdict').className='verdict';setHalo(null);});
   App.$('#simBtn').addEventListener('click',()=>runSim(el));
   App.$('#solBtn').addEventListener('click',()=>{
     if(boardDragged){boardDragged=false;return;}
@@ -751,6 +833,7 @@ function paint(el){
   }));
   bindBoard();
   startWind();
+  startFish();
 }
 
 /* ---------- חלקיקי רוח: פסים נסחפים בכיוון שאליו נושבת הרוח ---------- */

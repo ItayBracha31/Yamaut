@@ -213,6 +213,15 @@ nav.tabs button[aria-selected="true"] svg{animation:tabpop .34s var(--spring)}
 @keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
 @keyframes shake{0%,100%{transform:none}25%{transform:translateX(4px)}75%{transform:translateX(-4px)}}
 .shake{animation:shake .3s ease-in-out 2}
+/* משוב מתמשך על תמרון: הילה ירוקה (נכון) או אדומה (שגוי) שנשארת עד למעבר תרחיש/איפוס */
+@keyframes haloGood{0%,100%{box-shadow:0 0 16px 2px rgba(34,208,122,.42)}50%{box-shadow:0 0 32px 7px rgba(34,208,122,.72)}}
+@keyframes haloBad{0%,100%{box-shadow:0 0 16px 2px rgba(226,72,61,.42)}50%{box-shadow:0 0 32px 7px rgba(226,72,61,.78)}}
+.board.halo-good{animation:haloGood 2.6s ease-in-out infinite}
+.board.halo-bad{animation:shake .3s ease-in-out 2, haloBad 2.6s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){
+  .board.halo-good{animation:none;box-shadow:0 0 20px 3px rgba(34,208,122,.6)}
+  .board.halo-bad{animation:none;box-shadow:0 0 20px 3px rgba(226,72,61,.65)}
+}
 
 /* ---------- generic ---------- */
 .section-title{display:flex;align-items:baseline;gap:10px;margin:14px 2px 12px;flex-wrap:wrap}
@@ -328,7 +337,7 @@ svg.marksvg{background:linear-gradient(180deg,#315270 0%,#1d3a55 62%,#0d2c44 100
 .voyage-wrap{margin:2px 0 8px}
 
 /* ---------- scenarios ---------- */
-.board{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--water);touch-action:none;position:relative;
+.board{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--water);touch-action:pan-y;position:relative;
   max-width:min(100%,52vh);margin-inline:auto}
 /* סרגל עליון קומפקטי לתרחישים (יום/לילה + עזרה) — במקום כותרת גדולה */
 .scn-topbar{display:flex;align-items:center;gap:8px;margin:2px 2px 8px}
@@ -339,7 +348,27 @@ svg.marksvg{background:linear-gradient(180deg,#315270 0%,#1d3a55 62%,#0d2c44 100
 @keyframes radarSweep{0%{transform:rotate(-20deg);opacity:.85}100%{transform:rotate(345deg);opacity:0}}
 .scn-types{margin-top:12px}
 .board svg{display:block;width:100%;height:auto}
-.board .windovl{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.board #boardSvg{position:relative;z-index:1}
+.board .seaovl{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;border-radius:14px}
+.board .windovl{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+/* ---------- ים רגוע ונייח: רקע סטטי + דג נדיר שקופץ מדי פעם ---------- */
+/* דג בודד — נוצר דינמית ע"י startFish, מריץ קפיצה אחת ומוסר. keyframes בלבד כאן. */
+.seaovl .fish{transform-box:fill-box;transform-origin:50% 50%;will-change:transform,opacity}
+/* קפיצה נמוכה בקשת קדימה: הדג עולה סמוך לפני המים, חוצה קשת מתונה קדימה ושב פנימה.
+   השקיפות משתנה סמוך לפני המים (לא באוויר) כך שנראה "יוצא ונכנס" ולא "מהבהב". */
+@keyframes fishleap{
+  0%{opacity:0;transform:translate(-8px,9px) scale(.78) rotate(-46deg)}
+  14%{opacity:1;transform:translate(-4px,4px) scale(.9) rotate(-34deg)}
+  50%{opacity:1;transform:translate(9px,-14px) scale(1) rotate(0deg)}
+  86%{opacity:1;transform:translate(22px,4px) scale(.9) rotate(34deg)}
+  100%{opacity:0;transform:translate(26px,9px) scale(.78) rotate(46deg)}
+}
+.seaovl .splash{transform-box:fill-box;transform-origin:50% 50%;opacity:0}
+/* פעימת התז יחידה — משמשת פעמיים: ביציאה (נקודת המוצא) ובכניסה (נקודת הצלילה קדימה) */
+@keyframes fsplashp{0%{opacity:0;transform:scale(.3)}30%{opacity:.6;transform:scale(1)}100%{opacity:0;transform:scale(1.7)}}
+@media (prefers-reduced-motion:reduce){
+  .seaovl .fish,.seaovl .splash{display:none}
+}
 /* נתיב מתוכנן: "נמלים צועדות" אל היעד */
 .board .trk{stroke-dasharray:7 7;animation:trkflow 1s linear infinite}
 @keyframes trkflow{to{stroke-dashoffset:-14}}
