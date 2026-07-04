@@ -282,17 +282,20 @@ function bankRenderable(q){
 /* ---------- תצוגת החידון ---------- */
 const st={selected:null, genFilter:null, openCats:null, q:null, correct:0, total:0};
 /* כניסה מסוננת (ממסלול ההפלגה): חידון על נושא COLREG ספציפי — בוחר את "חוקי הדרך" ומגביל את המחולל */
-G.setFilter = ids=>{ st.genFilter=new Set(ids); st.selected=new Set(['colreg']); st.openCats=new Set(['yam']); st.q=null; };
+G.setFilter = ids=>{ st.genFilter=new Set(ids); st.genFilterFresh=true; st.selected=new Set(['colreg']); st.openCats=new Set(['yam']); st.q=null; };
 
 function buildQuestion(){
   const sel=st.selected?[...st.selected]:[];
   if(!sel.length) return null;
   const sources=[];
+  const legFiltered = !!(st.genFilter&&st.genFilter.size);   // כניסה מתחנת מסלול → מחולל בלבד
   sel.forEach(id=>{
     const s=SUBS[id]; if(!s) return;
     if(s.gen) sources.push({kind:'gen', topics:s.gen});
-    const bq=bankIndex()[id];
-    if(bq&&bq.length) sources.push({kind:'bank', pool:bq});
+    if(!legFiltered){
+      const bq=bankIndex()[id];
+      if(bq&&bq.length) sources.push({kind:'bank', pool:bq});
+    }
   });
   if(!sources.length) return null;
   const src=App.pick(sources);
@@ -307,6 +310,9 @@ function buildQuestion(){
 App.registerView('quiz',{render(el){
   if(!st.selected) st.selected=new Set(['colreg']);
   if(!st.openCats) st.openCats=new Set(['yam']);
+  if(st.genFilter && !st.genFilterFresh) st.genFilter=null;   // סינון‑תחנה חד‑פעמי — לא נדבק לביקור הבא
+  st.genFilterFresh=false;
+  st.q=null;                                                  // שאלה טרייה בכל כניסה למסך (מונע מענה כפול)
   paint(el);
 }});
 function paint(el){

@@ -319,6 +319,8 @@ svg.marksvg{background:linear-gradient(180deg,#315270 0%,#1d3a55 62%,#0d2c44 100
 .quiz-cats .typesel{margin:0}
 .cat-sel{margin-inline-start:auto;font-size:.7rem;font-family:var(--mono);color:var(--brass);font-weight:800}
 .chip-n{font-size:.66rem;font-family:var(--mono);opacity:.6;margin-inline-start:3px}
+/* מפת מסך הבית — בלי כרטיס לבן, המפה עצמה היא הפאנל */
+.voyage-wrap{margin:2px 0 8px}
 
 /* ---------- scenarios ---------- */
 .board{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--water);touch-action:none;position:relative}
