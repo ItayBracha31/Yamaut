@@ -717,7 +717,7 @@ function paint(el){
     </div>
     <div class="scn-types">${chipsBar()}</div>
     <div class="verdict" id="verdict"></div>
-    <div class="card quiz" style="margin-top:8px;padding:12px 14px">
+    <div class="card quiz" style="margin-top:8px;padding:12px 14px;display:none">
       <div class="qtext" style="margin:2px 0 8px">מי נותן זכות קדימה (give‑way)?</div>
       <div id="scnOpts">${opts.map((o,i)=>`<button class="opt" data-i="${i}" ${sim.answered?'disabled':''}>${App.esc(o)}</button>`).join('')}</div>
       <div id="scnExp"></div>
