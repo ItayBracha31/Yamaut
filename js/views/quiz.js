@@ -345,17 +345,24 @@ function paint(el){
     const sc=cat.subs.filter(s=>st.selected.has(s.id)).length;
     return `<details class="typesel" data-cat="${cat.id}" ${st.openCats.has(cat.id)?'open':''}>
       <summary>${App.icon(cat.ic,15)} ${App.esc(cat.name)} <span class="cat-sel">${sc}/${cat.subs.length}</span></summary>
-      <div class="chipbar">${chips}</div></details>`;
+      <div class="chipbar">${chips}</div>
+      ${sc?`<div class="cat-clear-row"><button type="button" class="cat-clear" data-clearcat="${cat.id}">נקה</button></div>`:''}</details>`;
   }).join('');
   el.innerHTML=`
     <div class="quiz-cats">${cats}</div>
-    <div class="row" style="padding:2px 4px 0"><button class="btn ghost mini" id="selNone">נקה בחירה</button></div>
+    <div class="row" style="padding:2px 4px 0"><button class="btn ghost mini" id="selNone">נקה הכל</button></div>
     <div class="scorebar" style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--ink-dim);padding:8px 4px">
       <span>ציון: ${st.correct}/${st.total} ${st.total?'('+acc+'%)':''}</span>
       <span>${App.combo()>=3?'<span class="combo">קומבו ×'+App.combo()+'</span>':''}</span>
     </div>
     <div id="qhost"></div>`;
   App.$$('.typesel[data-cat]',el).forEach(d=>d.addEventListener('toggle',()=>{ if(d.open)st.openCats.add(d.dataset.cat); else st.openCats.delete(d.dataset.cat); }));
+  // נקה בחירה בקטגוריה בודדת (בתוך התפריט הפתוח בלבד — לא ניתן ללחיצה בטעות על הכותרת)
+  App.$$('.cat-clear',el).forEach(b=>b.addEventListener('click',()=>{
+    const cat=CATS.find(c=>c.id===b.dataset.clearcat); if(!cat) return;
+    cat.subs.forEach(s=>st.selected.delete(s.id));
+    st.genFilter=null; st.q=null; paint(el);
+  }));
   App.$$('.chip[data-sub]',el).forEach(c=>c.addEventListener('click',()=>{
     const id=c.dataset.sub; st.genFilter=null;   // בחירה ידנית מבטלת סינון מחולל
     if(st.selected.has(id)) st.selected.delete(id); else st.selected.add(id);

@@ -332,6 +332,11 @@ svg.marksvg{background:linear-gradient(180deg,#315270 0%,#1d3a55 62%,#0d2c44 100
 .quiz-cats{display:flex;flex-direction:column;gap:8px;margin-top:4px}
 .quiz-cats .typesel{margin:0}
 .cat-sel{margin-inline-start:auto;font-size:.7rem;font-family:var(--mono);color:var(--brass);font-weight:800}
+/* "נקה בחירה בקטגוריה" — בתוך התפריט הפתוח, מתחת לצ'יפים (מופיע רק כשיש בחירה בקטגוריה) */
+.cat-clear-row{padding:2px 12px 15px}
+.cat-clear{font-family:inherit;font-size:.7rem;font-weight:700;cursor:pointer;
+  border:1px solid var(--line);background:transparent;color:var(--ink-dim);border-radius:7px;padding:5px 11px;min-height:30px}
+.cat-clear:hover,.cat-clear:focus-visible{color:var(--bad);border-color:var(--bad)}
 .chip-n{font-size:.66rem;font-family:var(--mono);opacity:.6;margin-inline-start:3px}
 /* מפת מסך הבית — בלי כרטיס לבן, המפה עצמה היא הפאנל */
 .voyage-wrap{margin:2px 0 8px}
