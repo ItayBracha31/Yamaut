@@ -723,10 +723,10 @@ window.SEA_RULES = {
     { letter:"A", phonetic:"אלפא (Alfa)",   meaning:"יש לי צוללן במים — התרחק ממני ועבור במהירות נמוכה.", design:{type:"vert",colors:["white","blue"]}, swallow:true, ref:{colreg:"ICS A", israeli:""} },
     { letter:"B", phonetic:"בראבו (Bravo)", meaning:"אני טוען, פורק או נושא מטען מסוכן.", design:{type:"solid",color:"red"}, swallow:true, ref:{colreg:"ICS B", israeli:""} },
     { letter:"D", phonetic:"דלתא (Delta)",  meaning:"התרחק ממני — אני מתמרן בקושי.", design:{type:"horiz3",colors:["yellow","blue","yellow"]}, ref:{colreg:"ICS D", israeli:""} },
-    { letter:"E", phonetic:"אקו (Echo)",    meaning:"אני משנה את הילוכי לימין (starboard).", design:{type:"horiz",colors:["blue","red"]}, ref:{colreg:"ICS E", israeli:""} },
+    { letter:"E", phonetic:"אקו (Echo)",    meaning:"אני משנה את דרכי (כיווני) לימין (starboard).", design:{type:"horiz",colors:["blue","red"]}, ref:{colreg:"ICS E", israeli:""} },
     { letter:"G", phonetic:"גולף (Golf)",   meaning:"אני זקוק לנתב. (כלי דיג: ‘אני מעלה רשתות’)", design:{type:"vert",colors:["yellow","blue","yellow","blue","yellow","blue"]}, ref:{colreg:"ICS G", israeli:""} },
     { letter:"H", phonetic:"הוטל (Hotel)",  meaning:"יש נתב על סיפוני.", design:{type:"vert",colors:["white","red"]}, ref:{colreg:"ICS H", israeli:""} },
-    { letter:"I", phonetic:"אינדיה (India)",meaning:"אני משנה את הילוכי לשמאל (port).", design:{type:"circle",field:"yellow",dot:"black"}, ref:{colreg:"ICS I", israeli:""} },
+    { letter:"I", phonetic:"אינדיה (India)",meaning:"אני משנה את דרכי (כיווני) לשמאל (port).", design:{type:"circle",field:"yellow",dot:"black"}, ref:{colreg:"ICS I", israeli:""} },
     { letter:"J", phonetic:"ג׳ולייט (Juliett)", meaning:"אני בוער ונושא מטען מסוכן — התרחק ממני.", design:{type:"horiz",colors:["blue","white","blue"]}, ref:{colreg:"ICS J", israeli:""} },
     { letter:"O", phonetic:"אוסקר (Oscar)", meaning:"אדם נפל למים (Man overboard).", design:{type:"diag",a:"red",b:"yellow"}, ref:{colreg:"ICS O", israeli:""} },
     { letter:"P", phonetic:"פאפא (Papa)",   meaning:"כל אנשי הצוות יתייצבו — הכלי עומד להפליג (‘הדגל הכחול’).", design:{type:"square",field:"blue",sq:"white"}, ref:{colreg:"ICS P", israeli:""} },
@@ -747,9 +747,12 @@ window.SEA_RULES = {
     { letter:"Z", phonetic:"זולו (Zulu)", meaning:"דרושה לי גוררת. (מכלי דיג בשטחי דיג: אני פורש רשתות.)", design:{type:"zquad",top:"yellow",side1:"blue",bottom:"red",side2:"black"}, ref:{colreg:"ICS Z", israeli:""} }
   ],
 
-  /* אילו דגלים מופיעים בפועל במאגר הבחינה הרשמי (data.gov.il · opercraft_tq) — לפי ניתוח המאגר.
-     משמש הן לפיצול מסך הדגלים והן לסינון שאלות הדגלים בחידון (שאר הדגלים נשארים ללימוד בלבד). */
-  examFlags: ["A","B","C","D","F","G","M","N","O","Q","V"],
+  /* אילו דגלים מופיעים בפועל במאגר הבחינה הרשמי (data.gov.il · opercraft_tq).
+     נגזר אוטומטית בזמן ריצה מהמאגר + figures.js (App.deriveExamFlags) — הרשימה כאן היא גיבוי בלבד,
+     המשמש אם הנתונים לא נטענו. משמש לפיצול מסך הדגלים ולסינון שאלות הדגלים בחידון.
+     הערך הנגזר (נכון ל-2026): A,B,C,D,F,G,N,O,Q,V — 7 כנושא שאלה (A,B,C,G,N,O,Q) ועוד D,F,V כמסיחים.
+     M הוסר: אינו מוזכר באף שאלה פעילה (לא כתמונה, לא פונטית, לא "דגל M"). */
+  examFlags: ["A","B","C","D","F","G","N","O","Q","V"],
 
   /* ========================== תרחישי זכות קדימה (לסימולטור) ========================== */
   /* כל תרחיש: שני כלי שיט עם מיקום וכיוון בלוח 360×360 (0,0 שמאל‑עליון).

@@ -214,7 +214,15 @@ G.renderQuestion = (el,q,opts)=>{
    כך כל שאלת מאגר משובצת לתת‑נושא אחד בדיוק (כיסוי מלא של הסילבוס). */
 const CATS=[
   {id:'yam', name:'ימאות', ic:'anchor', subs:[
-    {id:'colreg', name:'חוקי הדרך', gen:['lights','shapes','giveway','sounds','marks','flags'], bank:['rules','rules_dq']},
+    /* חוקי הדרך — מפוצל לתת‑נושאים לתרגול ממוקד (כל אחד = מחולל שאלות אינסופי על נושא COLREG יחיד).
+       "שאלות מאגר" מרכז את שאלות התרחישים הרשמיות (rules/rules_dq) שאינן מתויגות לפי נושא בודד. */
+    {id:'cd_lights',  name:'אורות (לילה)', group:'חוקי הדרך', gen:['lights']},
+    {id:'cd_shapes',  name:'צורות יום',    group:'חוקי הדרך', gen:['shapes']},
+    {id:'cd_giveway', name:'זכות קדימה',   group:'חוקי הדרך', gen:['giveway']},
+    {id:'cd_sounds',  name:'אותות קול',    group:'חוקי הדרך', gen:['sounds']},
+    {id:'cd_marks',   name:'מצופים',       group:'חוקי הדרך', gen:['marks']},
+    {id:'cd_flags',   name:'דגלים',        group:'חוקי הדרך', gen:['flags']},
+    {id:'cd_bank',    name:'שאלות מאגר',   group:'חוקי הדרך', bank:['rules','rules_dq']},
     {id:'safety', name:'בטיחות', bank:['safety']},
     {id:'proc',   name:'נהלים', bank:['procedures']},
     {id:'emerg',  name:'חירום ומצוקה', bank:['emergency']},
@@ -240,6 +248,10 @@ const CATS=[
   ]}
 ];
 const SUBS={}; CATS.forEach(c=>c.subs.forEach(s=>{ SUBS[s.id]=s; }));
+/* תתי‑הנושאים של "חוקי הדרך" (ברירת המחדל של מסך החידון) */
+const CD_SUBS=['cd_lights','cd_shapes','cd_giveway','cd_sounds','cd_marks','cd_flags','cd_bank'];
+/* מיפוי נושא‑מחולל (מזהה COLREG) → מזהה תת‑הנושא המתאים, לכניסה מסוננת ממסלול ההפלגה */
+const GEN_TO_SUB={}; CATS.forEach(c=>c.subs.forEach(s=>{ if(s.gen&&s.gen.length===1) GEN_TO_SUB[s.gen[0]]=s.id; }));
 
 /* אינדקס: תת‑נושא → מערך שאלות מהמאגר. שיבוץ מלא — כל שאלה נכנסת לתת‑נושא יחיד. */
 let _bankIdx=null;
@@ -282,7 +294,12 @@ function bankRenderable(q){
 /* ---------- תצוגת החידון ---------- */
 const st={selected:null, genFilter:null, openCats:null, q:null, correct:0, total:0};
 /* כניסה מסוננת (ממסלול ההפלגה): חידון על נושא COLREG ספציפי — בוחר את "חוקי הדרך" ומגביל את המחולל */
-G.setFilter = ids=>{ st.genFilter=new Set(ids); st.genFilterFresh=true; st.selected=new Set(['colreg']); st.openCats=new Set(['yam']); st.q=null; };
+G.setFilter = ids=>{
+  const subIds=(ids||[]).map(id=>GEN_TO_SUB[id]).filter(Boolean);   // נושא‑מחולל → תת‑נושא ספציפי
+  if(subIds.length){ st.selected=new Set(subIds); st.genFilter=null; }
+  else { st.genFilter=new Set(ids); st.genFilterFresh=true; st.selected=new Set(['cd_bank']); }
+  st.openCats=new Set(['yam']); st.q=null;
+};
 
 function buildQuestion(){
   const sel=st.selected?[...st.selected]:[];
@@ -308,7 +325,7 @@ function buildQuestion(){
 }
 
 App.registerView('quiz',{render(el){
-  if(!st.selected) st.selected=new Set(['colreg']);
+  if(!st.selected) st.selected=new Set(CD_SUBS);
   if(!st.openCats) st.openCats=new Set();   // קטגוריות מקופלות כברירת מחדל — השאלה גבוהה במסך, בלי גלילה
   if(st.genFilter && !st.genFilterFresh) st.genFilter=null;   // סינון‑תחנה חד‑פעמי — לא נדבק לביקור הבא
   st.genFilterFresh=false;
@@ -319,7 +336,12 @@ function paint(el){
   if(!st.q) st.q=buildQuestion();
   const acc=st.total?Math.round(st.correct/st.total*100):0;
   const cats=CATS.map(cat=>{
-    const chips=cat.subs.map(s=>`<button class="chip" data-sub="${s.id}" aria-pressed="${st.selected.has(s.id)}">${App.esc(s.name)} <span class="chip-n">${subCount(s)}</span></button>`).join('');
+    const chips=cat.subs.map((s,i)=>{
+      const prev=cat.subs[i-1];
+      // תווית תת‑קבוצה (למשל "חוקי הדרך") לפני הצ'יפ הראשון בכל קבוצה — flex-basis:100% שובר שורה
+      const lbl=(s.group && (!prev||prev.group!==s.group))?`<div class="chip-group">${App.esc(s.group)}</div>`:'';
+      return lbl+`<button class="chip" data-sub="${s.id}" aria-pressed="${st.selected.has(s.id)}">${App.esc(s.name)} <span class="chip-n">${subCount(s)}</span></button>`;
+    }).join('');
     const sc=cat.subs.filter(s=>st.selected.has(s.id)).length;
     return `<details class="typesel" data-cat="${cat.id}" ${st.openCats.has(cat.id)?'open':''}>
       <summary>${App.icon(cat.ic,15)} ${App.esc(cat.name)} <span class="cat-sel">${sc}/${cat.subs.length}</span></summary>

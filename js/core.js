@@ -23,6 +23,30 @@ App.todayStr = ()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMo
 App.R = window.SEA_RULES || null;
 App.BANK = window.EXAM_BANK || null;
 
+/* ---------------- דגלים שבבחינה — נגזר מהמאגר (אימות אוטומטי) ----------------
+   במקום רשימה ידנית ב-rules.js: סורקים אילו דגלי ICS מוזכרים בפועל בשאלות פעילות.
+   שאלת דגל מפנה ל"תמונה N" מחוברת האורות (figures.js ממפה תמונה→אות דגל) — בין אם הדגל
+   הוא נושא השאלה (q.figure) ובין אם כמסיח בטקסט/אפשרות — או מזכירה "דגל X" מפורשות.
+   כך הרשימה תמיד מדויקת ומתעדכנת עם עדכון חי של המאגר; R.examFlags נשאר גיבוי אם אין נתונים. */
+App.deriveExamFlags = function(){
+  const bank=window.EXAM_BANK, figs=window.EXAM_FIGURES;
+  if(!bank||!bank.questions||!bank.questions.length||!figs) return null;
+  const figFlag={};
+  for(const n in figs){ const m=(figs[n].desc||'').match(/דגל\s*["'׳]?\s*([A-Z])\b/); if(m) figFlag[n]=m[1]; }
+  const set=new Set(); let mm;
+  bank.questions.forEach(q=>{
+    if(q.figure>0 && figFlag[q.figure]) set.add(figFlag[q.figure]);   // הדגל הוא נושא השאלה
+    const t=q.q+' '+q.options.join(' ');
+    const reF=/תמונ\S*\s*["'׳]?\s*(\d{2,3})/g;                        // תמונת דגל כמסיח / בטקסט
+    while((mm=reF.exec(t))) if(figFlag[mm[1]]) set.add(figFlag[mm[1]]);
+    const reL=/דגל\s*["'׳]?\s*([A-Z])\b/g;                            // "דגל X" מפורש
+    while((mm=reL.exec(t))) set.add(mm[1]);
+  });
+  return set.size ? [...set].sort() : null;
+};
+App.refreshExamFlags = function(){ const d=App.deriveExamFlags(); if(d && App.R) App.R.examFlags=d; return d; };
+App.refreshExamFlags();
+
 /* ---------------- מערכת אייקונים (SVG, קו אחיד — במקום אימוג׳י) ---------------- */
 App.ICONS={
   anchor:'M12 6a2 2 0 1 1 .01 0M12 6v15M12 21c-4.5-.4-7.2-3.2-7.7-7.3M12 21c4.5-.4 7.2-3.2 7.7-7.3M3.5 13.7h2.8M17.7 13.7h2.8',

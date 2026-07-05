@@ -25,7 +25,9 @@ U.loadOverride = ()=>{
         const fmap=new Map(cur.questions.map(q=>[q.id,q.figure]));
         b.questions.forEach(q=>{ if(!(q.figure>0)){ const bf=fmap.get(q.id); if(bf>0) q.figure=bf; } });
       }
-      window.EXAM_BANK=b; App.BANK=b; return true;
+      window.EXAM_BANK=b; App.BANK=b;
+      if(App.refreshExamFlags) App.refreshExamFlags();   // דגלים שבבחינה נגזרים מחדש מהמאגר המעודכן
+      return true;
     }
   }catch(e){}
   return false;
@@ -158,6 +160,7 @@ U.refreshBank = async onProgress=>{
   try{ localStorage.setItem(KEY, JSON.stringify(bank)); }
   catch(e){ throw new Error('אין מספיק מקום לשמירת העדכון במכשיר'); }
   window.EXAM_BANK=bank; App.BANK=bank;
+  if(App.refreshExamFlags) App.refreshExamFlags();   // דגלים שבבחינה נגזרים מחדש מהמאגר המעודכן
   return Object.assign({total:questions.length}, diff);
 };
 

@@ -4,10 +4,9 @@
 (function(){
 "use strict";
 
-/* אילו דגלים מופיעים בפועל במאגר הבחינה הרשמי — מקור אמת יחיד ב-rules.js (R.examFlags),
-   משותף גם לחידון (שאלות דגלים). "נס אדום" הוא אות ישראלי נפרד ואינו דגל ICS — לא נכלל. */
-const EXAM_FLAGS=new Set((App.R&&App.R.examFlags)||[]);
-
+/* אילו דגלים מופיעים בפועל במאגר הבחינה הרשמי — נגזר אוטומטית מהמאגר (App.deriveExamFlags,
+   ראו core.js), משותף גם לחידון (שאלות דגלים). נקרא בזמן render כדי לשקף עדכון חי של המאגר.
+   "נס אדום" הוא אות ישראלי נפרד ואינו דגל ICS — לא נכלל. */
 function tile(f){
   return `<div class="tile flagtile" role="button" tabindex="0" data-flag="${f.letter}">
     <div class="flagimg">${Draw.drawFlag(f)}</div>
@@ -16,6 +15,7 @@ function tile(f){
 
 App.registerView('flags',{render(el){
   const R=App.R;
+  const EXAM_FLAGS=new Set(R.examFlags||[]);
   const grid=list=>`<div class="grid small">${list.map(tile).join('')}</div>`;
   const inExam=R.flags.filter(f=>EXAM_FLAGS.has(f.letter));
   const notExam=R.flags.filter(f=>!EXAM_FLAGS.has(f.letter));

@@ -386,6 +386,8 @@ svg.marksvg{background:linear-gradient(180deg,#315270 0%,#1d3a55 62%,#0d2c44 100
 .typesel summary::before{content:"▾ ";color:var(--brass)}
 .typesel[open] summary::before{content:"▴ "}
 .chipbar{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 4px}
+/* תווית תת‑קבוצה בתוך שורת הצ'יפים (שוברת שורה) — למשל "חוקי הדרך" מעל תתי‑הנושאים שלה */
+.chip-group{flex-basis:100%;font-size:.68rem;font-weight:800;color:var(--brass);letter-spacing:.02em;margin:4px 0 0}
 /* תגיות מרובעות-עדינות (כמו תוויות במפה) במקום גלולות */
 .chip{font-family:inherit;font-size:.74rem;font-weight:700;cursor:pointer;border-radius:7px;
   border:1px solid var(--line);background:var(--sea2);color:var(--ink-dim);padding:7px 11px;transition:all .12s;min-height:32px;
